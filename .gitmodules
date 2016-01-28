@@ -1,0 +1,3 @@
+[submodule "public/myvc_front"]
+	path = public/myvc_front
+	url = git@github.com:bluesky777/myvc_front.git

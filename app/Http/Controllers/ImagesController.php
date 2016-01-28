@@ -12,6 +12,7 @@ use App\Models\Year;
 use App\Models\Alumno;
 use App\Models\Profesor;
 use App\Models\Acudiente;
+use App\Models\ChangeAsked;
 
 
 class ImagesController extends Controller {
@@ -19,8 +20,37 @@ class ImagesController extends Controller {
 	public function getIndex()
 	{
 		$user = User::fromToken();
-		return ImageModel::where('user_id', '=', $user->user_id)->get();
+		
+
+		if ($user->tipo == "Alumno" and $user->tipo == "Acudiente") {
+			return ImageModel::where('user_id', $user->user_id)->get();
+		}
+
+		$imagenes_privadas = ImageModel::where('user_id', $user->user_id)
+								->whereNull('publica')
+								->get();
+
+		$imagenes_publicas = ImageModel::where('user_id', $user->user_id)
+								->where('publica', true)
+								->get();
+
+		return array('imagenes_privadas' => $imagenes_privadas, 'imagenes_publicas' => $imagenes_publicas);
 	}
+
+
+	public function getDatosImagen()
+	{
+		//$user = User::fromToken();
+		$user_id = Request::input('user_id');
+		$imagen_id = Request::input('imagen_id');
+		
+
+		$datos_imagen = ImageModel::DatosImagen($imagen_id, $user_id);
+
+		return $datos_imagen;
+	}
+
+
 
 
 	public function postStore()
@@ -113,30 +143,53 @@ class ImagesController extends Controller {
 	public function putCambiarimagenoficial($id)
 	{
 		$user = User::findOrFail($id);
+		$img_id = Request::input('foto_id');
 		$persona = new stdClass();
 		
-		$alumno = Alumno::where('user_id', '=', $user->id)->first();
+		$alumno = Alumno::where('user_id', $user->id)->first();
 
 		if ($alumno) {
+			
+			// No cambiamos la imagen, solo la solicitamos.
 			$persona = $alumno;
+
+			$already = ChangeAsked::where('asked_by_user_id', $user->id)
+								->where('oficial_image_id', $img_id)
+								->whereNull('rechazado_at')
+								->whereNull('accepted_at')
+								->first();
+
+			if ($already) {
+				return 'En espera';
+			}
+
+			$pedido = new ChangeAsked;
+			$pedido->asked_by_user_id = $user->id;
+			$pedido->oficial_image_id = $img_id;
+			$pedido->save();
+			return $pedido;
+
 		}else{
 
-			$profesor = Profesor::where('user_id', '=', $user->id)->first();
+			$profesor = Profesor::where('user_id', $user->id)->first();
 			if ($profesor) {
 				$persona = $profesor;
 			}else{
-				$acudiente = Acudiente::where('user_id', '=', $user->id)->first();
+				$acudiente = Acudiente::where('user_id', $user->id)->first();
 				if ($acudiente) {
 					$persona = $acudiente;
 				}else{
 					App::abort(400, 'Usuario no tiene foto oficial.');
 				}
 			}
+
+
+			$persona->foto_id = $img_id;
+			$persona->save();
+			return $persona;
+
 		}
 
-		$persona->foto_id = Request::input('foto_id');
-		$persona->save();
-		return $persona;
 	}
 
 
@@ -146,34 +199,46 @@ class ImagesController extends Controller {
 		
 		$filename = 'images/perfil/'.$img->nombre;
 
+
+		// Debería crear un código que impida borrar si la imagen es usada.
+
+
 		if (File::exists($filename)) {
 			File::delete($filename);
+			$img->delete();
 		}else{
-			return 'No se encuentra la imagen a eliminar.'.$img->nombre;
+			return 'No se encuentra la imagen a eliminar. '.$img->nombre;
 		}
 
-		$alumnos = Alumno::where('foto_id', '=', $id)->get();
+
+		// Elimino cualquier referencia que otros tengan a esa imagen borrada.
+		$alumnos = Alumno::where('foto_id', $id)->get();
 		foreach ($alumnos as $alum) {
 			$alum->foto_id = null;
 			$alum->save();
 		}
-		$profesores = Profesor::where('foto_id', '=', $id)->get();
+		$profesores = Profesor::where('foto_id', $id)->get();
 		foreach ($profesores as $prof) {
 			$prof->foto_id = null;
 			$prof->save();
 		}
-		$acudientes = Acudiente::where('foto_id', '=', $id)->get();
+		$acudientes = Acudiente::where('foto_id', $id)->get();
 		foreach ($acudientes as $acud) {
 			$acud->foto_id = null;
 			$acud->save();
 		}
-		$users = User::where('imagen_id', '=', $id)->get();
+		$users = User::where('imagen_id', $id)->get();
 		foreach ($users as $user) {
 			$user->imagen_id = null;
 			$user->save();
 		}
+		$years = Year::where('logo_id', $id)->get();
+		foreach ($years as $year) {
+			$year->logo_id = null;
+			$year->save();
+		}
 
-		$img->delete();
+		
 		return $img;
 	}
 
