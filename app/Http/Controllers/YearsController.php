@@ -6,7 +6,7 @@ use Request;
 use App\Models\User;
 use App\Models\Year;
 use App\Models\Periodo;
-use App\Models\configCertificado;
+use App\Models\ConfigCertificado;
 use App\Models\ImageModel;
 use App\Models\Grupo;
 
@@ -39,7 +39,7 @@ class YearsController extends Controller {
 			$year->periodos = Periodo::where('year_id', '=', $year->id)->get();
 		}
 
-		$certif 	= configCertificado::all();
+		$certif 	= ConfigCertificado::all();
 
 		$imagenes 	= ImageModel::where('user_id', '=', $user->user_id)->get();
 
