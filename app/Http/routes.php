@@ -19,7 +19,6 @@ Route::get('/', function()
 Route::get('/app', function()
 {
 	return View::make('dist.index');
-	
 });
 
 Route::controller('login', 'LoginController');
@@ -46,7 +45,7 @@ Route::controller('nota_comportamiento', 'NotaComportamientoController');
 Route::controller('definiciones_comportamiento', 'DefinicionesComportamientoController');
 Route::controller('frases', 'FrasesController');
 Route::controller('myimages', 'ImagesController');
-Route::controller('ChangeAsked', 'ChangeAskedController');
+Route::controller('ChangesAsked', 'ChangeAskedController');
 Route::controller('ausencias', 'AusenciasController');
 Route::controller('parentescos', 'ParentescosController');
 Route::controller('bitacoras', 'BitacorasController');

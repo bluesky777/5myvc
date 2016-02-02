@@ -121,6 +121,32 @@ class ImagesController extends Controller {
 	}
 
 
+	public function putPublicarImagen($imagen_id)
+	{
+		$imagen = ImageModel::findOrFail($imagen_id);
+		$imagen->publica = true;
+		$imagen->save();
+
+		return $imagen->nombre;
+	}
+
+	public function putPrivatizarImagen($imagen_id)
+	{
+		$years = Year::where('logo_id', $imagen_id)->get();
+		
+		if (count($years) > 0) {
+			return ['imagen' => array('is_logo_of_year' => $years[0]->year)];
+		}
+
+
+		$imagen = ImageModel::findOrFail($imagen_id);
+		$imagen->publica = null;
+		$imagen->save();
+
+		return $imagen->nombre;
+	}
+
+
 	public function putCambiarimagenperfil($id)
 	{
 		$user = User::findOrFail($id);

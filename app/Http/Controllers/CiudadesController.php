@@ -5,6 +5,7 @@ use DB;
 
 use App\Models\User;
 use App\Models\Ciudad;
+use App\Models\Pais;
 
 
 class CiudadesController extends Controller {

@@ -6,12 +6,13 @@ use Request;
 use DB;
 
 use App\Models\User;
-use App\Models\Acudiente;
+use App\Models\ChangeAsked;
+use App\Models\Alumno;
 
 
-class AcudientesController extends Controller {
+class AnunciosController extends Controller {
 
-	public function index()
+	public function getAll()
 	{
 		return Acudiente::all();
 	}

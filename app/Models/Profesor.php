@@ -21,7 +21,9 @@ class Profesor extends Model {
 	public static function detallado($profesor_id)
 	{
 		$consulta = 'SELECT p.id as profesor_id, p.nombres as nombres_profesor, p.apellidos as apellidos_profesor,
-						p.user_id, u.username, p.sexo, u.email, p.fecha_nac, 
+						p.user_id, u.username, p.sexo, u.email, p.fecha_nac, p.tipo_doc, p.num_doc,
+						p.ciudad_doc, p.ciudad_nac, p.titulo, p.estado_civil, p.barrio, p.direccion,
+						p.telefono, p.celular, p.facebook, p.email, p.tipo_profesor,
 						u.imagen_id, IFNULL(i.nombre, IF(p.sexo="F","default_female.jpg", "default_male.jpg")) as imagen_nombre, 
 						p.foto_id, IFNULL(i2.nombre, IF(p.sexo="F","default_female.jpg", "default_male.jpg")) as foto_nombre
 					from profesores p

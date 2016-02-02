@@ -34,7 +34,7 @@ class CreateProfesoresTable extends Migration {
 			$table->string('celular')->nullable();
 			$table->string('facebook')->nullable();
 			$table->string('email')->nullable();
-			$table->string('tipo_profesor')->nullable();
+			$table->string('tipo_profesor')->nullable(); // Catedrático o tiempo completo
 			$table->integer('user_id')->unsigned()->nullable();
 			$table->integer('created_by')->nullable();
 			$table->integer('updated_by')->nullable();
