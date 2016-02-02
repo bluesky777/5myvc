@@ -135,10 +135,10 @@ class GruposController extends Controller {
 	}
 
 
-	public function putUpdate()
+	public function putUpdate($id)
 	{
 		$user = User::fromToken();
-		$grupo = Grupo::findOrFail(Request::input('id'));
+		$grupo = Grupo::findOrFail($id);
 
 		try {
 

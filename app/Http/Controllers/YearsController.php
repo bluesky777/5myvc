@@ -8,6 +8,7 @@ use App\Models\Year;
 use App\Models\Periodo;
 use App\Models\configCertificado;
 use App\Models\ImageModel;
+use App\Models\Grupo;
 
 
 class YearsController extends Controller {
@@ -60,7 +61,7 @@ class YearsController extends Controller {
 		$year->abrev_colegio			=	Request::input('abrev_colegio');
 		//$year->ciudad_id				=	Request::input('ciudad_id');
 		//$year->logo_id			=	Request::input('logo_id');
-		//$year->img_encabezado_id=	Request::input('img_encabezado_id');
+		//$year->img_encabezado_id 	=	Request::input('img_encabezado_id');
 		//$year->rector_id			=	Request::input('rector_id');
 		//$year->secretario_id		=	Request::input('secretario_id');
 		//$year->tesorero_id		=	Request::input('tesorero_id');
@@ -97,6 +98,28 @@ class YearsController extends Controller {
 
 
 		$year->save();
+
+		$year_ante = $year->year - 1;
+
+		$pasado = Year::where('year', $year_ante)->first();
+		if ($pasado) {
+			$grupos_ant = Grupo::where('year_id', $pasado->id)->get();
+			
+			foreach ($grupos_ant as $key => $grupo) {
+				$newGr = new Grupo;
+				$newGr->nombre 			= $grupo->nombre;
+				$newGr->abrev 			= $grupo->abrev;
+				$newGr->year_id 		= $year->id;
+				$newGr->grado_id 		= $grupo->grado_id;
+				$newGr->valormatricula 	= $grupo->valormatricula;
+				$newGr->valorpension 	= $grupo->valorpension;
+				$newGr->orden 			= $grupo->orden;
+				$newGr->caritas 		= $grupo->caritas;
+				$newGr->save();
+			}
+		}
+		
+
 
 		return $year;
 		
