@@ -74,7 +74,7 @@ class ProfesoresController extends Controller {
 		$usuario->email			=	Request::input('email2');
 		$usuario->is_superuser	=	Request::input('is_superuser', false);
 		$usuario->is_active		=	Request::input('is_active', true);
-		$usuario->tipo			=	'Alumno';
+		$usuario->tipo			=	'Profesor';
 		$usuario->save();
 
 

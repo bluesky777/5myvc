@@ -9,6 +9,7 @@ use App\Models\Periodo;
 use App\Models\ConfigCertificado;
 use App\Models\ImageModel;
 use App\Models\Grupo;
+use App\Models\Asignatura;
 
 
 class YearsController extends Controller {
@@ -99,6 +100,9 @@ class YearsController extends Controller {
 
 		$year->save();
 
+
+
+		/// AHORA COPIAMOS LOS GRUPOS Y ASIGNATURAS DEL AÑO PASADO AL NUEVO AÑO.
 		$year_ante = $year->year - 1;
 
 		$pasado = Year::where('year', $year_ante)->first();
@@ -116,7 +120,21 @@ class YearsController extends Controller {
 				$newGr->orden 			= $grupo->orden;
 				$newGr->caritas 		= $grupo->caritas;
 				$newGr->save();
+
+
+				$asigs_ant = Asignatura::where('grupo_id', $grupo->id)->get();
+			
+				foreach ($asigs_ant as $key => $asig) {
+					$newAsig = new Asignatura;
+					$newAsig->materia_id 	= $asig->materia_id;
+					$newAsig->grupo_id 		= $asig->grupo_id;
+					$newAsig->creditos 		= $asig->creditos;
+					$newAsig->orden 		= $asig->orden;
+					$newAsig->save();
+				}
+				$grupo->asigs_ant = $asigs_ant;
 			}
+			$year->grupos_ant = $grupos_ant;
 		}
 		
 
@@ -192,18 +210,6 @@ class YearsController extends Controller {
 
 	
 
-	public function deleteDestroy($id)
-	{
-		$user = User::fromToken();
-		
-		$year = Year::findOrFail($id);
-		$year->delete();
-
-		return $year;
-	}
-
-
-
 	public function putAlumnosCanSeeNotas($can){
 		$user = User::fromToken();
 
@@ -219,6 +225,51 @@ class YearsController extends Controller {
 		}
 		
 	}
+
+
+	public function deleteDelete($id)
+	{
+		$user = User::fromToken();
+		
+		$year = Year::findOrFail($id);
+		$year->delete();
+
+		return $year;
+	}
+
+
+
+	public function deleteDestroy($id)
+	{
+		$user = User::fromToken();
+		
+		$year = Year::onlyTrashed()->findOrFail($id);
+		$year->forceDelete();
+
+		return $year;
+	}
+
+	public function putRestore($id)
+	{
+		$year = Year::onlyTrashed()->findOrFail($id);
+
+		if ($year) {
+			$year->restore();
+		}else{
+			return abort(400, 'Año no encontrado en la Papelera.');
+		}
+		return $year;
+	}
+
+
+	public function getTrashed()
+	{
+		$years = Year::onlyTrashed()->get();
+
+		return $years;
+	}
+
+
 
 }
 

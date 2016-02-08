@@ -57,8 +57,9 @@ Route::controller('frases_asignatura', 'FrasesAsignaturaController');
 Route::controller('eventos', 'EventosController');
 Route::controller('years', 'YearsController');
 Route::controller('certificados', 'ConfigCertificadosController');
-Route::controller('bolfinales', 'BolfinalesController');
 Route::controller('periodos', 'PeriodosController');
+Route::controller('bolfinales', 'Informes\BolfinalesController');
+Route::controller('puestos', 'Informes\PuestosAnualesController');
 
 Route::controller('editnota', 'EditnotaController');
 
