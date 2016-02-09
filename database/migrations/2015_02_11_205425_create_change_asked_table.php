@@ -24,14 +24,13 @@ class CreateChangeAskedTable extends Migration {
 			$table->integer('oficial_image_id')->nullable(); // Cuando propone una imagen de oficial
 			$table->string('nombres')->nullable(); // Cuando propone actualizar nombre
 			$table->string('apellidos')->nullable(); // Cuando propone actualizar apellido
-			$table->integer('nota_id')->nullable(); // Cuando propone cambio de nota
-			$table->integer('nota_asked')->nullable(); // Cuando propone cambio de nota, esta es la nota que desea
 
 			$table->integer('somebody_id')->nullable(); // Cuando propone cambiar algún dato a alguien
 			$table->string('somebody_nombres')->nullable(); // Cuando propone cambiar el nombre de alguien
 			$table->string('somebody_apellidos')->nullable(); // Cuando propone cambiar el apellido de alguien
 			$table->integer('somebody_nota_id')->nullable(); // Cuando propone cambio de nota
-			$table->integer('somebody_nota_asked')->nullable(); // Cuando propone cambio de nota, esta es la nota que desea
+			$table->integer('somebody_nota_old')->nullable(); // Cuando propone cambio de nota, esta es la nota que desea
+			$table->integer('somebody_nota_new')->nullable(); // Cuando propone cambio de nota, esta es la nota que desea
 			$table->integer('somebody_image_id_to_delete')->nullable(); // Cuando propone cambio de nota, esta es la nota que desea
 
 			$table->integer('materia_to_remove_id')->nullable(); // Cuando un profesor pide una materia
@@ -43,8 +42,8 @@ class CreateChangeAskedTable extends Migration {
 			$table->integer('change_creditos')->nullable();
 
 			$table->integer('asked_nota_id')->nullable(); // Cuando un alumno pide el cambio de una nota
-			$table->integer('nota_old')->nullable();
-			$table->integer('nota_new')->nullable();
+			$table->integer('nota_old')->nullable(); // Cuando propone cambio de nota, esta es la nota que anterior, que NO desea
+			$table->integer('nota_new')->nullable(); // Cuando propone cambio de nota, esta es la nota que desea
 
 			$table->string('comentario_respuesta')->nullable(); // Comentario sobre el pedido que está haciendo
 			$table->datetime('rechazado_at')->nullable();
