@@ -39,7 +39,7 @@ class Grupo extends Model {
 							a.fecha_nac, a.ciudad_nac, a.celular, a.direccion, a.religion,
 							m.grupo_id, 
 							u.imagen_id, IFNULL(i.nombre, IF(a.sexo="F","default_female.jpg", "default_male.jpg")) as imagen_nombre, 
-							a.foto_id, IFNULL(i2.nombre, IF(a.sexo="F","default_female.jpg", "default_male.jpg")) as foto_nombre
+							a.foto_id, IFNULL(i2.nombre, IF(a.sexo="F","default_female.jpg", "default_male.jpg")) as foto_nombre,
 							m.deleted_at as retirado_at 
 						FROM alumnos a 
 						inner join matriculas m on a.id=m.alumno_id and m.grupo_id=? and m.matriculado=true 
