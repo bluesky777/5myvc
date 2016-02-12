@@ -9,6 +9,4 @@ class VtAspiracion extends Model {
 	protected $fillable = [];
 	protected $table = "vt_aspiraciones";
 
-	use SoftDeletes;
-	protected $softDelete = true;
 }

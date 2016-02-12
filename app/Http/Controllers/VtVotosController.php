@@ -1,43 +1,30 @@
 <?php namespace App\Http\Controllers;
 
+use Request;
+use DB;
+
+
+use App\Models\User;
+use App\Models\VtAspiracion;
+
+
 class VtVotosController extends Controller {
 
-	/**
-	 * Display a listing of the resource.
-	 * GET /vtvotos
-	 *
-	 * @return Response
-	 */
+
 	public function getIndex()
 	{
 		return VtVoto::all();
 	}
 
-	/**
-	 * Show the form for creating a new resource.
-	 * GET /vtvotos/create
-	 *
-	 * @return Response
-	 */
-	public function create()
-	{
-		//
-	}
 
-	/**
-	 * Store a newly created resource in storage.
-	 * POST /vtvotos
-	 *
-	 * @return Response
-	 */
 	public function postStore()
 	{
-		Eloquent::unguard();
+
 
 		$user = User::fromToken();
 
 		$votacionActual = VtVotacion::where('actual', '=', true)->first();
-		$aspiracion_id = VtCandidato::find(Input::get('candidato_id'))->aspiracion_id;
+		$aspiracion_id = VtCandidato::find(Request::input('candidato_id'))->aspiracion_id;
 		$particip = VtParticipante::participanteDeAspiracion($aspiracion_id, $user);
 
 		if (!$particip) {
@@ -54,7 +41,7 @@ class VtVotosController extends Controller {
 		try {
 			$voto = VtVoto::create([
 				'participante_id'	=>	$particip_id,
-				'candidato_id'		=>	Input::get('candidato_id'),
+				'candidato_id'		=>	Request::input('candidato_id'),
 				'locked'			=>	false
 			]);
 
@@ -105,6 +92,7 @@ class VtVotosController extends Controller {
 		return $result;
 	}
 
+
 	public function verificarVotosCompletos($votacion_id, $particip_id)
 	{
 		$aspiraciones = VtAspiracion::where('votacion_id', '=', $votacion_id)->get();
@@ -127,25 +115,13 @@ class VtVotosController extends Controller {
 	}
 
 
-	public function edit($id)
-	{
-		//
-	}
-
-	/**
-	 * Update the specified resource in storage.
-	 * PUT /vtvotos/{id}
-	 *
-	 * @param  int  $id
-	 * @return Response
-	 */
 	public function putUpdate($id)
 	{
 		$candidato = VtCandidato::findOrFail($id);
 		try {
 			$candidato->fill([
-				'tipo'		=>	Input::get('tipo'),
-				'abrev'		=>	Input::get('abrev')
+				'tipo'		=>	Request::input('tipo'),
+				'abrev'		=>	Request::input('abrev')
 			]);
 
 			$candidato->save();
@@ -154,13 +130,7 @@ class VtVotosController extends Controller {
 		}
 	}
 
-	/**
-	 * Remove the specified resource from storage.
-	 * DELETE /vtvotos/{id}
-	 *
-	 * @param  int  $id
-	 * @return Response
-	 */
+
 	public function deleteDestroy($id)
 	{
 		$candidato = VtCandidato::findOrFail($id);

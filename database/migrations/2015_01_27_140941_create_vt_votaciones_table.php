@@ -16,6 +16,7 @@ class CreateVtVotacionesTable extends Migration {
 		{
 			$table->engine = "InnoDB";
 			$table->increments('id');
+			$table->integer('user_id')->unsigned()->nullable();
 			$table->string('nombre');
 			$table->boolean('locked')->default(false);
 			$table->boolean('actual')->default(false);
@@ -29,6 +30,9 @@ class CreateVtVotacionesTable extends Migration {
 			$table->softDeletes();
 			$table->timestamps();
 		});
+		Schema::table('vt_votaciones', function(Blueprint $table) {
+			$table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+		});
 
 		Schema::create('vt_aspiraciones', function(Blueprint $table)
 		{
@@ -37,7 +41,6 @@ class CreateVtVotacionesTable extends Migration {
 			$table->string('aspiracion');
 			$table->string('abrev');
 			$table->integer('votacion_id')->unsigned();
-			$table->integer('deleted_by')->nullable();
 			$table->integer('created_by')->nullable();
 			$table->integer('updated_by')->nullable();
 			$table->softDeletes();
@@ -54,7 +57,7 @@ class CreateVtVotacionesTable extends Migration {
 			$table->integer('user_id')->unsigned();
 			$table->integer('votacion_id')->unsigned();
 			$table->boolean('locked')->dafault(false);
-			$table->integer('intentos')->default(0); # Tal vez quiera borrar sus votos par que lo vuelva a intentar, al borrar esta celda aumentaría
+			$table->integer('intentos')->default(0); # Tal vez quiera borrar sus votos para que lo vuelva a intentar, al borrar esos votos, esta celda aumentaría
 			$table->integer('created_by')->nullable();
 			$table->integer('updated_by')->nullable();
 			$table->integer('deleted_by')->nullable();

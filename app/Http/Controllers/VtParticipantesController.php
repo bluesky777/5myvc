@@ -1,13 +1,15 @@
 <?php namespace App\Http\Controllers;
 
+use Request;
+use DB;
+
+
+use App\Models\User;
+use App\Models\VtAspiracion;
+
+
 class VtParticipantesController extends Controller {
 
-	/**
-	 * Display a listing of the resource.
-	 * GET /participantes
-	 *
-	 * @return Response
-	 */
 	public function getIndex()
 	{
 
@@ -16,33 +18,16 @@ class VtParticipantesController extends Controller {
 
 	}
 
-	/**
-	 * Show the form for creating a new resource.
-	 * GET /participantes/create
-	 *
-	 * @return Response
-	 */
-	public function create()
-	{
-		//
-	}
-
-	/**
-	 * Store a newly created resource in storage.
-	 * POST /participantes
-	 *
-	 * @return Response
-	 */
 	public function postIndex()
 	{
-		Eloquent::unguard();
+
 		$votacion = VtVotacion::where('actual', '=', true)->first();
 
 		try {
 			$participante = VtParticipante::create([
-				'user_id'		=>	Input::get('user')['id'],
+				'user_id'		=>	Request::input('user')['id'],
 				'votacion_id'	=>	$votacion->id,
-				'locked'		=>	Input::get('locked', false),
+				'locked'		=>	Request::input('locked', false),
 				'intentos'		=>	0,
 
 			]);
@@ -80,8 +65,8 @@ class VtParticipantesController extends Controller {
 						$usuario = User::create([
 							'username'		=>	$name,
 							'password'		=>	'123456',
-							'is_superuser'	=>	Input::get('is_superuser', false),
-							'is_active'		=>	Input::get('is_active', true),
+							'is_superuser'	=>	Request::input('is_superuser', false),
+							'is_active'		=>	Request::input('is_active', true),
 						]);
 
 						$alumno = Alumno::find($alumnos[$i]->alumno_id);
@@ -157,10 +142,10 @@ class VtParticipantesController extends Controller {
 		$participante = VtParticipante::findOrFail($id);
 		try {
 			$participante->fill([
-				'user_id'		=>	Input::get('user_id'),
-				'votacion_id'	=>	Input::get('votacion_id'),
-				'locked'		=>	Input::get('locked'),
-				'intentos'		=>	Input::get('intentos'),
+				'user_id'		=>	Request::input('user_id'),
+				'votacion_id'	=>	Request::input('votacion_id'),
+				'locked'		=>	Request::input('locked'),
+				'intentos'		=>	Request::input('intentos'),
 
 			]);
 

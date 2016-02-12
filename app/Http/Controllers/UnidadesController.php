@@ -34,7 +34,7 @@ class UnidadesController extends Controller {
 	{
 		$user = User::fromToken();
 
-		$unidades = Unidad::where('asignatura_id', '=', $asignatura_id)->where('periodo_id', '=', $periodo_id)->get();
+		$unidades = Unidad::where('asignatura_id', $asignatura_id)->where('periodo_id', $periodo_id)->get();
 		
 
 		if (count($unidades)==0) {

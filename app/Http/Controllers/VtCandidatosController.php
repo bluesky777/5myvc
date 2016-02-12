@@ -34,11 +34,11 @@ class VtCandidatosController extends Controller {
 	{
 		Eloquent::unguard();
 
-		$participante_id = Input::get('participante_id');
-		$aspiracion_id = Input::get('aspiracion_id');
-		$plancha = Input::get('plancha');
-		$numero = Input::get('numero');
-		$locked = Input::get('locked', false);
+		$participante_id = Request::input('participante_id');
+		$aspiracion_id = Request::input('aspiracion_id');
+		$plancha = Request::input('plancha');
+		$numero = Request::input('numero');
+		$locked = Request::input('locked', false);
 
 		$busqueda = VtCandidato::where('participante_id', '=', $participante_id)
 					->where('aspiracion_id', '=', $aspiracion_id)->get();
@@ -141,9 +141,9 @@ class VtCandidatosController extends Controller {
 		$candidato = VtCandidato::findOrFail($id);
 		try {
 			$candidato->fill([
-				'participante_id'	=>	Input::get('participante_id'),
-				'aspiracion_id'		=>	Input::get('aspiracion_id'),
-				'locked'			=>	Input::get('locked'),
+				'participante_id'	=>	Request::input('participante_id'),
+				'aspiracion_id'		=>	Request::input('aspiracion_id'),
+				'locked'			=>	Request::input('locked'),
 
 			]);
 
