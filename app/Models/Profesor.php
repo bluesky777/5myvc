@@ -64,7 +64,7 @@ class Profesor extends Model {
 					inner join contratos c on c.profesor_id=p.id and p.deleted_at is null   
 					where c.year_id=:year_id and c.deleted_at is null';
 
-		$profesores = DB::select(DB::raw($consulta), array(':year_id' => $year_id));
+		$profesores = DB::select($consulta, [':year_id' => $year_id]);
 
 		return $profesores;
 	}

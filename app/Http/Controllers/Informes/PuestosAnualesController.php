@@ -79,36 +79,40 @@ class PuestosAnualesController extends Controller {
 
 	public function definitivas_year_alumno($alumno_id, $year_id, $numero_periodo=10)
 	{
-		$consulta = "SELECT R2.asignatura_id, R2.materia, R2.alias, SUM(R2.perdidos) as perdidos,
-				 ROUND(AVG(R2.nota_asignatura), 5) AS nota_asignatura_year, R2.alumno_id
+		$consulta = 'SELECT R2.asignatura_id, R2.materia, R2.alias, SUM(R2.perdidos) as perdidos,
+				 ROUND(AVG(R2.nota_asignatura), 5) AS nota_asignatura_year, R2.alumno_id,
+				 R2.profesor_id, R2.nombres_profesor, R2.apellidos_profesor, R2.sexo, R2.foto_id, R2.foto_nombre
 			FROM
 				(
 				SELECT R1.materia, R1.alias, SUM(valor_nota) as nota_asignatura, R1.periodo_id, R1.asignatura_id,
-					SUM(R1.perdido) as perdidos, R1.alumno_id
+					SUM(R1.perdido) as perdidos, R1.alumno_id,
+					R1.profesor_id, R1.nombres_profesor, R1.apellidos_profesor, R1.sexo, R1.foto_id, R1.foto_nombre
 			    FROM
 					(
 			        SELECT m.materia, m.alias, n.id as nota_id, n.nota, n.subunidad_id, n.alumno_id, 
 						AVG((u.porcentaje/100)*((s.porcentaje/100)*n.nota)) as valor_nota, 
 			            IF(n.nota < ?, 1, 0) as perdido, 
-						s.definicion, s.porcentaje as porc_subuni, s.unidad_id, u.porcentaje as porc_uni, u.periodo_id, u.asignatura_id
+						s.definicion, s.porcentaje as porc_subuni, s.unidad_id, u.porcentaje as porc_uni, u.periodo_id, u.asignatura_id,
+						pr.id as profesor_id, pr.nombres as nombres_profesor, pr.apellidos as apellidos_profesor, pr.sexo,
+						pr.foto_id, IFNULL(i.nombre, IF(pr.sexo="F","default_female.jpg", "default_male.jpg")) as foto_nombre 
 			        FROM notas n 
 						inner join subunidades s on s.id=n.subunidad_id and s.deleted_at is null
 						inner join unidades u on u.id=s.unidad_id and u.deleted_at is null
 			            inner join periodos p on p.id=u.periodo_id and p.numero <= ? and p.year_id = ?
 			            inner join asignaturas a on a.id=u.asignatura_id and a.deleted_at is null
-			            inner join grupos g on g.id=a.grupo_id and g.year_id = ? and g.deleted_at is null
+			            inner join profesores pr on pr.id=a.profesor_id and pr.deleted_at is null
 			            inner join materias m on m.id=a.materia_id and m.deleted_at is null
+			            left join images i on i.id=pr.foto_id
 			        WHERE alumno_id = ?
 			        group by n.id
 			        )R1
 				GROUP BY R1.asignatura_id, R1.periodo_id
 			    )R2
-			GROUP BY R2.asignatura_id";
+			GROUP BY R2.asignatura_id';
 
 		$notas = DB::select($consulta, [
 						User::$nota_minima_aceptada, 
 						$numero_periodo, 
-						$year_id,
 						$year_id,
 						$alumno_id
 				]);

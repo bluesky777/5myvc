@@ -6,109 +6,171 @@ use DB;
 
 use App\Models\User;
 use App\Models\VtAspiracion;
+use App\Models\VtVotacion;
+use App\Models\VtParticipante;
+use App\Models\Profesor;
 
 
 class VtParticipantesController extends Controller {
 
 	public function getIndex()
 	{
-
-		$participantes = VtParticipante::participantesDeEvento();
+		$user = User::fromToken();
+		$actual = VtVotacion::actual($user);
+		
+		if($actual) {
+			$participantes = VtParticipante::participantesDeEvento($actual->id);
+		} else{
+			abort(400, 'Debe haber un evento establecido como actual.');
+		}
+		
 		return $participantes;
 
 	}
 
-	public function postIndex()
-	{
-
-		$votacion = VtVotacion::where('actual', '=', true)->first();
-
-		try {
-			$participante = VtParticipante::create([
-				'user_id'		=>	Request::input('user')['id'],
-				'votacion_id'	=>	$votacion->id,
-				'locked'		=>	Request::input('locked', false),
-				'intentos'		=>	0,
-
-			]);
-			return $participante;
-		} catch (Exception $e) {
-			return App::abort('400', 'Datos incorrectos');
-			return $e;
-		}
-	}
 
 	public function postInscribirgrupo($grupo_id)
 	{
-		Eloquent::unguard();
+		$user = User::fromToken();
 
-		$votacion = VtVotacion::where('actual', '=', true)->first();
+		$votacion = VtVotacion::actual($user);
 
 		$consulta = 'SELECT a.id as alumno_id, a.nombres, m.grupo_id, a.user_id FROM alumnos a INNER JOIN matriculas m 
 			ON m.alumno_id=a.id AND m.matriculado = 1 AND m.grupo_id = :grupo_id';
 		
-		$alumnos = DB::select(DB::raw($consulta), array('grupo_id' => $grupo_id));
+		$alumnos = DB::select($consulta, ['grupo_id' => $grupo_id]);
 
 		$participantes = array();
 
 		for ($i=0; $i < count($alumnos); $i++) { 
 
-			$partic = VtParticipante::where('user_id', '=', $alumnos[$i]->user_id)
-					->where('votacion_id', '=', $votacion->id)->get();
+			$partic = VtParticipante::where('user_id', $alumnos[$i]->user_id)
+							->where('votacion_id', $votacion->id)
+							->first();
 			
-			if ( count($partic) == 0) {
-				try {
-					if (!$alumnos[$i]->user_id){
-						$dirtyName = $alumnos[$i]->nombres;
-						$name = preg_replace('/\s+/', '', $dirtyName);
+			if ( !$partic ) {
 
-						$usuario = User::create([
-							'username'		=>	$name,
-							'password'		=>	'123456',
-							'is_superuser'	=>	Request::input('is_superuser', false),
-							'is_active'		=>	Request::input('is_active', true),
-						]);
+				if (!$alumnos[$i]->user_id){
+					$dirtyName = $alumnos[$i]->nombres;
+					$name = preg_replace('/\s+/', '', $dirtyName);
 
-						$alumno = Alumno::find($alumnos[$i]->alumno_id);
-						$alumno->user_id = $usuario->id;
-						$alumno->save();
-						$alumnos[$i]->user_id = $alumno->user_id ;
-					}
-					
+					$usuario = new User;
+					$usuario->username		=	$name;
+					$usuario->password		=	'123456';
+					$usuario->is_superuser	=	false;
+					$usuario->is_active		=	true;
+					$usuario->save();
 
-					$participante = VtParticipante::create([
-						'user_id'		=>	$alumnos[$i]->user_id,
-						'votacion_id'	=>	$votacion->id,
-						'locked'		=>	false,
-						'intentos'		=>	0,
-					]);
-
-					array_push($participantes, $participante);
-
-				} catch (Exception $e) {
-					//return App::abort('400', 'Datos incorrectos');
-					return $e;
+					$alumno = Alumno::find($alumnos[$i]->alumno_id);
+					$alumno->user_id = $usuario->id;
+					$alumno->save();
+					$alumnos[$i]->user_id = $alumno->user_id ;
 				}
+
+				$partic_trash = VtParticipante::onlyTrashed()
+								->where('user_id', $alumnos[$i]->user_id)
+								->where('votacion_id', $votacion->id)
+								->first();
+			
+				
+				if ($partic_trash) {
+					$participante = $partic_trash;
+					$participante->restore();
+				}else{
+
+					$participante = new VtParticipante;
+					$participante->user_id		=	$alumnos[$i]->user_id;
+					$participante->votacion_id	=	$votacion->id;
+					$participante->locked		=	false;
+					$participante->intentos		=	0;
+					$participante->save();
+				}
+
+
+				array_push($participantes, $participante);
+
 			}
-
-
 		}
 
 		return $participantes;
 		
 	}
 
-	/**
-	 * Display the specified resource.
-	 * GET /participantes/{id}
-	 *
-	 * @param  int  $id
-	 * @return Response
-	 */
-	public function getShow($id)
+
+	public function postInscribirProfesores()
 	{
-		//
+		$user = User::fromToken();
+
+		$votacion = VtVotacion::actual($user);
+
+		$profesores = Profesor::fromyear($user->year_id);
+
+		$participantes = [];
+
+		for($i=0; $i < count($profesores); $i++){
+
+			$partic = VtParticipante::where('user_id', $profesores[$i]->user_id)
+							->where('votacion_id', $votacion->id)
+							->first();
+			
+			if ( !$partic ) {
+
+				if (!$profesores[$i]->user_id){
+
+					$dirtyName = $profesores[$i]->nombres;
+					$name = preg_replace('/\s+/', '', $dirtyName);
+
+					$usuario = new User;
+					$usuario->username		=	$name;
+					$usuario->password		=	'123456';
+					$usuario->is_superuser	=	false;
+					$usuario->is_active		=	true;
+					$usuario->save();
+
+					$profe = Profesor::find($profesores[$i]->id);
+					$profe->user_id = $usuario->id;
+					$profe->save();
+					$profesores[$i]->user_id = $profe->user_id ;
+				}
+
+				$partic_trash = VtParticipante::onlyTrashed()
+								->where('user_id', $profesores[$i]->user_id)
+								->where('votacion_id', $votacion->id)
+								->first();
+			
+				
+				if ($partic_trash) {
+					$participante = $partic_trash;
+					$participante->restore();
+				}else{
+
+					$participante = new VtParticipante;
+					$participante->user_id		=	$profesores[$i]->user_id;
+					$participante->votacion_id	=	$votacion->id;
+					$participante->locked		=	false;
+					$participante->intentos		=	0;
+					$participante->save();
+				}
+
+				array_push($participantes, $participante);
+			}
+
+		}
+
+		return $participantes;
 	}
+
+	
+	public function putSetLocked()
+	{
+		$user = User::fromToken();
+		$id = Request::input('id');
+		$locked = Request::input('locked', true);
+
+		$vot = VtParticipante::where('id', $id)->update(['locked' => $locked]);
+		return 'Cambiado';
+	}
+
 
 	public function getAllinscritos()
 	{
@@ -129,33 +191,7 @@ class VtParticipantesController extends Controller {
 	}
 
 
-	/**
-	 * Update the specified resource in storage.
-	 * PUT /participantes/{id}
-	 *
-	 * @param  int  $id
-	 * @return Response
-	 */
-	public function putUpdate($id)
-	{
-		Eloquent::unguard();
-		$participante = VtParticipante::findOrFail($id);
-		try {
-			$participante->fill([
-				'user_id'		=>	Request::input('user_id'),
-				'votacion_id'	=>	Request::input('votacion_id'),
-				'locked'		=>	Request::input('locked'),
-				'intentos'		=>	Request::input('intentos'),
 
-			]);
-
-			$participante->save();
-			return $participante;
-		} catch (Exception $e) {
-			return App::abort('400', 'Datos incorrectos');
-			return $e;
-		}
-	}
 
 
 	public function deleteDestroy($id)

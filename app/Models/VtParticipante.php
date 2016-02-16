@@ -4,21 +4,28 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 
+use DB;
+
 
 class VtParticipante extends Model {
+
 	protected $fillable = [];
 	protected $table = "vt_participantes";
 
 	use SoftDeletes;
 	protected $softDelete = true;
 
+
+
 	public static function one($user_id){
-		$particip = VtParticipante::where('user_id', '=', $user_id)->get();
-		if (count($particip) > 0) {
-			return $particip[0];
+		$particip = VtParticipante::where('user_id', $user_id)->first();
+		if ($particip) {
+			return $particip;
 		}
 		return $particip;
 	}
+
+
 
 	public static function participanteDeAspiracion($aspira_id, $userT = '')
 	{
@@ -30,19 +37,15 @@ class VtParticipante extends Model {
 		}
 		
 		$votacion_id = VtAspiracion::find($aspira_id)->votacion_id;
-		$participante = VtParticipante::where('user_id', '=', $user->id)
-								->where('votacion_id', '=', $votacion_id)
+		$participante = VtParticipante::where('user_id', $user->id)
+								->where('votacion_id', $votacion_id)
 								->first();
 
 		return $participante;
 	}
 
-	public static function participantesDeEvento($evento_id=0)
+	public static function participantesDeEvento($votacion_id)
 	{
-		$votacion_id = $evento_id;
-		if ($evento_id==0) {
-			$votacion_id = VtVotacion::actual()->id;
-		}
 
 		$year_id = Year::actual()->id;
 
@@ -103,19 +106,20 @@ class VtParticipante extends Model {
 								inner join users u on ac.user_id=u.id
 						)
 					and u.deleted_at is null ) usus
-				inner join vt_participantes vp on vp.user_id=usus.user_id and vp.votacion_id=:votacion_id and usus.year_id=:year_id';
+				inner join vt_participantes vp on vp.user_id=usus.user_id and vp.votacion_id=:votacion_id and usus.year_id=:year_id and vp.deleted_at is null';
 		
-		$participantes = DB::select(DB::raw($consulta), array('year_idd' => $year_id, 'votacion_id' => $votacion_id, 'year_id' => $year_id));
+		$participantes = DB::select($consulta, ['year_idd' => $year_id, 'votacion_id' => $votacion_id, 'year_id' => $year_id]);
 
 		foreach ($participantes as $participante) {
 			$aspiraciones = VtAspiracion::where('votacion_id', '=', $votacion_id)->get();
+			
 			$cons = 'SELECT vv.participante_id, vv.candidato_id, vp.votacion_id, vv.created_at
 					FROM vt_votos vv
-					inner join vt_participantes vp on vp.id=vv.participante_id and vv.participante_id=:participante_id
-					inner join vt_candidatos vc on vc.id=vv.candidato_id
+					inner join vt_participantes vp on vp.id=vv.participante_id and vv.participante_id=:participante_id and vp.deleted_at is null
+					inner join vt_candidatos vc on vc.id=vv.candidato_id and vc.deleted_at is null
 					inner join vt_aspiraciones va on va.id=vc.aspiracion_id and va.votacion_id=:votacion_id';
 
-			$votosVotados = DB::select(DB::raw($cons), array('votacion_id' => $votacion_id, 'participante_id' => $participante->id));
+			$votosVotados = DB::select($cons, array('votacion_id' => $votacion_id, 'participante_id' => $participante->id));
 			$participante->votosVotados = $votosVotados;
 
 			$cantVotados = count($votosVotados);

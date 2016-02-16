@@ -1,112 +1,84 @@
 <?php namespace App\Http\Controllers;
 
+use Request;
+use DB;
+
+
+use App\Models\User;
+use App\Models\VtCandidato;
+use App\Models\VtVotacion;
+use App\Models\VtAspiracion;
+use App\Models\VtParticipante;
+use App\Models\Year;
+
+
 class VtCandidatosController extends Controller {
 
-	/**
-	 * Display a listing of the resource.
-	 * GET /candidatos
-	 *
-	 * @return Response
-	 */
+
 	public function getIndex()
 	{
+		$user = User::fromToken();
+		$actual = VtVotacion::actual($user);
 		return VtCandidato::all();
 	}
 
-	/**
-	 * Show the form for creating a new resource.
-	 * GET /candidatos/create
-	 *
-	 * @return Response
-	 */
-	public function create()
-	{
-		//
-	}
 
-	/**
-	 * Store a newly created resource in storage.
-	 * POST /candidatos
-	 *
-	 * @return Response
-	 */
 	public function postStore()
 	{
-		Eloquent::unguard();
 
-		$participante_id = Request::input('participante_id');
-		$aspiracion_id = Request::input('aspiracion_id');
-		$plancha = Request::input('plancha');
-		$numero = Request::input('numero');
-		$locked = Request::input('locked', false);
+		$participante_id 	= Request::input('participante_id');
+		$aspiracion_id 		= Request::input('aspiracion_id');
+		$plancha 			= Request::input('plancha');
+		$numero 			= Request::input('numero');
+		$locked 			= Request::input('locked', false);
 
 		$busqueda = VtCandidato::where('participante_id', '=', $participante_id)
 					->where('aspiracion_id', '=', $aspiracion_id)->get();
 
 		if ( count($busqueda) > 0 ) {
-			return App::abort('400', 'Candidato ya inscrito.');
+			return abort(400, 'Candidato ya inscrito.');
 		}else{
-			$candidato = VtCandidato::create([
-				'participante_id'	=>	$participante_id,
-				'aspiracion_id'		=>	$aspiracion_id,
-				'plancha'			=>	$plancha,
-				'numero'			=>	$numero,
-				'locked'			=>	$locked,
-			]);
+			$candidato = new VtCandidato;
+			$candidato->participante_id		=	$participante_id;
+			$candidato->aspiracion_id		=	$aspiracion_id;
+			$candidato->plancha				=	$plancha;
+			$candidato->numero				=	$numero;
+			$candidato->locked				=	$locked;
 		}
 
 		try {
 			
 			return $candidato;
 		} catch (Exception $e) {
-			//return App::abort('400', 'Datos incorrectos');
+			//return abort('400', 'Datos incorrectos');
 			return $e;
 		}
 	}
 
-	/**
-	 * Display the specified resource.
-	 * GET /candidatos/{id}
-	 *
-	 * @param  int  $id
-	 * @return Response
-	 */
-	public function show($id)
-	{
-		//
-	}
+
 	public function getConaspiraciones()
 	{
-		$year = Year::actual();
-		$votacion = VtVotacion::actual();
-		$aspiraciones = VtAspiracion::where('votacion_id', '=', $votacion->id)->get();
+		$user = User::fromToken();
+
+		$votacion = VtVotacion::actual($user);
+		$aspiraciones = VtAspiracion::where('votacion_id', $votacion->id)->get();
 		
-		$token = JWTAuth::parseToken();
-
-		if ($token){
-			$user = $token->toUser();
-		}else{
-			$user = (object)array('id'=>2);
-			//return Response::json(['error' => 'Token expirado'], 401);
-		}
-
 		$particip = VtParticipante::one($user->id);
 
 
 		$result = array();
 
 		foreach ($aspiraciones as $aspira) {
-			$candidatos = VtCandidato::porAspiracion($aspira->id, $year->id);
+			$candidatos = VtCandidato::porAspiracion($aspira->id, $user->year_id);
 			$aspira->candidatos = $candidatos;
 
+			$votado = [];
 			if ($particip) {
-				$votado = [];
 				try {
 					$votado = VtVoto::votesInAspiracion($aspira->id, $particip->id);
 				} catch (Exception $e) {
 					
 				}
-
 				
 			}
 
@@ -117,25 +89,8 @@ class VtCandidatosController extends Controller {
 		return $result;
 	}
 
-	/**
-	 * Show the form for editing the specified resource.
-	 * GET /candidatos/{id}/edit
-	 *
-	 * @param  int  $id
-	 * @return Response
-	 */
-	public function edit($id)
-	{
-		//
-	}
 
-	/**
-	 * Update the specified resource in storage.
-	 * PUT /candidatos/{id}
-	 *
-	 * @param  int  $id
-	 * @return Response
-	 */
+
 	public function update($id)
 	{
 		$candidato = VtCandidato::findOrFail($id);
@@ -154,13 +109,7 @@ class VtCandidatosController extends Controller {
 		}
 	}
 
-	/**
-	 * Remove the specified resource from storage.
-	 * DELETE /candidatos/{id}
-	 *
-	 * @param  int  $id
-	 * @return Response
-	 */
+
 	public function deleteDestroy($id)
 	{
 		$candidato = VtCandidato::findOrFail($id);

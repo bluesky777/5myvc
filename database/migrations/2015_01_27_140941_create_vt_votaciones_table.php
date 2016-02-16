@@ -17,6 +17,7 @@ class CreateVtVotacionesTable extends Migration {
 			$table->engine = "InnoDB";
 			$table->increments('id');
 			$table->integer('user_id')->unsigned()->nullable();
+			$table->integer('year_id')->unsigned()->nullable();
 			$table->string('nombre');
 			$table->boolean('locked')->default(false);
 			$table->boolean('actual')->default(false);
@@ -32,6 +33,7 @@ class CreateVtVotacionesTable extends Migration {
 		});
 		Schema::table('vt_votaciones', function(Blueprint $table) {
 			$table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+			$table->foreign('year_id')->references('id')->on('years')->onDelete('cascade');
 		});
 
 		Schema::create('vt_aspiraciones', function(Blueprint $table)

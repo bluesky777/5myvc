@@ -16,7 +16,16 @@ class VtVotacionesController extends Controller {
 	public function getIndex()
 	{
 		$user = User::fromToken();
-		return VtVotacion::where('user_id', $user->id)->get();
+		
+		$votaciones = VtVotacion::where('user_id', $user->id)
+							->where('year_id', $user->year_id)->get();
+
+		for($i=0; $i<count($votaciones); $i++){
+			$aspiraciones = VtAspiracion::where('votacion_id', $votaciones[$i]->id)->get();
+			$votaciones[$i]->aspiraciones = $aspiraciones;
+		}
+
+		return $votaciones;
 	}
 
 
@@ -67,14 +76,17 @@ class VtVotacionesController extends Controller {
 
 			$aspiraciones = Request::input('aspiraciones');
 
-			foreach ($aspiraciones as $key => $aspiracion) {
+			for ($i=0; $i < count($aspiraciones); $i++) {
 				$asp 				= new VtAspiracion;
-				$asp->aspiracion 	= $aspiracion->aspiracion;
-				$asp->abrev 		= $aspiracion->abrev;
+				$asp->aspiracion 	= $aspiraciones[$i]['aspiracion'];
+				$asp->abrev 		= $aspiraciones[$i]['abrev'];
 				$asp->votacion_id 	= $votacion;
 				$asp->save();
+
+				$aspiraciones[$i]['id'] = $asp->id;
 			}
 
+			$datos['aspiraciones'] = $aspiraciones;
 
 			return $datos;
 		} catch (Exception $e) {
@@ -92,7 +104,13 @@ class VtVotacionesController extends Controller {
 	public function getActual()
 	{
 		$user = User::fromToken();
-		return VtVotacion::where('actual', true)->where('user_id', $user->id)->first();
+		return VtVotacion::actual($user);
+	}
+
+	public function getActualInAction()
+	{
+		$user = User::fromToken();
+		return VtVotacion::actualInAction($user);
 	}
 
 	public function getUnsignedsusers()
@@ -107,52 +125,90 @@ class VtVotacionesController extends Controller {
 	public function putSetLocked()
 	{
 		$user = User::fromToken();
-		$consulta = 'SELECT u.id, u.username, u.email, u.is_superuser 
-					FROM users u where u.id not in 
-						(select p.user_id 
-						from vt_participantes p
-						inner join vt_votaciones v on v.id=p.votacion_id and v.actual=true and v.user_id=?)';
-		return DB::select($consulta, [$user->id]);
+		$id = Request::input('id');
+		$locked = Request::input('locked', true);
+
+		$vot = VtVotacion::where('id', $id)->update(['locked' => $locked]);
+		return 'Cambiado';
 	}
+
 
 	public function putSetInAction()
 	{
 		$user = User::fromToken();
-
 		$id = Request::input('id');
+		$in_action = Request::input('in_action', false);
 
-		$consulta = 'UPDATE vt_votaciones v SET v.in_action=false WHERE v.user_id=?';
-		DB::statement($consulta, [$user->id]);
+		if ($in_action) {
+			
+			$consulta = 'UPDATE vt_votaciones v SET v.in_action=false 
+						WHERE v.id<>? and v.user_id=? 
+							and v.year_id=? and v.in_action=true AND v.deleted_at is null';
 
-		$consulta = 'UPDATE vt_votaciones v SET v.in_action=true WHERE v.id=?';
-		DB::statement($consulta, [$id]);
+			DB::statement($consulta, [$id, $user->id, $user->year_id]);
 
-		return true;
+			
+			$consulta = 'UPDATE vt_votaciones v SET v.in_action=true WHERE v.id=?';
+			$vot = DB::statement($consulta, [$id]);
+
+			return 'Cambiado true';
+
+		}else{
+
+			$consulta = 'UPDATE vt_votaciones v SET v.in_action=false WHERE v.id=?';
+			$vot = DB::statement($consulta, [$id]);
+			return 'Cambiado false';
+
+		}
 	}
+
 
 	public function putSetActual()
 	{
-		$consulta = 'SELECT u.id, u.username, u.email, u.is_superuser 
-					FROM users u where u.id not in (select p.user_id from vt_participantes p)';
-		return DB::select(DB::raw($consulta));
+		$user = User::fromToken();
+		$id = Request::input('id');
+		$actual = Request::input('actual', true);
+
+		if ($actual) {
+			
+			$consulta = 'UPDATE vt_votaciones v SET v.actual=false 
+						WHERE v.id<>? and v.user_id=? 
+							and v.year_id=? and v.actual=true AND v.deleted_at is null';
+
+			DB::statement($consulta, [$id, $user->id, $user->year_id]);
+
+			
+			$consulta = 'UPDATE vt_votaciones v SET v.actual=true WHERE v.id=?';
+			$vot = DB::statement($consulta, [$id]);
+
+			return 'Cambiado true';
+
+		}else{
+
+			$consulta = 'UPDATE vt_votaciones v SET v.actual=false WHERE v.id=?';
+			$vot = DB::statement($consulta, [$id]);
+			return 'Cambiado false';
+
+		}
+		
 	}
 
 
-	public function update($id)
+	public function putUpdate($id)
 	{
 		$votacion = VtVotacion::findOrFail($id);
 		try {
-			$votacion->nombre		=	Request::input('nombre');
-			$votacion->locked		=	Request::input('locked');
-			$votacion->actual		=	Request::input('actual');
-			$votacion->in_action	=	Request::input('in_action');
-			$votacion->fecha_inicio	=	Request::input('fecha_inicio');
-			$votacion->fecha_fin	=	Request::input('fecha_fin');
+			$votacion->nombre		=	Request::input('nombre', $votacion->nombre);
+			$votacion->locked		=	Request::input('locked', $votacion->locked);
+			$votacion->actual		=	Request::input('actual', $votacion->actual);
+			$votacion->in_action	=	Request::input('in_action', $votacion->in_action);
+			$votacion->fecha_inicio	=	Request::input('fecha_inicio', $votacion->fecha_inicio);
+			$votacion->fecha_fin	=	Request::input('fecha_fin', $votacion->fecha_fin);
 
 			$votacion->save();
 			return $votacion;
 		} catch (Exception $e) {
-			return App::abort('400', 'Datos incorrectos');
+			return abort(400, 'Datos incorrectos');
 			return $e;
 		}
 	}

@@ -4,6 +4,8 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 
+use DB;
+
 
 class VtCandidato extends Model {
 	protected $fillable = [];
@@ -82,7 +84,7 @@ class VtCandidato extends Model {
 			':aspiracion_id'	=> $aspiracion_id,
 			':year_id'			=> $year_id);
 
-		$candidatos = DB::select(DB::raw($consulta), $datos);
+		$candidatos = DB::select($consulta, $datos);
 
 		return $candidatos;
 	}

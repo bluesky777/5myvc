@@ -12,9 +12,22 @@ class VtVotacion extends Model {
 	use SoftDeletes;
 	protected $softDelete = true;
 
-	public static function actual()
+
+	public static function actual($user)
 	{
-		$votacion = VtVotacion::where('actual', '=', true)->first();
-		return $votacion;
+		return VtVotacion::where('actual', true)
+					->where('user_id', $user->id)
+					->where('year_id', $user->year_id)
+					->first();
 	}
+
+	public function actualInAction($user)
+	{
+		return VtVotacion::where('actual', true)
+					->where('user_id', $user->id)
+					->where('in_action', true)
+					->where('year_id', $user->year_id)
+					->first();
+	}
+
 }

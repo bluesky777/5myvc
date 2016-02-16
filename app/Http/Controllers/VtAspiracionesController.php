@@ -14,26 +14,26 @@ class VtAspiracionesController extends Controller {
 
 	public function index()
 	{
-		$votacion = $this->eventoactual();
-		$aspiraciones = VtAspiracion::where('votacion_id', '=', $votacion->id)->get();
+		$user = User::fromToken();
+
+		$votacion = VtVotacion::where('actual', '=', true)
+							->where('user_id', $user->id)
+							->where('year_id', $user->year_id)->first();
+
+		$aspiraciones = VtAspiracion::where('votacion_id', $votacion->id)->get();
 		return $aspiraciones;
 	}
-	public function eventoactual()
-	{
-		$votacion = VtVotacion::where('actual', '=', true)->first();
-		return $votacion;
-	}
 
-	public function store()
+
+
+	public function postStore()
 	{
 
 		try {
-			$aspiracion = VtAspiracion::create([
-				'aspiracion'	=>	Request::input('aspiracion'),
-				'abrev'			=>	Request::input('abrev'),
-				'votacion_id'	=>	Request::input('votacion_id')
+			$aspiracion = new VtAspiracion;
+			$aspiracion->votacion_id	=	Request::input('votacion_id');
+			$aspiracion->save();
 
-			]);
 			return $aspiracion;
 		} catch (Exception $e) {
 			return abort(400, 'Datos incorrectos');
@@ -42,16 +42,14 @@ class VtAspiracionesController extends Controller {
 	}
 
 
-	public function update($id)
+	public function putUpdate()
 	{
-
+		$id = Request::input('id');
 		$aspiracion = VtAspiracion::findOrFail($id);
+		
 		try {
-			$aspiracion->fill([
-				'aspiracion'=>	Request::input('aspiracion'),
-				'abrev'		=>	Request::input('abrev')
-
-			]);
+			$aspiracion->aspiracion 	=	Request::input('aspiracion');
+			$aspiracion->abrev			=	Request::input('abrev');
 
 			$aspiracion->save();
 			return $aspiracion;
@@ -62,7 +60,7 @@ class VtAspiracionesController extends Controller {
 	}
 
 
-	public function destroy($id)
+	public function deleteDestroy($id)
 	{
 		$aspiracion = VtAspiracion::findOrFail($id);
 		$aspiracion->delete();

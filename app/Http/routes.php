@@ -64,7 +64,7 @@ Route::controller('puestos', 'Informes\PuestosAnualesController');
 Route::controller('editnota', 'EditnotaController');
 
 Route::controller('votaciones', 'VtVotacionesController');
-Route::resource('aspiraciones', 'VtAspiracionesController');
+Route::controller('aspiraciones', 'VtAspiracionesController');
 Route::controller('participantes', 'VtParticipantesController');
 Route::controller('candidatos', 'VtCandidatosController');
 Route::controller('votos', 'VtVotosController');
