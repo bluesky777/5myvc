@@ -316,12 +316,12 @@ class PerfilesController extends Controller {
 		$perfil = User::findOrFail($id);
 
 
-		if (Input::has('email_restore') || Input::has('email_restore') == '') {
+		if (Request::has('email_restore') || Request::has('email_restore') == '') {
 			$perfil->email = Request::input('email_restore');
 		}
 
 
-		if (Input::has('oldpassword') || Input::has('oldpassword') == '') {
+		if (Request::has('oldpassword') || Request::has('oldpassword') == '') {
 			if (! Hash::check((string)Request::input('oldpassword'), $perfil->password))
 			{
 				App::abort(400, 'Contraseña antigua es incorrecta');

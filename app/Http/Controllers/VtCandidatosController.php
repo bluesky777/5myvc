@@ -25,6 +25,7 @@ class VtCandidatosController extends Controller {
 
 	public function postStore()
 	{
+		$user = User::fromToken();
 
 		$participante_id 	= Request::input('participante_id');
 		$aspiracion_id 		= Request::input('aspiracion_id');
@@ -32,10 +33,10 @@ class VtCandidatosController extends Controller {
 		$numero 			= Request::input('numero');
 		$locked 			= Request::input('locked', false);
 
-		$busqueda = VtCandidato::where('participante_id', '=', $participante_id)
-					->where('aspiracion_id', '=', $aspiracion_id)->get();
+		$busqueda = VtCandidato::where('participante_id', $participante_id)
+								->where('aspiracion_id', $aspiracion_id)->first();
 
-		if ( count($busqueda) > 0 ) {
+		if ( $busqueda ) {
 			return abort(400, 'Candidato ya inscrito.');
 		}else{
 			$candidato = new VtCandidato;
@@ -44,6 +45,7 @@ class VtCandidatosController extends Controller {
 			$candidato->plancha				=	$plancha;
 			$candidato->numero				=	$numero;
 			$candidato->locked				=	$locked;
+			$candidato->save();
 		}
 
 		try {
@@ -60,7 +62,12 @@ class VtCandidatosController extends Controller {
 	{
 		$user = User::fromToken();
 
-		$votacion = VtVotacion::actual($user);
+		if ($user->tipo == 'Alumno' || $user->tipo == 'Acudiente') {
+			$votacion = VtVotacion::actualInscrito($user);
+		}else{
+			$votacion = VtVotacion::actual($user);
+		}
+		
 		$aspiraciones = VtAspiracion::where('votacion_id', $votacion->id)->get();
 		
 		$particip = VtParticipante::one($user->id);

@@ -6,6 +6,11 @@ use DB;
 
 use App\Models\User;
 use App\Models\VtAspiracion;
+use App\Models\VtVoto;
+use App\Models\VtCandidato;
+use App\Models\VtParticipante;
+use App\Models\VtVotacion;
+use App\Models\Year;
 
 
 class VtVotosController extends Controller {
@@ -19,8 +24,6 @@ class VtVotosController extends Controller {
 
 	public function postStore()
 	{
-
-
 		$user = User::fromToken();
 
 		$votacionActual = VtVotacion::where('actual', '=', true)->first();
@@ -28,10 +31,10 @@ class VtVotosController extends Controller {
 		$particip = VtParticipante::participanteDeAspiracion($aspiracion_id, $user);
 
 		if (!$particip) {
-			return Response::json(array('msg'=>'No puede votar ya que no está inscrito como participante', 400));
+			return ['msg'=>'No puede votar ya que no está inscrito como participante'];
 		}
 		if ($particip->locked == true) {
-			return Response::json(array('msg'=>'Está actualmente bloqueado. Tal vez ya votaste'), 400);
+			return ['msg'=>'Está actualmente bloqueado. Tal vez ya votaste'];
 		}
 
 
@@ -39,11 +42,11 @@ class VtVotosController extends Controller {
 		VtVoto::verificarNoVoto($aspiracion_id, $particip_id);
 
 		try {
-			$voto = VtVoto::create([
-				'participante_id'	=>	$particip_id,
-				'candidato_id'		=>	Request::input('candidato_id'),
-				'locked'			=>	false
-			]);
+			$voto = new VtVoto;
+			$voto->participante_id	=	$particip_id;
+			$voto->candidato_id		=	Request::input('candidato_id');
+			$voto->locked			=	false;
+
 
 			$completos = $this->verificarVotosCompletos($votacionActual->id, $particip_id);
 
@@ -60,36 +63,37 @@ class VtVotosController extends Controller {
 
 	public function getShow()
 	{
-		$year = Year::actual();
-		$votacion = VtVotacion::actual();
-		$aspiraciones = VtAspiracion::where('votacion_id', '=', $votacion->id)->get();
+		$user = User::fromToken();
+
+		$votaciones = VtVotacion::actualesInscrito($user, false); // Traer aunque no esté en acción.
 		
-		$token = JWTAuth::parseToken();
+		$cantVot = count($votaciones);
 
-		if ($token){
-			$user = $token->toUser();
-		}else{
-			$user = (object)array('id'=>2);
-			//return Response::json(['error' => 'Token expirado'], 401);
-		}
+		for($j=0; $j<$cantVot; $j++){
+			
+			$aspiraciones = VtAspiracion::where('votacion_id', $votaciones[$j]->votacion_id)->get();
+			
+			$result = array();
 
-		$result = array();
+			foreach ($aspiraciones as $aspira) {
+				$candidatos = VtCandidato::porAspiracion($aspira->id, $user->year_id);
 
-		foreach ($aspiraciones as $aspira) {
-			$candidatos = VtCandidato::porAspiracion($aspira->id, $year->id);
+				for ($i=0; $i<count($candidatos); $i++) {
 
-			foreach ($candidatos as $key => $candidato) {
+					$votos = VtVoto::deCandidato($candidatos[$i]->candidato_id, $aspira->id)[0];
+					$candidatos[$i]->cantidad = $votos->cantidad;
+					$candidatos[$i]->total = $votos->total;
+				}
 
-				$votos = VtVoto::deCandidato($candidato->candidato_id, $aspira->id)[0];
-				$candidatos[$key]->cantidad = $votos->cantidad;
-				$candidatos[$key]->total = $votos->total;
+				$aspira->candidatos = $candidatos;
+				
+				array_push($result, $aspira);
 			}
 
-			$aspira->candidatos = $candidatos;
-			
-			array_push($result, $aspira);
+			$votaciones[$j]->aspiraciones = $result;
 		}
-		return $result;
+		return $votaciones;
+		
 	}
 
 

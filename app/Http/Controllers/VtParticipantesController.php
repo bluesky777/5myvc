@@ -19,7 +19,7 @@ class VtParticipantesController extends Controller {
 		$actual = VtVotacion::actual($user);
 		
 		if($actual) {
-			$participantes = VtParticipante::participantesDeEvento($actual->id);
+			$participantes = VtParticipante::participantesDeEvento($actual->id, $user->year_id);
 		} else{
 			abort(400, 'Debe haber un evento establecido como actual.');
 		}

@@ -7,6 +7,8 @@ use DB;
 use App\Models\User;
 use App\Models\VtAspiracion;
 use App\Models\VtVotacion;
+use App\Models\VtCandidato;
+use App\Models\VtVoto;
 use \DateTime;
 
 
@@ -58,6 +60,7 @@ class VtVotacionesController extends Controller {
 			
 			$datos = ['user_id'		=>	$user->id,
 					'nombre'		=>	Request::input('nombre'),
+					'year_id'		=>	$user->year_id,
 					'locked'		=>	Request::input('locked', false),
 					'actual'		=>	Request::input('actual', false),
 					'in_action'		=>	Request::input('in_action', false),
@@ -90,8 +93,7 @@ class VtVotacionesController extends Controller {
 
 			return $datos;
 		} catch (Exception $e) {
-			return App::abort('400', 'Datos incorrectos');
-			return $e;
+			return abort(400, 'Datos incorrectos');
 		}
 	}
 
@@ -212,6 +214,58 @@ class VtVotacionesController extends Controller {
 			return $e;
 		}
 	}
+
+
+
+	// Para cuando entra alguien a votar. Necesita todos los eventos en acción a 
+	// los que está inscrito.
+	public function getEnAccionInscrito()
+	{
+		$user = User::fromToken();
+
+		$votaciones = VtVotacion::actualesInscrito($user);
+
+		$cantVot = count($votaciones);
+
+		if ($cantVot > 0) {
+
+			for($i=0; $i < $cantVot; $i++){
+
+				$aspiraciones = VtAspiracion::where('votacion_id', $votaciones[$i]->votacion_id)->get();
+				
+				$cantAsp = count($aspiraciones);
+
+				if ($cantAsp > 0) {
+
+					for ($j=0; $j<$cantAsp; $j++) {
+
+						$candidatos = VtCandidato::porAspiracion($aspiraciones[$j]->id, $user->year_id);
+
+						for ($k=0; $k<count($candidatos); $k++) {
+
+							$votos = VtVoto::deCandidato($candidatos[$k]->candidato_id, $aspiraciones[$j]->id)[0];
+							$candidatos[$k]->cantidad = $votos->cantidad;
+							$candidatos[$k]->total = $votos->total;
+						}
+
+						$aspiraciones[$j]->candidatos = $candidatos;
+						
+					}
+
+					$votaciones[$i]->aspiraciones = $aspiraciones;
+
+				}else{
+					$votaciones[$i]->aspiraciones = [];
+				}
+			}
+		}else{
+			return ['msg' => 'No está inscrito en algún evento que se encuentre en acción.'];
+		}
+		
+
+		return $votaciones;
+	}
+
 
 
 	public function deleteDestroy($id)

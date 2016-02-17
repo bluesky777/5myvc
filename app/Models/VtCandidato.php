@@ -78,7 +78,7 @@ class VtCandidato extends Model {
 						)
 					and u.deleted_at is null ) usus
 					on usus.user_id=vp.user_id
-				where usus.year_id=:year_id';
+				where c.deleted_at is null and usus.year_id=:year_id';
 
 		$datos = array(
 			':aspiracion_id'	=> $aspiracion_id,

@@ -44,10 +44,8 @@ class VtParticipante extends Model {
 		return $participante;
 	}
 
-	public static function participantesDeEvento($votacion_id)
+	public static function participantesDeEvento($votacion_id, $year_id)
 	{
-
-		$year_id = Year::actual()->id;
 
 
 		$consulta = 'SELECT * FROM (
