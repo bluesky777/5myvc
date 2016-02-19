@@ -28,7 +28,7 @@
 										Boletin FINAL {{$year->year}}</div>
 								</div>
 								<div class="col-lg-2.col-xs-2">
-									<img class="img-responsive img-thumbnail foto-alumno" src="{{ $User::$perfilPath . $alumno->foto_nombre}}"  />
+									
 								</div>
 							</div>
 							<div class="row.descripcion-encabezado">

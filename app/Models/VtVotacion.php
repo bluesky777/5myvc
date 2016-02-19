@@ -63,4 +63,28 @@ class VtVotacion extends Model {
 		return $votaciones;
 	}
 
+
+	public static function verificarVotosCompletos($votacion_id, $particip_id)
+	{
+		$aspiraciones = VtAspiracion::where('votacion_id', '=', $votacion_id)->get();
+		$cons = 'SELECT vv.participante_id, vv.candidato_id, vp.votacion_id, vv.created_at
+				FROM vt_votos vv
+				inner join vt_participantes vp on vp.id=vv.participante_id and vv.participante_id=:participante_id
+				inner join vt_candidatos vc on vc.id=vv.candidato_id
+				inner join vt_aspiraciones va on va.id=vc.aspiracion_id and va.votacion_id=:votacion_id';
+
+		$votosVotados = DB::select(DB::raw($cons), array('votacion_id' => $votacion_id, 'participante_id' => $particip_id));
+
+		$cantVotados = count($votosVotados);
+
+		if ($cantVotados < count($aspiraciones)) {
+			$completo = false;
+		}else{
+			$completo = true;
+		}
+		return $completo;
+	}
+
+
+
 }

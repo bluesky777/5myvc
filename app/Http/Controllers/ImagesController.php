@@ -56,6 +56,41 @@ class ImagesController extends Controller {
 	public function postStore()
 	{
 		$user = User::fromToken();
+
+		$folder = 'images/perfil/';
+
+		$newImg = $this->guardar_imagen($user);
+
+		try {
+			
+			$img = Image::make($folder . $newImg->nombre);
+			$img->fit(300);
+			//$img->resize(300, null, function ($constraint) {
+			//	$constraint->aspectRatio();
+			//});
+			$img->save();
+		} catch (Exception $e) {
+			
+		}
+
+		return $newImg;
+	}
+
+
+
+	public function postStoreIntacta()
+	{
+		$user = User::fromToken();
+		
+		$newImg = $this->guardar_imagen($user);
+		$newImg->publica = true;
+		$newImg->save();
+
+		return $newImg;
+	}
+
+	public function guardar_imagen($user)
+	{
 		$folderName = 'user_'.$user->user_id;
 		$folder = 'images/perfil/'.$folderName;
 
@@ -70,7 +105,7 @@ class ImagesController extends Controller {
 		$miImg = $file->getClientOriginalName();
 
 		//return Request::file('file')->getMimeType(); // Puedo borrarlo
-		//mientras el archivo exista iteramos y aumentamos i
+		//mientras el nombre exista iteramos y aumentamos i
 		$i = 0;
 		while(file_exists($folder.'/'. $miImg)){
 			$i++;
@@ -85,24 +120,8 @@ class ImagesController extends Controller {
 		$newImg->user_id = $user->user_id;
 		$newImg->save();
 
-
-
-		
-		try {
-			
-			$img = Image::make($folder .'/'.$miImg);
-			$img->fit(300);
-			//$img->resize(300, null, function ($constraint) {
-			//	$constraint->aspectRatio();
-			//});
-			$img->save();
-		} catch (Exception $e) {
-			
-		}
-
 		return $newImg;
 	}
-
 
 	public function putRotarimagen($imagen_id)
 	{

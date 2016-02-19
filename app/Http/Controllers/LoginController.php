@@ -11,6 +11,7 @@ use DB;
 
 
 use App\Models\User;
+use App\Models\VtVotacion;
 
 
 class LoginController extends Controller {
@@ -89,7 +90,34 @@ class LoginController extends Controller {
 				}
 			}
 
+
 			$userTemp = User::fromToken($token);
+
+
+
+			// Ahora verificamos si está inscrito en alguna votación
+			$votaciones = VtVotacion::actualesInscrito($userTemp, true);
+			$votacionesResult = [];
+
+			$cantVot = count($votaciones);
+
+			if ($cantVot > 0) {
+				for($i=0; $i<$cantVot; $i++) {
+					$completos = VtVotacion::verificarVotosCompletos($votaciones[$i]->votacion_id, $votaciones[$i]->participante_id);
+					if (!$completos) {
+						array_push($votacionesResult, $votaciones[$i]);
+					}
+				}
+
+				$cantVot = count($votacionesResult);
+				if ($cantVot > 0) {
+					$userTemp->votaciones = $votacionesResult;
+				}
+				
+			}
+
+
+
 		}
 
 		//return json_decode(json_encode($user[0]), true);

@@ -46,9 +46,10 @@ class VtVotosController extends Controller {
 			$voto->participante_id	=	$particip_id;
 			$voto->candidato_id		=	Request::input('candidato_id');
 			$voto->locked			=	false;
+			$voto->save();
 
 
-			$completos = $this->verificarVotosCompletos($votacionActual->id, $particip_id);
+			$completos = VtVotacion::verificarVotosCompletos($votacionActual->id, $particip_id);
 
 			$particip->locked = $completos;
 			$particip->save();
@@ -70,52 +71,35 @@ class VtVotosController extends Controller {
 		$cantVot = count($votaciones);
 
 		for($j=0; $j<$cantVot; $j++){
-			
-			$aspiraciones = VtAspiracion::where('votacion_id', $votaciones[$j]->votacion_id)->get();
-			
-			$result = array();
 
-			foreach ($aspiraciones as $aspira) {
-				$candidatos = VtCandidato::porAspiracion($aspira->id, $user->year_id);
+			if ($votaciones[$j]->can_see_results) {
 
-				for ($i=0; $i<count($candidatos); $i++) {
+				$aspiraciones = VtAspiracion::where('votacion_id', $votaciones[$j]->votacion_id)->get();
+				
+				$result = array();
 
-					$votos = VtVoto::deCandidato($candidatos[$i]->candidato_id, $aspira->id)[0];
-					$candidatos[$i]->cantidad = $votos->cantidad;
-					$candidatos[$i]->total = $votos->total;
+				foreach ($aspiraciones as $aspira) {
+					$candidatos = VtCandidato::porAspiracion($aspira->id, $user->year_id);
+
+					for ($i=0; $i<count($candidatos); $i++) {
+
+						$votos = VtVoto::deCandidato($candidatos[$i]->candidato_id, $aspira->id)[0];
+						$candidatos[$i]->cantidad = $votos->cantidad;
+						$candidatos[$i]->total = $votos->total;
+					}
+
+					$aspira->candidatos = $candidatos;
+					
+					array_push($result, $aspira);
 				}
 
-				$aspira->candidatos = $candidatos;
-				
-				array_push($result, $aspira);
-			}
+				$votaciones[$j]->aspiraciones = $result;	
 
-			$votaciones[$j]->aspiraciones = $result;
+			}
+			
 		}
 		return $votaciones;
 		
-	}
-
-
-	public function verificarVotosCompletos($votacion_id, $particip_id)
-	{
-		$aspiraciones = VtAspiracion::where('votacion_id', '=', $votacion_id)->get();
-		$cons = 'SELECT vv.participante_id, vv.candidato_id, vp.votacion_id, vv.created_at
-				FROM vt_votos vv
-				inner join vt_participantes vp on vp.id=vv.participante_id and vv.participante_id=:participante_id
-				inner join vt_candidatos vc on vc.id=vv.candidato_id
-				inner join vt_aspiraciones va on va.id=vc.aspiracion_id and va.votacion_id=:votacion_id';
-
-		$votosVotados = DB::select(DB::raw($cons), array('votacion_id' => $votacion_id, 'participante_id' => $particip_id));
-
-		$cantVotados = count($votosVotados);
-
-		if ($cantVotados < count($aspiraciones)) {
-			$completo = false;
-		}else{
-			$completo = true;
-		}
-		return $completo;
 	}
 
 

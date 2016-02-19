@@ -115,7 +115,7 @@ class Nota extends Model {
 
 	public static function alumnoPeriodosDetailed($alumno_id, $year_id, $profesor_id='')
 	{
-		$periodos 	= Periodo::where('year_id', '=', $year_id)->get();
+		$periodos 	= Periodo::where('year_id', $year_id)->get();
 		$alumno 	= Alumno::alumnoData($alumno_id, $year_id);
 
 		foreach ($periodos as $keyPer => $periodo) {

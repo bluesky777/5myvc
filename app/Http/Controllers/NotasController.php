@@ -80,10 +80,12 @@ class NotasController extends Controller {
 	{
 		$user = User::fromToken();
 
-		$usuario = User::find($user->user_id);
 
-		if ($user->alumnos_can_see_notas==false && ( $usuario->hasRole('alumno') || $usuario->hasRole('acudiente') ) ) {
-			return 'Sistema bloqueado. No puedes ver las notas';
+		if ($user->alumnos_can_see_notas==false) {
+			$usuario = User::find($user->user_id);
+			if ($usuario->hasRole('alumno') || $usuario->hasRole('acudiente')) {
+				return 'Sistema bloqueado. No puedes ver las notas';				
+			}
 		}
 
 		if ($alumno_id=='') {

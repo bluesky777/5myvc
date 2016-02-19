@@ -37,12 +37,14 @@ class YearsController extends Controller {
 		$years 		= Year::all();
 
 		foreach ($years as $year) {
-			$year->periodos = Periodo::where('year_id', '=', $year->id)->get();
+			$year->periodos = Periodo::where('year_id', $year->id)->get();
 		}
 
 		$certif 	= ConfigCertificado::all();
 
-		$imagenes 	= ImageModel::where('user_id', '=', $user->user_id)->get();
+		$imagenes 	= ImageModel::where('user_id', $user->user_id)
+							->where('publica', true)
+							->get();
 
 		$result = ['years' => $years, 'certificados' => $certif, 'imagenes' => $imagenes];
 

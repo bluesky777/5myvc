@@ -73,7 +73,7 @@ class VtVoto extends Model {
 				)t  where vv.candidato_id=:candidato_id';
 
 		$datos = array(':aspiracion_id' => $aspiracion_id, ':candidato_id' => $candidato_id);
-		$votos = DB::select(DB::raw($consulta), $datos);
+		$votos = DB::select($consulta, $datos);
 		
 		return $votos;
 	}

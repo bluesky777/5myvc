@@ -35,7 +35,8 @@ class ChangeAskedController extends Controller {
 					inner join alumnos a on a.user_id=u.id
 					left join images i on i.id=a.foto_id and i.deleted_at is null
 					left join images i2 on i2.id=c.oficial_image_id and i2.deleted_at is null
-					left join images i3 on i3.id=c.somebody_image_id_to_delete and i3.deleted_at is null';
+					left join images i3 on i3.id=c.somebody_image_id_to_delete and i3.deleted_at is null
+					ORDER BY c.id DESC LIMIT 10';
 
 		$cambios = DB::select($consulta);
 		return $cambios;

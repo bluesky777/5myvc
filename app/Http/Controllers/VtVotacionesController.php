@@ -165,6 +165,17 @@ class VtVotacionesController extends Controller {
 	}
 
 
+	public function putSetPermisoVerResults()
+	{
+		$user = User::fromToken();
+		$id = Request::input('id');
+		$can_see_results = Request::input('can_see_results', false);
+
+		$vot = VtVotacion::where('id', $id)->update(['can_see_results' => $can_see_results]);
+		return 'Cambiado';
+	}
+
+
 	public function putSetActual()
 	{
 		$user = User::fromToken();
@@ -230,6 +241,9 @@ class VtVotacionesController extends Controller {
 		if ($cantVot > 0) {
 
 			for($i=0; $i < $cantVot; $i++){
+
+				$completos = VtVotacion::verificarVotosCompletos($votaciones[$i]->votacion_id, $votaciones[$i]->participante_id);
+				$votaciones[$i]->completos = $completos;
 
 				$aspiraciones = VtAspiracion::where('votacion_id', $votaciones[$i]->votacion_id)->get();
 				
