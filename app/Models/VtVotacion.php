@@ -73,7 +73,7 @@ class VtVotacion extends Model {
 				inner join vt_candidatos vc on vc.id=vv.candidato_id
 				inner join vt_aspiraciones va on va.id=vc.aspiracion_id and va.votacion_id=:votacion_id';
 
-		$votosVotados = DB::select(DB::raw($cons), array('votacion_id' => $votacion_id, 'participante_id' => $particip_id));
+		$votosVotados = DB::select($cons, array('votacion_id' => $votacion_id, 'participante_id' => $particip_id));
 
 		$cantVotados = count($votosVotados);
 

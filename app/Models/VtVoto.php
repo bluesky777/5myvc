@@ -69,10 +69,13 @@ class VtVoto extends Model {
 		$consulta = 'SELECT count(*) as cantidad, t.total from vt_votos vv
 				inner join (
 					select count(*) as total from vt_votos 
-					inner join vt_candidatos vc on vc.id=vt_votos.candidato_id and vc.aspiracion_id=:aspiracion_id
-				)t  where vv.candidato_id=:candidato_id';
+					inner join vt_candidatos vc on vc.id=vt_votos.candidato_id 
+						and vc.aspiracion_id=:aspiracion_id and vt_votos.deleted_at is null
+				)t  where vv.candidato_id=:candidato_id and vv.deleted_at is null';
 
-		$datos = array(':aspiracion_id' => $aspiracion_id, ':candidato_id' => $candidato_id);
+		$datos = 	[':aspiracion_id' => $aspiracion_id, 
+					':candidato_id' => $candidato_id
+					];
 		$votos = DB::select($consulta, $datos);
 		
 		return $votos;

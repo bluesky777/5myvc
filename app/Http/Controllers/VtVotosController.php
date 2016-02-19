@@ -83,9 +83,9 @@ class VtVotosController extends Controller {
 
 					for ($i=0; $i<count($candidatos); $i++) {
 
-						$votos = VtVoto::deCandidato($candidatos[$i]->candidato_id, $aspira->id)[0];
-						$candidatos[$i]->cantidad = $votos->cantidad;
-						$candidatos[$i]->total = $votos->total;
+						$votos 	= VtVoto::deCandidato($candidatos[$i]->candidato_id, $aspira->id)[0];
+						$candidatos[$i]->cantidad 	= $votos->cantidad;
+						$candidatos[$i]->total 		= $votos->total;
 					}
 
 					$aspira->candidatos = $candidatos;

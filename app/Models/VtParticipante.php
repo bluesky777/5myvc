@@ -115,7 +115,8 @@ class VtParticipante extends Model {
 					FROM vt_votos vv
 					inner join vt_participantes vp on vp.id=vv.participante_id and vv.participante_id=:participante_id and vp.deleted_at is null
 					inner join vt_candidatos vc on vc.id=vv.candidato_id and vc.deleted_at is null
-					inner join vt_aspiraciones va on va.id=vc.aspiracion_id and va.votacion_id=:votacion_id';
+					inner join vt_aspiraciones va on va.id=vc.aspiracion_id and va.votacion_id=:votacion_id 
+					WHERE vv.deleted_at is null';
 
 			$votosVotados = DB::select($cons, array('votacion_id' => $votacion_id, 'participante_id' => $participante->id));
 			$participante->votosVotados = $votosVotados;
