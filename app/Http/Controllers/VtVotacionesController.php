@@ -234,7 +234,7 @@ class VtVotacionesController extends Controller {
 	{
 		$user = User::fromToken();
 
-		$votaciones = VtVotacion::actualesInscrito($user);
+		$votaciones = VtVotacion::actualesInscrito($user, true);
 
 		$cantVot = count($votaciones);
 
@@ -253,7 +253,7 @@ class VtVotacionesController extends Controller {
 
 					for ($j=0; $j<$cantAsp; $j++) {
 
-						$candidatos = VtCandidato::porAspiracion($aspiraciones[$j]->id, $user->year_id);
+						$candidatos = VtCandidato::porAspiracion($aspiraciones[$j]->id, $votaciones[$i]->year_id);
 
 						for ($k=0; $k<count($candidatos); $k++) {
 

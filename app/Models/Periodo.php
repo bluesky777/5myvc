@@ -19,8 +19,8 @@ class Periodo extends Model {
 
 		// Solo los periodos pasados hasta EL ACTUAL si así fue solicitado
 		if ($periodos_a_calcular == 'de_colegio') {
-			$periodo_actual = Periodo::where('actual', '=', true)
-									->where('year_id', '=', $year_id)->first();
+			$periodo_actual = Periodo::where('actual', true)
+									->where('year_id', $year_id)->first();
 
 			$periodos = Periodo::where('numero', '<=', $periodo_actual->numero)
 								->where('year_id', '=', $year_id)->get();

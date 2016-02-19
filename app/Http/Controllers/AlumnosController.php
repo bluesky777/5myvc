@@ -118,7 +118,8 @@ class AlumnosController extends Controller {
 
 	public function postStore()
 	{
-		
+		$user = User::fromToken();
+
 		$alumno = [];
 
 		try {
@@ -157,11 +158,16 @@ class AlumnosController extends Controller {
 
 			$this->checkOrChangeUsername($alumno->user_id);
 
+			$yearactual = Year::actual();
+			$periodo_actual = Periodo::where('actual', true)
+									->where('year_id', $yearactual->id)->first();
+
 			$usuario = new User;
 			$usuario->username		=	Request::input('username');
 			$usuario->password		=	Hash::make(Request::input('password', '123456'));
 			$usuario->email			=	Request::input('email2');
 			$usuario->is_superuser	=	Request::input('is_superuser', false);
+			$usuario->periodo_id	=	$periodo_actual->id;
 			$usuario->is_active		=	Request::input('is_active', true);
 			$usuario->tipo			=	'Alumno';
 			$usuario->save();
@@ -353,12 +359,18 @@ class AlumnosController extends Controller {
 				$this->sanarInputUser();
 				$this->checkOrChangeUsername($alumno->user_id);
 
+				$yearactual = Year::actual();
+				$periodo_actual = Periodo::where('actual', true)
+									->where('year_id', $yearactual->id)->first();
+
+
 				$usuario = new User;
 				$usuario->username		=	Request::input('username');
 				$usuario->password		=	Hash::make(Request::input('password', '123456'));
 				$usuario->email			=	Request::input('email2');
 				$usuario->is_superuser	=	Request::input('is_superuser', false);
 				$usuario->is_active		=	Request::input('is_active', true);
+				$usuario->periodo_id	=	$periodo_actual->id;
 				$usuario->save();
 
 				$alumno->user_id = $usuario->id;

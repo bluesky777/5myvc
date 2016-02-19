@@ -26,7 +26,7 @@ class VtVotosController extends Controller {
 	{
 		$user = User::fromToken();
 
-		$votacionActual = VtVotacion::where('actual', '=', true)->first();
+		$votacion_actual_id = Request::input('votacion_id');
 		$aspiracion_id = VtCandidato::find(Request::input('candidato_id'))->aspiracion_id;
 		$particip = VtParticipante::participanteDeAspiracion($aspiracion_id, $user);
 
@@ -49,10 +49,10 @@ class VtVotosController extends Controller {
 			$voto->save();
 
 
-			$completos = VtVotacion::verificarVotosCompletos($votacionActual->id, $particip_id);
+			$completos = VtVotacion::verificarVotosCompletos($votacion_actual_id, $particip_id);
 
-			$particip->locked = $completos;
-			$particip->save();
+			//$particip->locked = $completos;
+			//$particip->save();
 
 			$voto->completo = $completos; // Para verificar en el frontend cuando se guarde el voto.
 

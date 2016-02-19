@@ -16,7 +16,7 @@ class Year extends Model {
 
 	public static function actual()
 	{
-		$year = Year::where('actual', '=', true)->first();
+		$year = Year::where('actual', true)->first();
 		return $year;
 	}
 

@@ -43,7 +43,7 @@ class VtVotacion extends Model {
 						v.created_at
 					FROM vt_participantes p
 					inner join vt_votaciones v on v.id=p.votacion_id and p.deleted_at is null 
-						and v.in_action=true and v.locked=false and v.year_id=? 
+						and v.in_action=true and v.locked=false 
 					where p.user_id=? and p.deleted_at is null';
 
 		}else{
@@ -54,12 +54,12 @@ class VtVotacion extends Model {
 						v.created_at
 					FROM vt_participantes p
 					inner join vt_votaciones v on v.id=p.votacion_id and p.deleted_at is null 
-						and v.locked=false and v.year_id=? 
+						and v.locked=false 
 					where p.user_id=? and p.deleted_at is null';
 
 		}
 		
-		$votaciones = DB::select($consulta, [$user->year_id, $user->user_id]);
+		$votaciones = DB::select($consulta, [$user->user_id]);
 		return $votaciones;
 	}
 
