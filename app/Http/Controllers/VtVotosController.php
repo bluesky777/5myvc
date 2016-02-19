@@ -67,7 +67,19 @@ class VtVotosController extends Controller {
 		$user = User::fromToken();
 
 		$votaciones = VtVotacion::actualesInscrito($user, false); // Traer aunque no esté en acción.
-		
+
+		// Votaciones creadas por el usuario.
+		$consulta = 'SELECT v.id as votacion_id, v.*
+					FROM vt_votaciones v
+					where v.user_id=? and v.year_id=? and v.deleted_at is null';
+
+		$votacionesMias = DB::select($consulta, [$user->user_id, $user->year_id]);
+
+		foreach ($votacionesMias as $key => $votMia) {
+			array_push($votaciones, $votMia);
+		}
+
+
 		$cantVot = count($votaciones);
 
 		for($j=0; $j<$cantVot; $j++){
