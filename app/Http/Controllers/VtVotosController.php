@@ -76,6 +76,7 @@ class VtVotosController extends Controller {
 		$votacionesMias = DB::select($consulta, [$user->user_id, $user->year_id]);
 
 		foreach ($votacionesMias as $key => $votMia) {
+			// Debo crear otro array para verificar que ya no tenga el mismo evento.
 			array_push($votaciones, $votMia);
 		}
 

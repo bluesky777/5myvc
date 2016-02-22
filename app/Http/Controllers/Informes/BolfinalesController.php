@@ -16,9 +16,14 @@ use App\Models\Subunidad;
 use App\Models\Unidad;
 use App\Models\Profesor;
 use App\Models\Nota;
+use App\Models\ConfigCertificado;
+use App\Models\EscalaDeValoracion;
 
 
 class BolfinalesController extends Controller {
+
+
+	private $escalas_val = [];
 
 
 
@@ -63,12 +68,40 @@ class BolfinalesController extends Controller {
 
 	public function detailedNotasGrupo($grupo_id, $user, $requested_alumnos='')
 	{
+
+		$this->escalas_val = EscalaDeValoracion::where('year_id', $user->year_id)->get();
 		
 		$grupo			= Grupo::datos($grupo_id);
 		$year			= Year::datos($user->year_id);
 		$alumnos		= Grupo::alumnos($grupo_id, $requested_alumnos);
 
 		$year->periodos = Periodo::where('year_id', $user->year_id)->get();
+
+		$cons = 'SELECT c.*, i.nombre as encabezado_nombre, i2.nombre as pie_nombre 
+				FROM config_certificados c 
+				left join images i on i.id=c.encabezado_img_id and i.deleted_at is null
+				left join images i2 on i2.id=c.piepagina_img_id and i2.deleted_at is null
+					where c.id=?';
+		$config_certificado = DB::select($cons, [$year->config_certificado_estudio_id]);
+		if (count($config_certificado) > 0) {
+			$year->config_certificado = $config_certificado[0];
+		}
+
+
+		$cons = 'SELECT n.nombre as nivel_educativo FROM niveles_educativos n
+				inner join grados gra on gra.nivel_educativo_id=n.id and gra.deleted_at is null
+				inner join grupos gru on gru.grado_id=gra.id and gru.id=? and gru.deleted_at is null
+				where n.deleted_at is null';
+
+		$niveles = DB::select($cons, [$year->config_certificado_estudio_id]);
+		if (count($niveles) > 0) {
+			$grupo->nivel_educativo = $niveles[0]->nivel_educativo;
+		}
+
+
+
+		
+
 
 		$grupo->cantidad_alumnos = count($alumnos);
 
@@ -147,10 +180,13 @@ class BolfinalesController extends Controller {
 		$alumno->cant_lost_asig = 0;
 		$alumno->ausencias = 0;
 		$alumno->tardanzas = 0;
+		$alumno->total_creditos = 0;
 		$alumno->notas_perdidas = 0;
 
 
 		foreach ($alumno->asignaturas as $asignatura) {
+
+			$alumno->total_creditos += $asignatura->creditos;
 			
 			$consulta = 'SELECT alumno_id, asignatura_id, periodo_id, numero_periodo,
 							creditos, sum( ValorUnidad ) DefMateria, cantidad_ausencia, cantidad_tardanza 
@@ -184,7 +220,7 @@ class BolfinalesController extends Controller {
 						)r
 						group by alumno_id, asignatura_id, periodo_id
 						order by numero_periodo, asignatura_id, periodo_id';
-		
+		//User::$nota_minima_aceptada
 			$asignatura->definitivas = DB::select(DB::raw($consulta), array(
 										':alumno_id'	=> $alumno->alumno_id, 
 										':year_id'		=> $year_id,
@@ -246,6 +282,13 @@ class BolfinalesController extends Controller {
 			$alumno->tardanzas += $asignatura->tardanzas;
 			$alumno->notas_perdidas += $asignatura->notas_perdidas;
 
+			$escala = $this->valoracion($asignatura->promedio);
+
+			$asignatura->desempenio 	= $escala->desempenio;
+			$asignatura->perdido 		= $escala->perdido;
+			$asignatura->valoracion 	= $escala->valoracion;
+
+
 
 			// Si es un promedio perdido, debo sumarlo como una asignatura perdida
 			if ($asignatura->promedio < User::$nota_minima_aceptada) {
@@ -256,8 +299,23 @@ class BolfinalesController extends Controller {
 
 		$alumno->promedio = $alumno->promedio / count($alumno->asignaturas);
 
+		$escala = $this->valoracion($alumno->promedio);
+		$alumno->desempenio 	= $escala->desempenio;
 
 		return $alumno;
+	}
+
+
+	public function valoracion($nota)
+	{
+		$nota = floatval($nota);
+
+		foreach ($this->escalas_val as $key => $escala_val) {
+			if (($escala_val->porc_inicial <= $nota) &&  ($escala_val->porc_final <= $nota)) {
+				return $escala_val;
+			}
+		}
+		return [];
 	}
 
 

@@ -5,6 +5,7 @@ use DB;
 
 use App\Models\User;
 use App\Models\ConfigCertificado;
+use App\Models\Year;
 
 class ConfigCertificadosController extends Controller {
 
@@ -85,6 +86,19 @@ class ConfigCertificadosController extends Controller {
 	}
 
 	
+
+	public function putActual()
+	{
+		$user = User::fromToken();
+
+		$year = Year::find(Request::input('year_id'));
+
+		$year->config_certificado_estudio_id = Request::input('config_certificado_estudio_id');
+		$year->save();
+
+		return 'Cambiado';
+	}
+
 
 	public function deleteDestroy($id)
 	{

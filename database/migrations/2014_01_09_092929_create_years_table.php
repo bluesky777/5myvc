@@ -19,6 +19,7 @@ class CreateYearsTable extends Migration {
 			$table->integer('year')->unique();
 			$table->string('nombre_colegio');
 			$table->string('abrev_colegio')->nullable();
+			$table->string('genero_colegio', 1)->default('F');
 			$table->string('ciudad_id')->nullable();
 			$table->integer('logo_id')->unsigned()->nullable();
 			$table->integer('img_encabezado_id')->unsigned()->nullable();
@@ -34,9 +35,10 @@ class CreateYearsTable extends Migration {
 			$table->string('nota_minima_aceptada', 3)->default(70);
 			$table->string('unidad_displayname')->default('Unidad');
 			$table->string('unidades_displayname')->default('Unidades');
-			$table->string('genero_unidad')->default('F');
+			$table->string('genero_unidad', 1)->default('F');
 			$table->string('subunidad_displayname')->default('Subunidad');
 			$table->string('subunidades_displayname')->default('Subunidades');
+			$table->string('genero_subunidad', 1)->default('F');
 
 			$table->text('resolucion')->nullable();
 			$table->string('codigo_dane')->nullable();
@@ -44,7 +46,6 @@ class CreateYearsTable extends Migration {
 			$table->text('frase_final_certificado')->nullable();
 			$table->boolean('actual')->default(0);
 			$table->string('telefono')->nullable();
-			$table->string('genero_subunidad')->default('F');
 			$table->string('celular')->nullable();
 			$table->string('website')->nullable();
 			$table->string('website_myvc')->nullable();
