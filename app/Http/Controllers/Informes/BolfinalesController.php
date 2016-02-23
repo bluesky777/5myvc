@@ -93,7 +93,7 @@ class BolfinalesController extends Controller {
 				inner join grupos gru on gru.grado_id=gra.id and gru.id=? and gru.deleted_at is null
 				where n.deleted_at is null';
 
-		$niveles = DB::select($cons, [$year->config_certificado_estudio_id]);
+		$niveles = DB::select($cons, [$grupo_id]);
 		if (count($niveles) > 0) {
 			$grupo->nivel_educativo = $niveles[0]->nivel_educativo;
 		}
@@ -277,16 +277,19 @@ class BolfinalesController extends Controller {
 			$asignatura->tardanzas = $suma_tar;
 			$asignatura->notas_perdidas = $notas_perd;
 
+			$escala = $this->valoracion($asignatura->promedio);
+
+			if ($escala) {
+				$asignatura->desempenio 	= $escala->desempenio;
+				$asignatura->perdido 		= $escala->perdido;
+				$asignatura->valoracion 	= $escala->valoracion;
+			}
+			
+
 			$alumno->promedio += $asignatura->promedio;
 			$alumno->ausencias += $asignatura->ausencias;
 			$alumno->tardanzas += $asignatura->tardanzas;
 			$alumno->notas_perdidas += $asignatura->notas_perdidas;
-
-			$escala = $this->valoracion($asignatura->promedio);
-
-			$asignatura->desempenio 	= $escala->desempenio;
-			$asignatura->perdido 		= $escala->perdido;
-			$asignatura->valoracion 	= $escala->valoracion;
 
 
 
@@ -300,7 +303,10 @@ class BolfinalesController extends Controller {
 		$alumno->promedio = $alumno->promedio / count($alumno->asignaturas);
 
 		$escala = $this->valoracion($alumno->promedio);
-		$alumno->desempenio 	= $escala->desempenio;
+		if ($escala) {
+			$alumno->desempenio = $escala->desempenio;
+		}
+		
 
 		return $alumno;
 	}

@@ -31,7 +31,7 @@ class NotasController extends Controller {
 		$unidades = Unidad::where('asignatura_id', '=', $asignatura_id)
 					->where('periodo_id', '=', $user->periodo_id)->orderBy('orden')->get();
 
-		$asignatura = (object)Asignatura::detallada($asignatura_id);
+		$asignatura = (object)Asignatura::detallada($asignatura_id, $user->year_id);
 		
 		foreach ($unidades as $unidad) {
 			$subunidades = Subunidad::where('unidad_id', '=', $unidad->id)->orderBy('orden')->get();

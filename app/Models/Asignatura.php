@@ -16,19 +16,20 @@ class Asignatura extends Model {
 	protected $softDelete = true;
 
 
-	public static function detallada($asignatura_id)
+	public static function detallada($asignatura_id, $year_id)
 	{
 		$consulta = 'SELECT a.id as asignatura_id, a.grupo_id, a.profesor_id, a.creditos, a.orden,
 						m.materia, m.alias as alias_materia, g.nombre as nombre_grupo, g.abrev as abrev_grupo, 
 						g.titular_id, g.caritas, p.id as profesor_id, p.nombres as nombres_profesor, p.apellidos as apellidos_profesor
 					FROM asignaturas a 
 					inner join materias m on m.id=a.materia_id 
-					inner join grupos g on g.id=a.grupo_id 
+					inner join grupos g on g.id=a.grupo_id and g.year_id=:year_id and g.deleted_at is null 
 					inner join profesores p on p.id=a.profesor_id 
 					where a.id=:asignatura_id 
 					order by g.orden, a.orden';
 
-		$asignatura = DB::select(DB::raw($consulta), array(':asignatura_id' => $asignatura_id));
+		$asignatura = DB::select($consulta, [':asignatura_id' => $asignatura_id,
+											':year_id' => $year_id]);
 
 
 		return (array)$asignatura[0];

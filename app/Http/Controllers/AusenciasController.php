@@ -1,5 +1,16 @@
 <?php namespace App\Http\Controllers;
 
+
+use DB;
+use Request;
+
+use App\Models\User;
+use App\Models\Alumno;
+use App\Models\Grupo;
+use App\Models\Ausencia;
+use App\Models\Asignatura;
+
+
 class AusenciasController extends Controller {
 
 	public function getIndex()
@@ -11,7 +22,7 @@ class AusenciasController extends Controller {
 	{
 		$user = User::fromToken();
 
-		$asignatura = (object)Asignatura::detallada($asignatura_id);
+		$asignatura = (object)Asignatura::detallada($asignatura_id, $user->year_id);
 		
 		$alumnos = Grupo::alumnos($asignatura->grupo_id);
 		
@@ -45,27 +56,18 @@ class AusenciasController extends Controller {
 		$user = User::fromToken();
 
 		$aus = new Ausencia;
-		$aus->alumno_id 		= Input::get('alumno_id');
-		$aus->asignatura_id 	= Input::get('asignatura_id');
+		$aus->alumno_id 		= Request::input('alumno_id');
+		$aus->asignatura_id 	= Request::input('asignatura_id');
 		$aus->periodo_id		= $user->periodo_id;
-		$aus->cantidad_ausencia	= Input::get('cantidad_ausencia', null);
-		$aus->cantidad_tardanza	= Input::get('cantidad_tardanza', null);
-		$aus->fecha_hora		= Input::get('fecha_hora', null);
+		$aus->cantidad_ausencia	= Request::input('cantidad_ausencia', null);
+		$aus->cantidad_tardanza	= Request::input('cantidad_tardanza', null);
+		$aus->fecha_hora		= Request::input('fecha_hora', null);
 		$aus->created_by		= $user->user_id;
 
 		$aus->save();
 		return $aus;
 	}
 
-	public function getShow($id)
-	{
-		//
-	}
-
-	public function putUpdate($id)
-	{
-		//
-	}
 
 	public function deleteDestroy($id)
 	{

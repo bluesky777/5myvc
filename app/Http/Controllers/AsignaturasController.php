@@ -46,7 +46,8 @@ class AsignaturasController extends Controller {
 
 	public function getShow($asignatura_id)
 	{
-		$asignatura = Asignatura::detallada($asignatura_id);
+		$user = User::fromToken();
+		$asignatura = Asignatura::detallada($asignatura_id, $user->year_id);
 		return $asignatura;
 	}
 

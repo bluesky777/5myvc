@@ -10,6 +10,7 @@ use App\Models\ConfigCertificado;
 use App\Models\ImageModel;
 use App\Models\Grupo;
 use App\Models\Asignatura;
+use App\Models\EscalaDeValoracion;
 
 
 class YearsController extends Controller {
@@ -62,16 +63,6 @@ class YearsController extends Controller {
 		$year->year						=	Request::input('year');
 		$year->nombre_colegio			=	Request::input('nombre_colegio');
 		$year->abrev_colegio			=	Request::input('abrev_colegio');
-		//$year->ciudad_id				=	Request::input('ciudad_id');
-		//$year->logo_id			=	Request::input('logo_id');
-		//$year->img_encabezado_id 	=	Request::input('img_encabezado_id');
-		//$year->rector_id			=	Request::input('rector_id');
-		//$year->secretario_id		=	Request::input('secretario_id');
-		//$year->tesorero_id		=	Request::input('tesorero_id');
-		//$year->coordinador_academico_id		=	Request::input('coordinador_academico_id');
-		//$year->coordinador_disciplinario_id	=	Request::input('coordinador_disciplinario_id');
-		//$year->capellan_id		=	Request::input('capellan_id');
-		//$year->psicorientador_id=	Request::input('psicorientador_id');
 		$year->nota_minima_aceptada		=	Request::input('nota_minima_aceptada');
 		$year->resolucion				=	Request::input('resolucion');
 		$year->codigo_dane				=	Request::input('codigo_dane');
@@ -92,7 +83,8 @@ class YearsController extends Controller {
 		$year->website_myvc				=	Request::input('website_myvc');
 		$year->alumnos_can_see_notas	=	Request::input('alumnos_can_see_notas');
 
-
+		$year->save();
+		
 
 		if ($year->actual) {
 			Year::where('actual', true)->update(['actual'=>false]);
@@ -100,15 +92,48 @@ class YearsController extends Controller {
 
 
 
-		$year->save();
-
-
-
-		/// AHORA COPIAMOS LOS GRUPOS Y ASIGNATURAS DEL AÑO PASADO AL NUEVO AÑO.
+		// NECESITARÉ MUCHO EL AÑO ANTERIOR
 		$year_ante = $year->year - 1;
-
 		$pasado = Year::where('year', $year_ante)->first();
+
+
+
 		if ($pasado) {
+
+
+			$year->ciudad_id				=	$pasado->ciudad_id;
+			$year->logo_id					=	$pasado->logo_id;
+			$year->rector_id				=	$pasado->rector_id;
+			$year->secretario_id			=	$pasado->secretario_id;
+			$year->tesorero_id				=	$pasado->tesorero_id;
+			$year->coordinador_academico_id	=	$pasado->coordinador_academico_id;
+			$year->coordinador_disciplinario_id	=	$pasado->coordinador_disciplinario_id;
+			$year->capellan_id				=	$pasado->capellan_id;
+			$year->psicorientador_id 		=	$pasado->psicorientador_id;
+
+			$year->save();
+			
+			/// COPIAREMOS LAS ESCALAS DE VALORACIÓN
+			$escalas_ant = EscalaDeValoracion::where('year_id', $pasado->id)->get();
+
+			foreach ($escalas_ant as $key => $escalas) {
+				$newEsc = new EscalaDeValoracion;
+				$newEsc->desempenio 	= $escalas->desempenio;
+				$newEsc->valoracion 	= $escalas->valoracion;
+				$newEsc->porc_inicial 	= $escalas->porc_inicial;
+				$newEsc->porc_final 	= $escalas->porc_final;
+				$newEsc->descripcion 	= $escalas->descripcion;
+				$newEsc->orden 			= $escalas->orden;
+				$newEsc->perdido 		= $escalas->perdido;
+				$newEsc->year_id 		= $year->id;
+				$newEsc->icono_infantil = $escalas->icono_infantil;
+				$newEsc->icono_adolescente = $escalas->icono_adolescente;
+				$newEsc->save();
+			}
+
+
+			
+			/// AHORA COPIAMOS LOS GRUPOS Y ASIGNATURAS DEL AÑO PASADO AL NUEVO AÑO.
 			$grupos_ant = Grupo::where('year_id', $pasado->id)->get();
 			
 			foreach ($grupos_ant as $key => $grupo) {
