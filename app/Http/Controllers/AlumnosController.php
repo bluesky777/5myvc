@@ -149,7 +149,6 @@ class AlumnosController extends Controller {
 			$alumno->religion	=	Request::input('religion');
 			$alumno->email		=	Request::input('email');
 			$alumno->facebook	=	Request::input('facebook');
-			$alumno->foto_id	=	Request::input('foto_id');
 			$alumno->pazysalvo	=	Request::input('pazysalvo');
 			$alumno->deuda		=	Request::input('deuda');
 			$alumno->save();

@@ -19,9 +19,12 @@ class ChangeAskedController extends Controller {
 	{
 		$user = User::fromToken();
 
-		// toca quitar los campos somebody, ya que esta consulta solo será para buscar los pedidos que han hecho alumnos.
+		$cambios = [];
 
-		$consulta = 'SELECT c.id, c.asked_by_user_id, c.comentario_pedido, c.main_image_id, c.oficial_image_id, c.nombres as nombres_asked,
+		// toca quitar los campos somebody, ya que esta consulta solo será para buscar los pedidos que han hecho alumnos.
+		if ($user->tipo == 'Usuario' && $user->is_superuser) {
+
+			$consulta = 'SELECT c.id, c.asked_by_user_id, c.comentario_pedido, c.main_image_id, c.oficial_image_id, c.nombres as nombres_asked,
 						c.apellidos as apellidos_asked, c.somebody_id, c.somebody_nombres, c.somebody_apellidos, 
 						c.somebody_nota_id, c.somebody_nota_old, c.somebody_nota_new, c.somebody_image_id_to_delete, c.materia_to_remove_id, c.materia_to_add_id,
 						c.asked_nota_id, c.nota_old, c.nota_new, c.rechazado_at, c.accepted_at, c.periodo_asked_id, c.year_asked_id, c.created_at,
@@ -29,16 +32,48 @@ class ChangeAskedController extends Controller {
 						u.tipo, a.id as alumno_id, a.nombres, a.apellidos, 
 						IFNULL(i.nombre, IF(a.sexo="F","default_female.jpg", "default_male.jpg")) as foto_nombre, 
 						i2.nombre as foto_nombre_asked,
-						i3.nombre as somebody_imagen_nombre_to_delete
+						i3.nombre as somebody_imagen_nombre_to_delete,
+						u2.username, u2.tipo
 					FROM change_asked c
 					inner join users u on u.id=c.asked_by_user_id
 					inner join alumnos a on a.user_id=u.id
 					left join images i on i.id=a.foto_id and i.deleted_at is null
 					left join images i2 on i2.id=c.oficial_image_id and i2.deleted_at is null
 					left join images i3 on i3.id=c.somebody_image_id_to_delete and i3.deleted_at is null
-					ORDER BY c.id DESC LIMIT 10';
+					left join users u2 on u2.id=c.deleted_by and u2.deleted_at is null
+					ORDER BY c.id DESC LIMIT 20';
 
-		$cambios = DB::select($consulta);
+			$cambios = DB::select($consulta);
+
+		}elseif ($user->tipo == 'Profesor') {
+
+			$consulta = 'SELECT c.id, c.asked_by_user_id, c.comentario_pedido, c.main_image_id, c.oficial_image_id, c.nombres as nombres_asked,
+						c.apellidos as apellidos_asked, c.somebody_id, c.somebody_nombres, c.somebody_apellidos, 
+						c.somebody_nota_id, c.somebody_nota_old, c.somebody_nota_new, c.somebody_image_id_to_delete, c.materia_to_remove_id, c.materia_to_add_id,
+						c.asked_nota_id, c.nota_old, c.nota_new, c.rechazado_at, c.accepted_at, c.periodo_asked_id, c.year_asked_id, c.created_at,
+						c.deleted_at, c.deleted_by,
+						u.tipo, a.id as alumno_id, a.nombres, a.apellidos, 
+						IFNULL(i.nombre, IF(a.sexo="F","default_female.jpg", "default_male.jpg")) as foto_nombre, 
+						i2.nombre as foto_nombre_asked,
+						i3.nombre as somebody_imagen_nombre_to_delete,
+						u2.username, u2.tipo
+					FROM change_asked c
+					inner join users u on u.id=c.asked_by_user_id
+					inner join alumnos a on a.user_id=u.id
+					inner join matriculas m on a.id=m.alumno_id and m.deleted_at is null
+					inner join grupos g on m.grupo_id=g.id and g.titular_id=? and g.deleted_at is null
+					left join images i on i.id=a.foto_id and i.deleted_at is null
+					left join images i2 on i2.id=c.oficial_image_id and i2.deleted_at is null
+					left join images i3 on i3.id=c.somebody_image_id_to_delete and i3.deleted_at is null
+					left join users u2 on u2.id=c.deleted_by and u2.deleted_at is null
+					ORDER BY c.id DESC LIMIT 20';
+
+			$cambios = DB::select($consulta, [$user->persona_id]);
+
+		}
+		
+		
+		
 		return $cambios;
 	}
 

@@ -282,6 +282,9 @@ class ImagesController extends Controller {
 			$year->logo_id = null;
 			$year->save();
 		}
+		
+		$asks = ChangeAsked::where('oficial_image_id', $id)->destroy();
+		
 
 		
 		return $img;
