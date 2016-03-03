@@ -27,7 +27,7 @@ class GruposController extends Controller {
 			where g.deleted_at is null
 			order by g.orden';
 
-		$grados = DB::select(DB::raw($consulta), array(':year_id'=>$user->year_id));
+		$grados = DB::select($consulta, array(':year_id'=>$user->year_id));
 
 		return $grados;
 	}
@@ -88,7 +88,7 @@ class GruposController extends Controller {
 			if (Request::input('titular_id')) {
 				$titular_id = Request::input('titular_id');
 			}else if (Request::input('titular')) {
-				$titular_id = Request::input('titular')['id'];
+				$titular_id = Request::input('titular')['profesor_id'];
 			}else{
 				$titular_id = null;
 			}
@@ -105,7 +105,7 @@ class GruposController extends Controller {
 			$grupo->nombre		=	Request::input('nombre');
 			$grupo->abrev		=	Request::input('abrev');
 			$grupo->year_id		=	$user->year_id;
-			$grupo->titular_id	=	Request::input('titular')['id'];
+			$grupo->titular_id	=	$titular_id;
 			$grupo->grado_id	=	Request::input('grado')['id'];
 			$grupo->valormatricula=	Request::input('valormatricula');
 			$grupo->valorpension=	Request::input('valorpension');
@@ -125,7 +125,7 @@ class GruposController extends Controller {
 	{
 		$grupo = Grupo::findOrFail($id);
 
-		$profesor = Profesor::findOrFail($grupo->titular_id);
+		$profesor = Profesor::find($grupo->titular_id);
 		$grupo->titular = $profesor;
 
 		$grado = Grado::findOrFail($grupo->grado_id);
@@ -135,10 +135,10 @@ class GruposController extends Controller {
 	}
 
 
-	public function putUpdate($id)
+	public function putUpdate()
 	{
 		$user = User::fromToken();
-		$grupo = Grupo::findOrFail($id);
+		$grupo = Grupo::findOrFail(Request::input('id'));
 
 		try {
 
@@ -148,7 +148,7 @@ class GruposController extends Controller {
 			if (Request::input('titular_id')) {
 				$titular_id = Request::input('titular_id');
 			}else if (Request::input('titular')) {
-				$titular_id = Request::input('titular')['id'];
+				$titular_id = Request::input('titular')['profesor_id'];
 			}else{
 				$titular_id = null;
 			}

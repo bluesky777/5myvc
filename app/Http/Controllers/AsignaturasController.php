@@ -69,8 +69,8 @@ class AsignaturasController extends Controller {
 
 	private function fixInputs()
 	{
-		if (!Request::input('profesor_id') and Request::input('profesor')['id']) {
-			Request::merge(array('profesor_id' => Request::input('profesor')['id'] ) );
+		if (!Request::input('profesor_id') and Request::input('profesor')['profesor_id']) {
+			Request::merge(array('profesor_id' => Request::input('profesor')['profesor_id'] ) );
 		}
 
 		if (!Request::input('grupo_id') and Request::input('grupo')['id']) {

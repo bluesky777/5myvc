@@ -24,8 +24,8 @@ class ContratosController extends Controller {
 					c.id as contrato_id, c.year_id,
 					p.foto_id, IFNULL(i.nombre, IF(p.sexo="F","default_female.jpg", "default_male.jpg")) as foto_nombre
 				from profesores p
-				inner join contratos c on c.profesor_id=p.id and c.year_id=:year_id
-				left join users u on p.user_id=u.id and u.is_active=true
+				inner join contratos c on c.profesor_id=p.id and c.year_id=:year_id and c.deleted_at is null
+				left join users u on p.user_id=u.id and u.deleted_at is null
 				LEFT JOIN images i on i.id=p.foto_id and i.deleted_at is null
 				where p.deleted_at is null
 				order by p.nombres, p.apellidos';

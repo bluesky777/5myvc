@@ -187,8 +187,16 @@ class ImagesController extends Controller {
 
 	public function putCambiarimagenoficial($id)
 	{
-		$user = User::findOrFail($id);
 		$img_id = Request::input('foto_id');
+
+		if (!$img_id) {
+			return abort(400, 'Debe seleccionar una foto.');
+		}
+
+		$user = User::findOrFail($id);
+
+
+
 		$persona = new stdClass();
 		
 		$alumno = Alumno::where('user_id', $user->id)->first();

@@ -86,7 +86,7 @@ class Year extends Model {
 	public static function de_un_profesor($profesor_id)
 	{
 		$consulta = 'SELECT y.id, y.year, y.nombre_colegio, y.abrev_colegio FROM years y
-					inner join contratos c on c.year_id and c.profesor_id = :profesor_id
+					inner join contratos c on c.year_id=y.id and c.profesor_id = :profesor_id
 					where y.deleted_at is null';
 
 		$years = DB::select(DB::raw($consulta), array(':profesor_id' => $profesor_id));
