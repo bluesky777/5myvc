@@ -41,14 +41,14 @@ class ContratosController extends Controller {
 
 		$consulta = 'SELECT p.id as profesor_id, p.nombres
 				from profesores p
-				inner join contratos c on c.profesor_id=p.id and c.year_id=:year_id and c.profesor_id=:profesor_id
+				inner join contratos c on c.profesor_id=p.id and c.year_id=:year_id and c.profesor_id=:profesor_id and c.deleted_at is null 
 				left join users u on p.user_id=u.id and u.is_Active=false
 				where p.deleted_at is null';
 
-		$contratado = DB::select(DB::raw($consulta), array(':year_id'=>$user->year_id, ':profesor_id' => Request::input('profesor_id')));
+		$contratado = DB::select($consulta, array(':year_id'=>$user->year_id, ':profesor_id' => Request::input('profesor_id')));
 
 		if (count($contratado) > 0) {
-			return 'Profesor ya contratado.';
+			return response()->json([ 'contratado'=> true, 'msg'=> 'Profesor ya contratado' ], 400);
 		}
 
 		$contrato = new Contrato;

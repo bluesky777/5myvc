@@ -27,12 +27,12 @@ class ProfesoresController extends Controller {
 					p.foto_id, IFNULL(i.nombre, IF(p.sexo="F","default_female.jpg", "default_male.jpg")) as foto_nombre
 				from profesores p
 				left join users u on p.user_id=u.id and u.is_Active=false
-				left join contratos c on c.profesor_id=p.id and c.year_id=:year_id
+				left join contratos c on c.profesor_id=p.id and c.year_id=:year_id and c.deleted_at is null
 				LEFT JOIN images i on i.id=p.foto_id and i.deleted_at is null
 				where p.deleted_at is null
 				order by p.nombres, p.apellidos';
 
-		$profesores = DB::select(DB::raw($consulta), array(':year_id'=>$user->year_id));
+		$profesores = DB::select($consulta, array(':year_id'=>$user->year_id));
 		return $profesores;
 	}
 
@@ -186,6 +186,8 @@ class ProfesoresController extends Controller {
 	{
 		
 		$this->sanarInputUser();
+		$this->sanarInputProfesor();
+
 
 		$profesor = Profesor::findOrFail($id);
 		try {

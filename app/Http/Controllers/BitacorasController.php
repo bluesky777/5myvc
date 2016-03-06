@@ -1,5 +1,8 @@
 <?php namespace App\Http\Controllers;
 
+use App\Models\User;
+use DB;
+
 class BitacorasController extends Controller {
 
 	public function getIndex($user_id='')
@@ -11,7 +14,7 @@ class BitacorasController extends Controller {
 		}
 
 		$consulta = 'SELECT * FROM bitacoras where created_by=? order by id desc ';
-		$bits = DB::select(DB::raw($consulta), array($user_id));
+		$bits = DB::select($consulta, array($user_id));
 
 		return $bits;
 	}

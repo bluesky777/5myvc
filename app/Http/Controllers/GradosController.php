@@ -18,7 +18,7 @@ class GradosController extends Controller {
 			inner join niveles_educativos n on n.id=g.nivel_educativo_id and g.deleted_at is null
 			order by g.orden';
 
-		$grados = DB::select(DB::raw($consulta));
+		$grados = DB::select($consulta);
 
 		return $grados;
 	}
@@ -26,7 +26,7 @@ class GradosController extends Controller {
 	
 	public function postStore()
 	{
-		
+		$user = User::fromToken();
 		try {
 			$grado = new Grado;
 			$grado->nombre		=	Request::input('nombre');
@@ -37,7 +37,7 @@ class GradosController extends Controller {
 			
 			return $grado;
 		} catch (Exception $e) {
-			return abort('400', 'Datos incorrectos');
+			return abort(400, 'Datos incorrectos');
 		}
 	}
 
@@ -66,10 +66,9 @@ class GradosController extends Controller {
 
 
 			$grado->save();
-			return $grado;
+			return 'Cambiado';
 		} catch (Exception $e) {
 			return abort('400', $e);
-			return $e;
 		}
 	}
 
@@ -79,7 +78,7 @@ class GradosController extends Controller {
 		$grado = Grado::findOrFail($id);
 		$grado->delete();
 
-		return $grado;
+		return 'Eliminado';
 	}
 
 }

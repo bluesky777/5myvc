@@ -16,7 +16,7 @@ class CreateYearsTable extends Migration {
 		{
 			$table->engine = "InnoDB";
 			$table->increments('id');
-			$table->integer('year')->unique();
+			$table->integer('year');
 			$table->string('nombre_colegio');
 			$table->string('abrev_colegio')->nullable();
 			$table->string('genero_colegio', 1)->default('F');

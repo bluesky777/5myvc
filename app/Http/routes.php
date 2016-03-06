@@ -35,7 +35,7 @@ Route::controller('subunidades', 'SubunidadesController');
 Route::resource('users', 'UsersController');
 Route::controller('notas', 'NotasController');
 Route::resource('estados_civiles', 'EstadosCivilesController');
-Route::resource('niveles_educativos', 'NivelesEducativosController');
+Route::controller('niveles_educativos', 'NivelesEducativosController');
 Route::controller('grados', 'GradosController');
 Route::controller('grupos', 'GruposController');
 Route::controller('matriculas', 'MatriculasController');

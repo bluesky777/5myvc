@@ -18,7 +18,7 @@ class CreateProfesoresTable extends Migration {
 			$table->increments('id');
 			$table->string('nombres');
 			$table->string('apellidos')->nullable();
-			$table->string('sexo');
+			$table->string('sexo', 1);
 			$table->integer('foto_id')->nullable(); // Código de la imagen
 			$table->integer('firma_id')->nullable(); // Código de la imagen que tiene la firma
 			$table->integer('tipo_doc')->unsigned()->nullable();

@@ -43,7 +43,7 @@ class Alumno extends Model {
 						a.foto_id, IFNULL(i2.nombre, IF(a.sexo="F","default_female.jpg", "default_male.jpg")) as foto_nombre,
 						m.grupo_id, g.nombre as nombre_grupo, g.abrev as abrev_grupo, g.titular_id, g.orden, g.caritas
 					from alumnos a 
-					inner join matriculas m on m.alumno_id=a.id and m.matriculado=true and m.deleted_at is null
+					inner join matriculas m on m.alumno_id=a.id 
 					inner join grupos g on g.id=m.grupo_id and g.year_id=? and g.deleted_at is null
 					left join users u on a.user_id=u.id and u.deleted_at is null
 					left join images i on i.id=u.imagen_id and i.deleted_at is null
@@ -51,7 +51,12 @@ class Alumno extends Model {
 					where a.id=? and a.deleted_at is null';
 
 		$datos = DB::select($consulta, [$year_id, $alumno_id]);
-		return $datos[0];
+		if (count($datos)>0) {
+			return $datos[0];
+		}else{
+			return false;
+		}
+		
 	}
 
 	public static function detailedNotas($alumno_id)

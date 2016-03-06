@@ -60,8 +60,14 @@ class PuestosAnualesController extends Controller {
 			}
 
 			try {
-				$alumno->promedio_year = ($sumatoria_asignaturas_year / count($alumno->notas_asig));
-				$alumno->perdidos_year = $perdidos_year;
+				$cant = count($alumno->notas_asig);
+				if ($cant == 0) {
+					$alumno->promedio_year = 0;
+				}else{
+					$alumno->promedio_year = ($sumatoria_asignaturas_year / $cant);
+					$alumno->perdidos_year = $perdidos_year;
+				}
+				
 			} catch (Exception $e) {
 				$alumno->promedio_year = 0;
 			}

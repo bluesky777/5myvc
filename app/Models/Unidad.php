@@ -48,10 +48,10 @@ class Unidad extends Model {
 					where asignatura_id=:asignatura_id and periodo_id=:periodo_id and deleted_at is null
 					order by orden';
 
-		$unidades = DB::select(DB::raw($consulta), array(
+		$unidades = DB::select($consulta, [
 			':asignatura_id'	=> $asignatura_id,
 			':periodo_id'		=> $periodo_id
-		));
+		]);
 
 		$porc_unidades = 0;
 		$result->porc_subunidades_incorrecto = false;
@@ -75,7 +75,7 @@ class Unidad extends Model {
 			foreach ($unidad->subunidades as $subunidad) {
 				$porc_subunidades += $subunidad->porcentaje;
 
-				$notas = Nota::where('subunidad_id', '=', $subunidad->id)->get();
+				$notas = Nota::where('subunidad_id', $subunidad->id)->get();
 
 				$subunidad->cantNotas = count($notas);
 

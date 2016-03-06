@@ -86,9 +86,12 @@ class AsignaturasController extends Controller {
 	public function getListasignaturas($persona_id='')
 	{
 		$user = User::fromToken();
+		$info_profesor = false;
 
 		if ($persona_id=='') {
 			$persona_id = $user->persona_id;
+		}else{
+			$info_profesor = Profesor::detallado($persona_id);
 		}
 
 		$consulta = '';
@@ -116,7 +119,7 @@ class AsignaturasController extends Controller {
 						where a.profesor_id=:profesor_id and a.deleted_at is null
 						order by g.orden, a.orden, a.id';
 
-				$asignaturas = DB::select(DB::raw($consulta), array(':year_id' => $user->year_id, ':profesor_id' => $persona_id));
+				$asignaturas = DB::select($consulta, [':year_id' => $user->year_id, ':profesor_id' => $persona_id]);
 				
 				break;
 			
@@ -125,7 +128,43 @@ class AsignaturasController extends Controller {
 				break;
 		}
 
+		$res = ['asignaturas' => $asignaturas];
+
+		if ($info_profesor) {
+			$res['info_profesor'] = $info_profesor;
+		}
+
 		
+		$consulta = 'SELECT g.id, g.nombre, g.abrev, g.orden, g.grado_id, g.year_id, g.titular_id,
+			p.nombres as nombres_titular, p.apellidos as apellidos_titular, p.titulo,
+			g.created_at, g.updated_at, gra.nombre as nombre_grado 
+			from grupos g
+			inner join grados gra on gra.id=g.grado_id and g.year_id=:year_id 
+			inner join profesores p on p.id=g.titular_id and g.titular_id = :profesor_id
+			where g.deleted_at is null
+			order by g.orden';
+
+		$grados = DB::select($consulta, array(':year_id'=>$user->year_id, ':profesor_id' => $persona_id));
+
+		$res['grados_comp'] = $grados;
+
+
+		return $res;
+	}
+
+
+
+	// Solo las asignaturas para el popup del menú "notas" de los profesores
+	public function getListasignaturasAlone()
+	{
+		$user = User::fromToken();
+
+		$persona_id = $user->persona_id;
+
+		$consulta = '';
+		$asignaturas = '';
+		$asignaturas = Profesor::asignaturas($user->year_id, $persona_id);
+
 
 		return $asignaturas;
 	}

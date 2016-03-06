@@ -9,13 +9,13 @@ use App\Models\NivelEducativo;
 
 class NivelesEducativosController extends Controller {
 
-	public function index()
+	public function getIndex()
 	{
 		return NivelEducativo::orderBy("orden")->get();
 	}
 
 
-	public function store()
+	public function postStore()
 	{
 		try {
 			$nivel = new NivelEducativo;
@@ -26,19 +26,18 @@ class NivelesEducativosController extends Controller {
 
 			return $nivel;
 		} catch (Exception $e) {
-			return abort('400', 'Datos incorrectos');
-			return $e;
+			return abort(400, 'Datos incorrectos');
 		}
 	}
 
 
-	public function show($id)
+	public function getShow($id)
 	{
 		return NivelEducativo::findOrFail($id);
 	}
 
 
-	public function update($id)
+	public function putUpdate($id)
 	{
 		$nivel = NivelEducativo::findOrFail($id);
 		try {
@@ -49,13 +48,12 @@ class NivelesEducativosController extends Controller {
 			$nivel->save();
 			return $nivel;
 		} catch (Exception $e) {
-			return abort('400', 'Datos incorrectos');
-			return $e;
+			return abort(400, 'Datos incorrectos');
 		}
 	}
 
 
-	public function destroy($id)
+	public function deleteDestroy($id)
 	{
 		$nivel = NivelEducativo::findOrFail($id);
 		$nivel->delete();

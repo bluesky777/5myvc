@@ -33,27 +33,6 @@ class GruposController extends Controller {
 	}
 
 
-	public function getTitularias($profesor_id='')
-	{
-		$user = User::fromToken();
-
-		if ($profesor_id=='') {
-			$profesor_id = $user->persona_id;
-		}
-
-		$consulta = 'SELECT g.id, g.nombre, g.abrev, g.orden, g.grado_id, g.year_id, g.titular_id,
-			p.nombres as nombres_titular, p.apellidos as apellidos_titular, p.titulo,
-			g.created_at, g.updated_at, gra.nombre as nombre_grado 
-			from grupos g
-			inner join grados gra on gra.id=g.grado_id and g.year_id=:year_id 
-			inner join profesores p on p.id=g.titular_id and g.titular_id = :profesor_id
-			where g.deleted_at is null
-			order by g.orden';
-
-		$grados = DB::select(DB::raw($consulta), array(':year_id'=>$user->year_id, ':profesor_id' => $profesor_id));
-
-		return $grados;
-	}
 
 	public function getListado($grupo_id)
 	{

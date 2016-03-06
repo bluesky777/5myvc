@@ -232,7 +232,7 @@ class ImagesController extends Controller {
 				if ($acudiente) {
 					$persona = $acudiente;
 				}else{
-					App::abort(400, 'Usuario no tiene foto oficial.');
+					abort(400, 'Usuario no tiene foto oficial.');
 				}
 			}
 

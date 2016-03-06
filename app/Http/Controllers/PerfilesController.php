@@ -5,6 +5,11 @@ use DB;
 use Hash;
 
 use App\Models\User;
+use App\Models\Alumno;
+use App\Models\Profesor;
+use App\Models\Grupo;
+use App\Models\Grado;
+use App\Models\Acudiente;
 
 
 class PerfilesController extends Controller {
@@ -19,7 +24,7 @@ class PerfilesController extends Controller {
 			where g.deleted_at is null
 			order by g.orden';
 
-		$grados = DB::select(DB::raw($consulta), array(':year_id'=>$user->year_id));
+		$grados = DB::select($consulta, array(':year_id'=>$user->year_id));
 
 		return $grados;
 	}
@@ -65,8 +70,7 @@ class PerfilesController extends Controller {
 
 			return $grupo;
 		} catch (Exception $e) {
-			return App::abort('400', $e);
-			return $e;
+			return abort('400', $e);
 		}
 	}
 
@@ -149,7 +153,7 @@ class PerfilesController extends Controller {
 			return $user;
 		}
 
-		return App::abort(400, 'Usuario no encontrado.');
+		return abort(400, 'Usuario no encontrado.');
 	}
 
 	public function getComprobarusername($username)
@@ -173,7 +177,7 @@ class PerfilesController extends Controller {
 		$user = User::fromToken();
 
 		if (Request::input('username')=='') {
-			return App::abort(400, 'El nombre de usuario no puede estar vació');
+			return abort(400, 'El nombre de usuario no puede estar vació');
 		}
 		
 		$perfil = User::findOrFail($id);
@@ -202,8 +206,7 @@ class PerfilesController extends Controller {
 				$perfil->save();
 				return $perfil;
 			} catch (Exception $e) {
-				return App::abort('400', 'Datos incorrectos');
-				return $e;
+				return abort('400', 'Datos incorrectos');
 			}
 		}
 		if (Request::input('tipo') == 'Alumno') {
@@ -222,8 +225,7 @@ class PerfilesController extends Controller {
 				$perfil->save();
 				return $perfil;
 			} catch (Exception $e) {
-				return App::abort('400', 'Datos incorrectos');
-				return $e;
+				return abort('400', 'Datos incorrectos');
 			}
 		}
 		if (Request::input('tipo') == 'Ac') {
@@ -242,8 +244,7 @@ class PerfilesController extends Controller {
 				$perfil->save();
 				return $perfil;
 			} catch (Exception $e) {
-				return App::abort('400', 'Datos incorrectos');
-				return $e;
+				return abort(400, 'Datos incorrectos');
 			}
 		}
 		if (Request::input('tipo') == 'Usuario') {
@@ -260,8 +261,7 @@ class PerfilesController extends Controller {
 				$perfil->save();
 				return $perfil;
 			} catch (Exception $e) {
-				return App::abort('400', 'Datos incorrectos');
-				return $e;
+				return abort(400, 'Datos incorrectos');
 			}
 		}
 
@@ -324,7 +324,7 @@ class PerfilesController extends Controller {
 		if (Request::has('oldpassword') || Request::has('oldpassword') == '') {
 			if (! Hash::check((string)Request::input('oldpassword'), $perfil->password))
 			{
-				App::abort(400, 'Contraseña antigua es incorrecta');
+				abort(400, 'Contraseña antigua es incorrecta');
 			}
 
 		}
@@ -342,7 +342,7 @@ class PerfilesController extends Controller {
 		$perfil = User::findOrFail($id);
 
 		if (!$user->is_superuser){
-			App::abort(400, 'No tiene permisos para resetear password');
+			abort(400, 'No tiene permisos para resetear password');
 		}
 
 		$perfil->password = Hash::make((string)Request::input('password'));
@@ -362,7 +362,7 @@ class PerfilesController extends Controller {
 			$perfil->email = Request::input('email_restore');
 			$perfil->save();
 		}else{
-			App::abort(400, 'Email no asignado');
+			abort(400, 'Email no asignado');
 		}
 
 		return $perfil->password . ' - ' . (string)Request::input('password');
@@ -425,7 +425,7 @@ class PerfilesController extends Controller {
 		if ($grupo) {
 			$grupo->forceDelete();
 		}else{
-			return App::abort(400, 'Grupo no encontrado en la Papelera.');
+			return abort(400, 'Grupo no encontrado en la Papelera.');
 		}
 		return $grupo;
 	
@@ -439,7 +439,7 @@ class PerfilesController extends Controller {
 		if ($grupo) {
 			$grupo->restore();
 		}else{
-			return App::abort(400, 'Grupo no encontrado en la Papelera.');
+			return abort(400, 'Grupo no encontrado en la Papelera.');
 		}
 		return $grupo;
 	}
