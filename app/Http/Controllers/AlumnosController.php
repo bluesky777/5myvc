@@ -21,6 +21,7 @@ use App\Models\FraseAsignatura;
 use App\Models\Asignatura;
 use App\Models\NotaComportamiento;
 use App\Models\DefinicionComportamiento;
+use App\Models\ImageModel;
 
 use Carbon\Carbon;
 
@@ -288,6 +289,18 @@ class AlumnosController extends Controller {
 		if (!is_null($alumno->user_id)){
 			$alumno->user = User::findOrFail($alumno->user_id);
 		}
+
+		$imagen = ImageModel::find($alumno->foto_id);
+		if ($imagen) {
+			$alumno->foto_nombre = $imagen->nombre;
+		}else{
+			if ($alumno->sexo=='F') {
+				$alumno->foto_nombre = 'default_female.jpg';
+			}else{
+				$alumno->foto_nombre = 'default_male.jpg';
+			}
+		}
+
 		return $alumno;
 	}
 
