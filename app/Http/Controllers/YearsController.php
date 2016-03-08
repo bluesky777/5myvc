@@ -11,6 +11,7 @@ use App\Models\ImageModel;
 use App\Models\Grupo;
 use App\Models\Asignatura;
 use App\Models\EscalaDeValoracion;
+use App\Models\Frase;
 
 
 class YearsController extends Controller {
@@ -129,6 +130,18 @@ class YearsController extends Controller {
 				$newEsc->icono_infantil = $escalas->icono_infantil;
 				$newEsc->icono_adolescente = $escalas->icono_adolescente;
 				$newEsc->save();
+			}
+
+
+			/// COPIAREMOS LAS FRASES
+			$frases_ant = Frase::where('year_id', $pasado->id)->get();
+
+			foreach ($frases_ant as $key => $frases) {
+				$newFra = new Frase;
+				$newFra->frase 			= $frases->frase;
+				$newFra->tipo_frase 	= $frases->tipo_frase;
+				$newFra->year_id 		= $year->id;
+				$newFra->save();
 			}
 
 

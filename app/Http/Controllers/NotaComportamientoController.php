@@ -23,7 +23,7 @@ class NotaComportamientoController extends Controller {
 		$user = User::fromToken();
 
 		$alumnos = Grupo::alumnos($grupo_id);
-		
+
 		foreach ($alumnos as $alumno) {
 
 			$userData = Alumno::userData($alumno->alumno_id);
@@ -45,7 +45,7 @@ class NotaComportamientoController extends Controller {
 							
 						) defi';
 
-			$definiciones = DB::select(DB::raw($consulta), array('comportamiento1_id' => $nota->id, 'comportamiento2_id' => $nota->id));
+			$definiciones = DB::select($consulta, array('comportamiento1_id' => $nota->id, 'comportamiento2_id' => $nota->id));
 			
 			$alumno->definiciones = $definiciones;
 			$alumno->nota = $nota;

@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 
 class NotaComportamiento extends Model {
-	protected $fillable = [];
+	protected $fillable = ['alumno_id', 'periodo_id'];  // Para poder usar firstOrNew()
 	protected $table = "nota_comportamiento";
 
 	use SoftDeletes;
