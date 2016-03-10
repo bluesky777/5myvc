@@ -69,7 +69,7 @@ class User extends Model implements AuthenticatableContract, CanResetPasswordCon
 				try {
 					if ($token){
 						// Lleva aquí y ocurre un error cuando se ha demorado mucho en mover la página.
-						$userTemp = $token->toUser();
+						$userTemp = $token->authenticate();
 					}else {
 						return response()->json(['error' => 'No existe Token'], 401);
 					}
