@@ -112,7 +112,7 @@ class User extends Model implements AuthenticatableContract, CanResetPasswordCon
 								left join years y on y.id=per.year_id
 								where p.deleted_at is null and p.user_id=:user_id';
 
-					$usuario = DB::select(DB::raw($consulta), array(
+					$usuario = DB::select($consulta, array(
 						':user_id'		=> $userTemp->id, 
 						':imagen_id'	=> $userTemp->imagen_id, 
 						':periodo_id'	=> $userTemp->periodo_id,
@@ -141,7 +141,7 @@ class User extends Model implements AuthenticatableContract, CanResetPasswordCon
 								left join years y on y.id=per.year_id
 								where a.deleted_at is null and a.user_id=:user_id';
 					
-					$usuario = DB::select(DB::raw($consulta), array(
+					$usuario = DB::select($consulta, array(
 						':user_id'		=> $userTemp->id, 
 						':imagen_id'	=> $userTemp->imagen_id, 
 						':periodo_id'	=> $userTemp->periodo_id,
@@ -168,7 +168,7 @@ class User extends Model implements AuthenticatableContract, CanResetPasswordCon
 								left join years y on y.id=per.year_id
 								where ac.deleted_at is null and ac.user_id=:user_id';
 
-					$usuario = DB::select(DB::raw($consulta), array(
+					$usuario = DB::select($consulta, array(
 						':user_id'		=> $userTemp->id, 
 						':imagen_id'	=> $userTemp->imagen_id, 
 						':periodo_id'	=> $userTemp->periodo_id,
@@ -194,7 +194,7 @@ class User extends Model implements AuthenticatableContract, CanResetPasswordCon
 								left join images i on i.id=u.imagen_id 
 								where u.id=:user_id and u.deleted_at is null';
 
-					$usuario = DB::select(DB::raw($consulta), array(
+					$usuario = DB::select($consulta, array(
 						':user_id'		=> $userTemp->id
 					));
 
@@ -247,7 +247,7 @@ class User extends Model implements AuthenticatableContract, CanResetPasswordCon
 					inner join permissions pm on pm.id = pmr.permission_id 
 						and pmr.role_id = :role_id';
 			
-			$permisos = DB::select(DB::raw($consulta), array(':role_id' => $role->id));
+			$permisos = DB::select($consulta, array(':role_id' => $role->id));
 			
 			foreach ($permisos as $permiso) {
 				array_push($perms, $permiso->name);

@@ -146,8 +146,10 @@ class ProfesoresController extends Controller {
 			Request::merge(array('tipo_sangre' => array('sangre'=>'')));
 		}
 
-		if (Request::input('estado_civil')['estado_civil']) {
-			Request::merge(array('estado_civil' => Request::input('estado_civil')['estado_civil'] ) );
+		if (Request::input('estado_civil')) {
+			if (isset(Request::input('estado_civil')['estado_civil'])) {
+				Request::merge(array('estado_civil' => Request::input('estado_civil')['estado_civil'] ) );
+			}
 		}else{
 			Request::merge(array('estado_civil' => null) );
 		}
@@ -191,8 +193,8 @@ class ProfesoresController extends Controller {
 
 		$profesor = Profesor::findOrFail($id);
 		try {
-			$profesor->nombres		=	Request::input('nombres');
-			$profesor->apellidos	=	Request::input('apellidos');
+			$profesor->nombres		=	Request::input('nombres_profesor');
+			$profesor->apellidos	=	Request::input('apellidos_profesor');
 			$profesor->sexo			=	Request::input('sexo');
 			$profesor->tipo_doc		=	Request::input('tipo_doc');
 			$profesor->num_doc		=	Request::input('num_doc');
