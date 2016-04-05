@@ -193,8 +193,8 @@ class ProfesoresController extends Controller {
 
 		$profesor = Profesor::findOrFail($id);
 		try {
-			$profesor->nombres		=	Request::input('nombres_profesor');
-			$profesor->apellidos	=	Request::input('apellidos_profesor');
+			$profesor->nombres		=	Request::input('nombres_profesor', Request::input('nombres'));
+			$profesor->apellidos	=	Request::input('apellidos_profesor', Request::input('apellidos'));
 			$profesor->sexo			=	Request::input('sexo');
 			$profesor->tipo_doc		=	Request::input('tipo_doc');
 			$profesor->num_doc		=	Request::input('num_doc');
