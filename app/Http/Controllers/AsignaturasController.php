@@ -59,7 +59,7 @@ class AsignaturasController extends Controller {
 
 		$asignatura->materia_id		=	Request::input('materia_id');
 		$asignatura->grupo_id		=	Request::input('grupo_id');
-		$asignatura->profesor_id	=	Request::input('profesor_id');
+		$asignatura->profesor_id	=	Request::input('profesor_id', $asignatura->profesor_id);
 		$asignatura->creditos		=	Request::input('creditos');
 		$asignatura->orden			=	Request::input('orden');
 
