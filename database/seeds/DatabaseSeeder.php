@@ -15,6 +15,21 @@ class DatabaseSeeder extends Seeder {
 		Model::unguard();
 
 		// $this->call('UserTableSeeder');
+		$this->call('YearsTableSeeder');
+		$this->call('PeriodosTableSeeder');
+		$this->call('TiposDocumentosTableSeeder');  // Listo!
+		$this->call('PaisesTableSeeder');  // Listo!
+		$this->call('UserTableSeeder');
+		$this->call('RoleTableSeeder');
+		//$this->call('ProfesoresTableSeeder');
+		//$this->call('AlumnosTableSeeder');
+		$this->call('ImagesTableSeeder'); // Insertar registros de las imágenes por default
+		$this->call('NivelesEducativosTableSeeder');
+		$this->call('GradosTableSeeder');
+		$this->call('GruposTableSeeder');
+		//$this->call('MatriculasTableSeeder');
+		//$this->call('VtVotacionesTableSeeder');
+		//$this->call('VtAspiracionesTableSeeder');
 	}
 
 }

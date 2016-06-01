@@ -91,7 +91,7 @@ class PerfilesController extends Controller {
 	public function getUsername($username)
 	{
 		$consulta = 'SELECT * FROM (
-				SELECT p.id as persona_id, p.nombres, p.apellidos, p.user_id, u.username, 
+				SELECT p.id as persona_id, p.nombres, p.apellidos, p.user_id, u.username, "" as pazysalvo, "" as deuda, p.tipo_doc, p.num_doc as documento, 
 					("Pr") as tipo, p.sexo, u.email as email_restore, p.email as email_persona, p.fecha_nac, p.ciudad_nac, 
 					u.imagen_id, IFNULL(i.nombre, IF(p.sexo="F","default_female.jpg", "default_male.jpg")) as imagen_nombre, 
 					p.foto_id, IFNULL(i2.nombre, IF(p.sexo="F","default_female.jpg", "default_male.jpg")) as foto_nombre, 
@@ -102,7 +102,7 @@ class PerfilesController extends Controller {
 					left join images i2 on i2.id=p.foto_id
 					where p.deleted_at is null
 				union
-				SELECT a.id as persona_id, a.nombres, a.apellidos, a.user_id, u.username, 
+				SELECT a.id as persona_id, a.nombres, a.apellidos, a.user_id, u.username, a.pazysalvo, a.deuda, a.tipo_doc, a.documento, 
 					("Al") as tipo, a.sexo, u.email as email_restore, a.email as email_persona, a.fecha_nac, a.ciudad_nac, 
 					u.imagen_id, IFNULL(i.nombre, IF(a.sexo="F","default_female.jpg", "default_male.jpg")) as imagen_nombre, 
 					a.foto_id, IFNULL(i2.nombre, IF(a.sexo="F","default_female.jpg", "default_male.jpg")) as foto_nombre, 
@@ -115,7 +115,7 @@ class PerfilesController extends Controller {
 					left join images i2 on i2.id=a.foto_id
 					where a.deleted_at is null
 				union
-				SELECT ac.id as persona_id, ac.nombres, ac.apellidos, ac.user_id, u.username, 
+				SELECT ac.id as persona_id, ac.nombres, ac.apellidos, ac.user_id, u.username, "" as pazysalvo, "" as deuda, ac.tipo_doc, ac.documento, 
 					("Pr") as tipo, ac.sexo, u.email as email_restore, ac.email as email_persona, ac.fecha_nac, ac.ciudad_nac, 
 					u.imagen_id, IFNULL(i.nombre, IF(ac.sexo="F","default_female.jpg", "default_male.jpg")) as imagen_nombre, 
 					ac.foto_id, IFNULL(i2.nombre, IF(ac.sexo="F","default_female.jpg", "default_male.jpg")) as foto_nombre, 
@@ -126,7 +126,7 @@ class PerfilesController extends Controller {
 					left join images i2 on i2.id=ac.foto_id
 					where ac.deleted_at is null
 				union
-				SELECT u.id as persona_id, "" as nombres, "" as apellidos, u.id as user_id, u.username,
+				SELECT u.id as persona_id, "" as nombres, "" as apellidos, u.id as user_id, u.username, "" as pazysalvo, "" as deuda, "" as tipo_doc, "" as documento,
 					("Us") as tipo, u.sexo, u.email as email_restore, "N/A" as email_persona, "N/A" as fecha_nac, "N/A" as ciudad_nac, 
 					u.imagen_id, IFNULL(i.nombre, IF(u.sexo="F","default_female.jpg", "default_male.jpg")) as imagen_nombre, 
 					u.imagen_id as foto_id, IFNULL(i.nombre, IF(u.sexo="F","default_female.jpg", "default_male.jpg")) as foto_nombre, 
@@ -148,7 +148,7 @@ class PerfilesController extends Controller {
 					and u.deleted_at is null ) usus
 					where usus.username = :username';
 
-		$user = DB::select(DB::raw($consulta), array(':username'=>$username));
+		$user = DB::select($consulta, array(':username'=>$username));
 		if ($user) {
 			return $user;
 		}
@@ -454,6 +454,7 @@ class PerfilesController extends Controller {
 
 	public function getUsuariosall()
 	{
+		$year_id = Request::input('year_id');
 		$consulta = 'SELECT * FROM (
 				SELECT p.id as persona_id, p.nombres, p.apellidos, p.user_id, u.username, 
 					("Pr") as tipo, p.sexo, u.email, p.fecha_nac, p.ciudad_nac, 
@@ -477,7 +478,7 @@ class PerfilesController extends Controller {
 					left join grupos g on g.id=m.grupo_id
 					left join images i on i.id=u.imagen_id
 					left join images i2 on i2.id=a.foto_id
-					where a.deleted_at is null
+					where a.deleted_at is null and g.year_id=:year_id
 				union
 				SELECT ac.id as persona_id, ac.nombres, ac.apellidos, ac.user_id, u.username, 
 					("Pr") as tipo, ac.sexo, u.email, ac.fecha_nac, ac.ciudad_nac, 
@@ -511,7 +512,7 @@ class PerfilesController extends Controller {
 						)
 					and u.deleted_at is null ) usus';
 
-		$users = DB::select(DB::raw($consulta));
+		$users = DB::select(DB::raw($consulta), [':year_id' => $year_id]);
 
 		foreach ($users as $usuario) {
 

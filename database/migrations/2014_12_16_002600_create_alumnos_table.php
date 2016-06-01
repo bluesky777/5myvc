@@ -32,7 +32,7 @@ class CreateAlumnosTable extends Migration {
 			$table->string('direccion')->nullable();
 			$table->string('barrio')->nullable();
 			$table->string('estrato')->nullable();
-			$table->integer('ciudad_resid')->unsigned()->nullable(); // Cuidad de residencia
+			$table->integer('ciudad_resid')->unsigned()->index()->nullable(); // Cuidad de residencia
 			$table->string('religion')->nullable();
 			$table->string('email')->nullable();
 			$table->string('facebook')->nullable(); // Si no asigna facebook, se tomará el email
@@ -50,6 +50,7 @@ class CreateAlumnosTable extends Migration {
 			$table->foreign('user_id')->references('id')->on('users')->nullable();
 			$table->foreign('ciudad_nac')->references('id')->on('ciudades')->nullable();
 			$table->foreign('ciudad_doc')->references('id')->on('ciudades')->nullable();
+			$table->foreign('ciudad_resid')->references('id')->on('ciudades')->nullable();
 			$table->foreign('tipo_doc')->references('id')->on('tipos_documentos')->nullable();
 			
 		});
