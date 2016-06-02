@@ -17,7 +17,7 @@ use App\Models\VtVotacion;
 class LoginController extends Controller {
 
 
-	public function postIndex()
+	public function postIndex(Request $request)
 	{
 
 		$userTemp = [];
@@ -29,7 +29,7 @@ class LoginController extends Controller {
 
 
 			if ($token){
-				$userTemp = User::fromToken();
+				$userTemp = User::fromToken(false, $request);
 			}else if ((!(Request::has('username')) && Request::input('username') != ''))  {
 				return response()->json(['error' => 'Token expirado'], 401);
 			}

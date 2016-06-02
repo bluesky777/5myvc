@@ -43,7 +43,7 @@ class User extends Model implements AuthenticatableContract, CanResetPasswordCon
 	public static $imgSharedPath = '';
 
 
-	public static function fromToken($already_parsed=false)
+	public static function fromToken($already_parsed=false, $request = false)
 	{
 		$userTemp = [];
 		$usuario = [];
@@ -74,6 +74,10 @@ class User extends Model implements AuthenticatableContract, CanResetPasswordCon
 						return response()->json(['error' => 'No existe Token'], 401);
 					}
 				} catch (JWTException $e) {
+					/*
+					$tok = JWTAuth::getToken();
+					$tok->get(); // Sí hay token, definitivamente está expirado :(
+					*/
 					abort(401, 'Token ha expirado.');
 				}
 				

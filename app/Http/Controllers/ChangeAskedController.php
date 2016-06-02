@@ -20,11 +20,12 @@ class ChangeAskedController extends Controller {
 		$user = User::fromToken();
 
 		$cambios = [];
+		$cambios_elim = [];
 
 		// toca quitar los campos somebody, ya que esta consulta solo será para buscar los pedidos que han hecho alumnos.
 		if ($user->tipo == 'Usuario' && $user->is_superuser) {
 
-			$consulta = 'SELECT c.id, c.asked_by_user_id, c.asked_to_user_id, c.asked_for_user_id, c.comentario_pedido, 
+			$consulta = 'SELECT c.id, c.asked_by_user_id, c.asked_to_user_id, c.asked_to_user_id, c.comentario_pedido, 
 							a.id as alumno_id, a.nombres as nombres_alum, a.apellidos as apellidos_alum,
 							a.id as profe_id, p.nombres as nombres_profe, p.apellidos as apellidos_profe,
 							a.id as acud_id, ac.nombres as nombres_acud, ac.apellidos as apellidos_acud,
@@ -45,7 +46,7 @@ class ChangeAskedController extends Controller {
 
 			$cambios = DB::select($consulta);
 
-			$consulta2 = 'SELECT c.id, c.asked_by_user_id, c.asked_to_user_id, c.asked_for_user_id, c.comentario_pedido, 
+			$consulta2 = 'SELECT c.id, c.asked_by_user_id, c.asked_to_user_id, c.asked_to_user_id, c.comentario_pedido, 
 							a.id as alumno_id, a.nombres as nombres_alum, a.apellidos as apellidos_alum,
 							p.id as profe_id, p.nombres as nombres_profe, p.apellidos as apellidos_profe,
 							ac.id as acud_id, ac.nombres as nombres_acud, ac.apellidos as apellidos_acud,
@@ -187,7 +188,7 @@ class ChangeAskedController extends Controller {
 			$alumno = Alumno::where('id', $id)->first();
 
 			/*
-			$consulta = 'SELECT c.id, c.asked_by_user_id, c.asked_to_user_id, c.asked_for_user_id, c.comentario_pedido, 
+			$consulta = 'SELECT c.id, c.asked_by_user_id, c.asked_to_user_id, c.asked_to_user_id, c.comentario_pedido, 
 						a.id as alumno_id, a.nombres as nombres_alum, a.apellidos as apellidos_alum,
 						c.rechazado_at, c.accepted_at, c.periodo_asked_id, c.year_asked_id, c.created_at,
 						c.deleted_at, c.deleted_by, u.tipo
