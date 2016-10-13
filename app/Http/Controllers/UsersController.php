@@ -9,16 +9,14 @@ class UsersController extends Controller {
 		$aspiraciones = VtAspiracion::where('votacion_id', '=', $votacion->id)->get();
 		return $aspiraciones;
 	}
+
+	
 	public function eventoactual()
 	{
 		$votacion = VtVotacion::where('actual', '=', true)->first();
 		return $votacion;
 	}
 
-	public function create()
-	{
-		//
-	}
 
 	public function store()
 	{
