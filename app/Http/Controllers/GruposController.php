@@ -18,7 +18,7 @@ class GruposController extends Controller {
 	public function getIndex()
 	{
 		$user = User::fromToken();
-		$consulta = 'SELECT g.id, g.nombre, g.abrev, g.orden, g.grado_id, g.year_id, g.titular_id,
+		$consulta = 'SELECT g.id, g.nombre, g.abrev, g.orden, gra.orden as orden_grado, g.grado_id, g.year_id, g.titular_id,
 			p.nombres as nombres_titular, p.apellidos as apellidos_titular, p.titulo,
 			g.created_at, g.updated_at, gra.nombre as nombre_grado 
 			from grupos g

@@ -27,7 +27,7 @@ class Grupo extends Model {
 							u.imagen_id, IFNULL(i.nombre, IF(a.sexo="F","default_female.jpg", "default_male.jpg")) as imagen_nombre, 
 							a.foto_id, IFNULL(i2.nombre, IF(a.sexo="F","default_female.jpg", "default_male.jpg")) as foto_nombre
 						FROM alumnos a 
-						inner join matriculas m on a.id=m.alumno_id and m.grupo_id=? and m.matriculado=true and m.deleted_at is null
+						inner join matriculas m on a.id=m.alumno_id and m.grupo_id=? and m.estado="MATR" and m.deleted_at is null
 						left join users u on a.user_id=u.id and u.deleted_at is null
 						left join images i on i.id=u.imagen_id and i.deleted_at is null
 						left join images i2 on i2.id=a.foto_id and i2.deleted_at is null
@@ -40,13 +40,13 @@ class Grupo extends Model {
 							m.grupo_id, 
 							u.imagen_id, IFNULL(i.nombre, IF(a.sexo="F","default_female.jpg", "default_male.jpg")) as imagen_nombre, 
 							a.foto_id, IFNULL(i2.nombre, IF(a.sexo="F","default_female.jpg", "default_male.jpg")) as foto_nombre,
-							m.deleted_at as retirado_at 
+							m.fecha_retiro as fecha_retiro 
 						FROM alumnos a 
-						inner join matriculas m on a.id=m.alumno_id and m.grupo_id=? and m.matriculado=true 
+						inner join matriculas m on a.id=m.alumno_id and m.grupo_id=? and m.estado="MATR" 
 						left join users u on a.user_id=u.id and u.deleted_at is null
 						left join images i on i.id=u.imagen_id and i.deleted_at is null
 						left join images i2 on i2.id=a.foto_id and i2.deleted_at is null
-						where a.deleted_at is null
+						where a.deleted_at is null and m.deleted_at is null
 						order by a.apellidos, a.nombres';
 		}
 

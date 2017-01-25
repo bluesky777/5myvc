@@ -77,7 +77,7 @@ class BolfinalesController extends Controller {
 
 		$year->periodos = Periodo::where('year_id', $user->year_id)->get();
 
-		$cons = 'SELECT c.*, i.nombre as encabezado_nombre, i2.nombre as pie_nombre 
+		$cons = 'SELECT c.*, i.nombre as encabezado_nombre, i2.nombre as piepagina_nombre 
 				FROM config_certificados c 
 				left join images i on i.id=c.encabezado_img_id and i.deleted_at is null
 				left join images i2 on i2.id=c.piepagina_img_id and i2.deleted_at is null

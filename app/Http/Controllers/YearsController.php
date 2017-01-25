@@ -85,11 +85,17 @@ class YearsController extends Controller {
 		$year->alumnos_can_see_notas	=	Request::input('alumnos_can_see_notas');
 
 		$year->save();
+
+		$year_id_nuevo = $year->id;
 		
 
 		if ($year->actual) {
 			Year::where('actual', true)->update(['actual'=>false]);
 		}
+
+		$year 			= Year::find($year_id_nuevo);
+		$year->actual 	= true;
+		$year->save();
 
 
 
@@ -250,13 +256,17 @@ class YearsController extends Controller {
 
 	
 
-	public function putAlumnosCanSeeNotas($can){
+	public function putAlumnosCanSeeNotas(){
 		$user = User::fromToken();
 
-		$year = Year::findOrFail($user->year_id);
+		$year_id 	= 	Request::input('year_id');
+		$can 		= 	(boolean) Request::input('can');
+
+		$year = Year::findOrFail($year_id);
 		$year->alumnos_can_see_notas = $can;
 
 		$year->save();
+
 
 		if ($can) {
 			return 'Ahora pueden ver sus notas.';
