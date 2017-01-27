@@ -106,7 +106,7 @@ class MatriculasController extends Controller {
 
 		$grupo_actual 	= Request::input('grupo_actual');
 		$grado_ant_id 	= Request::input('grado_ant_id');
-		$year_ant 	= Request::input('year_ant');
+		$year_ant 		= Request::input('year_ant');
 		
 
 

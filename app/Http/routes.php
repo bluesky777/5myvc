@@ -39,6 +39,7 @@ Route::controller('niveles_educativos', 'NivelesEducativosController');
 Route::controller('grados', 'GradosController');
 Route::controller('grupos', 'GruposController');
 Route::controller('matriculas', 'MatriculasController');
+Route::controller('detalles', 'DetallesController');
 Route::controller('profesores', 'ProfesoresController');
 Route::controller('contratos', 'ContratosController');
 Route::controller('nota_comportamiento', 'NotaComportamientoController');
