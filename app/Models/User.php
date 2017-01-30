@@ -137,7 +137,7 @@ class User extends Model implements AuthenticatableContract, CanResetPasswordCon
 									y.unidad_displayname, y.subunidad_displayname, y.unidades_displayname, y.subunidades_displayname, 
 									y.genero_unidad, y.genero_subunidad, per.fecha_plazo, y.alumnos_can_see_notas
 								from alumnos a 
-								inner join matriculas m on m.alumno_id=a.id and m.matriculado=true
+								inner join matriculas m on m.alumno_id=a.id and (m.estado="MATR" or m.estado="ASIS")
 								inner join grupos g on g.id=m.grupo_id
 								left join images i on i.id=:imagen_id
 								left join images i2 on i2.id=a.foto_id

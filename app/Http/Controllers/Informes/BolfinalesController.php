@@ -342,7 +342,7 @@ class BolfinalesController extends Controller {
 				$consulta = 'SELECT distinct n.nota, n.id as nota_id, n.alumno_id,  s.id as subunidad_id, s.definicion, u.id as unidad_id, u.periodo_id
 						from notas n, subunidades s, unidades u, asignaturas a, matriculas m
 						where n.subunidad_id=s.id and s.unidad_id=u.id and u.periodo_id=:periodo_id 
-						and u.asignatura_id=a.id and m.alumno_id=n.alumno_id and m.deleted_at is null and m.matriculado=1
+						and u.asignatura_id=a.id and m.alumno_id=n.alumno_id and m.deleted_at is null and m.estado="MATR"
 						and a.id=:asignatura_id and n.alumno_id=:alumno_id and n.nota < :nota_minima;';
 
 				$notas_perdidas = DB::select(DB::raw($consulta), array(

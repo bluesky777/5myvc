@@ -226,22 +226,21 @@ class YearsController extends Controller {
 
 
 
-	public function putUpdate($id)
+	public function putGuardarCambios()
 	{
-		$year = Year::findOrFail($id);
+		$year = Year::findOrFail(Request::input('id'));
 		try {
-			$year->tipo				=	Request::input('tipo');
 			$year->nombre_colegio	=	Request::input('nombre_colegio');
 			$year->abrev_colegio	=	Request::input('abrev_colegio');
-			$year->rector			=	Request::input('rector');
-			$year->sexo_rector		=	Request::input('sexo_rector');
-			$year->secretario		=	Request::input('secretario');
-			$year->sexo_secretario	=	Request::input('sexo_secretario');
+			$year->year				=	Request::input('year');
+			$year->rector_id		=	Request::input('rector_id');
+			$year->secretario_id	=	Request::input('secretario_id');
+			$year->tesorero_id		=	Request::input('tesorero_id');
 			$year->resolucion		=	Request::input('resolucion');
 			$year->codigo_dane		=	Request::input('codigo_dane');
-			$year->encabezado_certificado=	Request::input('encabezado_certificado');
-			$year->frase_final_certificado=	Request::input('frase_final_certificado');
-			$year->actual			=	Request::input('actual');
+			#$year->encabezado_certificado=	Request::input('encabezado_certificado');
+			#$year->frase_final_certificado=	Request::input('frase_final_certificado');
+			#$year->actual			=	Request::input('actual');
 			$year->telefono			=	Request::input('telefono');
 			$year->celular			=	Request::input('celular');
 			$year->website			=	Request::input('website');
@@ -249,6 +248,8 @@ class YearsController extends Controller {
 			$year->alumnos_can_see_notas	=	Request::input('alumnos_can_see_notas');
 
 			$year->save();
+
+			return $year;
 		} catch (Exception $e) {
 			return $e;
 		}

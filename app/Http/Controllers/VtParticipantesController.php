@@ -36,7 +36,7 @@ class VtParticipantesController extends Controller {
 		$votacion = VtVotacion::actual($user);
 
 		$consulta = 'SELECT a.id as alumno_id, a.nombres, m.grupo_id, a.user_id FROM alumnos a INNER JOIN matriculas m 
-			ON m.alumno_id=a.id AND m.matriculado = 1 AND m.grupo_id = :grupo_id';
+			ON m.alumno_id=a.id AND (m.estado="MATR" or m.estado="ASIS") AND m.grupo_id = :grupo_id';
 		
 		$alumnos = DB::select($consulta, ['grupo_id' => $grupo_id]);
 
@@ -181,7 +181,7 @@ class VtParticipantesController extends Controller {
 						union
 						select a.id as persona_id, a.nombres, a.apellidos, a.user_id, u.username, ("Al") as tipo from alumnos a 
 							inner join users u on a.user_id=u.id
-							inner join matriculas m on m.alumno_id=a.id and m.matriculado=true
+							inner join matriculas m on m.alumno_id=a.id and (m.estado="MATR" or m.estado="ASIS")
 						)usus
 					inner join vt_participantes vp on vp.user_id=usus.user_id and vp.votacion_id = :votacion_id';
 		

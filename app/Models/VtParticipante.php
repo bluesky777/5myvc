@@ -67,7 +67,7 @@ class VtParticipante extends Model {
 					g.id as grupo_id, g.nombre as nombre_grupo, g.abrev as abrev_grupo, g.year_id
 					from alumnos a 
 					inner join users u on a.user_id=u.id
-					inner join matriculas m on m.alumno_id=a.id and m.matriculado=true
+					inner join matriculas m on m.alumno_id=a.id and (m.estado="MATR" or m.estado="ASIS")
 					inner join grupos g on g.id=m.grupo_id
 					left join images i on i.id=u.imagen_id
 					left join images i2 on i2.id=a.foto_id

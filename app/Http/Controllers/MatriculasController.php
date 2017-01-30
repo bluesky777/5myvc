@@ -22,6 +22,29 @@ class MatriculasController extends Controller {
 	}
 
 
+
+	public function postMatricularEn()
+	{
+		$user = User::fromToken();
+		$alumno_id 		= Request::input('alumno_id');
+		$grupo_id 		= Request::input('grupo_id');
+		$year_id 		= Request::input('year_id');
+
+		$consulta = 'SELECT m.id, m.alumno_id, m.grupo_id, m.estado, g.year_id 
+			FROM matriculas m 
+			inner join grupos g 
+				on m.alumno_id = :alumno_id and g.year_id = :year_id and m.grupo_id=g.id and m.grupo_id=:grupo_id and m.deleted_at is null';
+
+		$matriculas = DB::select($consulta, ['alumno_id'=>$alumno_id, 'year_id'=>$year_id, 'grupo_id'=>$grupo_id]);
+
+		if (count($matriculas) > 0) {
+			return 'Ya matriculado';
+		}
+
+		return Matricula::matricularUno($alumno_id, $grupo_id, $year_id);
+	}
+
+
 	public function putReMatricularuno()
 	{
 		$user = User::fromToken();

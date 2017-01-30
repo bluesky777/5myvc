@@ -21,7 +21,7 @@ class PlanillasController extends Controller {
 
 		$year 			= Year::datos_basicos($user->year_id);
 		$asignaturas 	= Grupo::detailed_materias($grupo_id);
-		$periodos 		= Periodo::where('year_id', '=', $user->year_id)->get();
+		$periodos 		= Periodo::where('year_id', $user->year_id)->get();
 
 		$year->periodos = $periodos;
 		

@@ -76,9 +76,9 @@ class AlumnosController extends Controller {
 				a.fecha_nac, a.ciudad_nac, a.celular, a.direccion, a.religion,
 				g.year_id, m.grupo_id, g.nombre as nombre_grupo, g.abrev as abrevgrupo,
 				a.foto_id, IFNULL(i.nombre, IF(a.sexo="F","default_female.jpg", "default_male.jpg")) as foto_nombre, 
-				m.deleted_at as sin_matricular
+				m.estado 
 			FROM alumnos a 
-			INNER JOIN matriculas m on m.alumno_id=a.id and a.deleted_at is null 
+			INNER JOIN matriculas m on m.alumno_id=a.id and a.deleted_at is null and m.deleted_at is null 
 			INNER JOIN grupos g ON m.grupo_id=g.id and g.year_id=:year_id and a.id=m.alumno_id and g.deleted_at is null
 			LEFT JOIN images i on i.id=a.foto_id and i.deleted_at is null';
 
@@ -187,7 +187,7 @@ class AlumnosController extends Controller {
 				$matricula = new Matricula;
 				$matricula->alumno_id		=	$alumno->id;
 				$matricula->grupo_id		=	$grupo_id;
-				$matricula->matriculado		=	true;
+				$matricula->estado			=	"MATR";
 				$matricula->save();
 
 				$grupo = Grupo::find($matricula->grupo_id);

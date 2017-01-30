@@ -23,7 +23,7 @@ class Grupo extends Model {
 			// Consulta con solo los matriculados
 			$consulta = 'SELECT m.id as matricula_id, m.alumno_id, a.no_matricula, a.nombres, a.apellidos, a.sexo, a.user_id, 
 							a.fecha_nac, a.ciudad_nac, a.celular, a.direccion, a.religion,
-							m.grupo_id, 
+							m.grupo_id, m.estado, 
 							u.imagen_id, IFNULL(i.nombre, IF(a.sexo="F","default_female.jpg", "default_male.jpg")) as imagen_nombre, 
 							a.foto_id, IFNULL(i2.nombre, IF(a.sexo="F","default_female.jpg", "default_male.jpg")) as foto_nombre
 						FROM alumnos a 
@@ -31,18 +31,18 @@ class Grupo extends Model {
 						left join users u on a.user_id=u.id and u.deleted_at is null
 						left join images i on i.id=u.imagen_id and i.deleted_at is null
 						left join images i2 on i2.id=a.foto_id and i2.deleted_at is null
-						where a.deleted_at is null
+						where a.deleted_at is null and m.deleted_at is null
 						order by a.apellidos, a.nombres';
 		}else{
 			// Consulta con solo los matriculados y retirados.
 			$consulta = 'SELECT m.id as matricula_id, m.alumno_id, a.no_matricula, a.nombres, a.apellidos, a.sexo, a.user_id, 
 							a.fecha_nac, a.ciudad_nac, a.celular, a.direccion, a.religion,
-							m.grupo_id, 
+							m.grupo_id, m.estado, 
 							u.imagen_id, IFNULL(i.nombre, IF(a.sexo="F","default_female.jpg", "default_male.jpg")) as imagen_nombre, 
 							a.foto_id, IFNULL(i2.nombre, IF(a.sexo="F","default_female.jpg", "default_male.jpg")) as foto_nombre,
 							m.fecha_retiro as fecha_retiro 
 						FROM alumnos a 
-						inner join matriculas m on a.id=m.alumno_id and m.grupo_id=? and m.estado="MATR" 
+						inner join matriculas m on a.id=m.alumno_id and m.grupo_id=?  
 						left join users u on a.user_id=u.id and u.deleted_at is null
 						left join images i on i.id=u.imagen_id and i.deleted_at is null
 						left join images i2 on i2.id=a.foto_id and i2.deleted_at is null
@@ -50,7 +50,7 @@ class Grupo extends Model {
 						order by a.apellidos, a.nombres';
 		}
 
-		$alumnos = DB::select(DB::raw($consulta), array($grupo_id));
+		$alumnos = DB::select($consulta, array($grupo_id));
 
 		return $alumnos;
 		//return $this->belongsToMany('Alumno', 'matriculas');

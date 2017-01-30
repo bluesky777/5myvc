@@ -109,7 +109,7 @@ class PerfilesController extends Controller {
 					g.id as grupo_id, g.nombre as nombre_grupo, g.abrev as abrev_grupo, g.year_id
 					from alumnos a 
 					inner join users u on a.user_id=u.id
-					inner join matriculas m on m.alumno_id=a.id and m.matriculado=true
+					inner join matriculas m on m.alumno_id=a.id and (m.estado="MATR" or m.estado="ASIS")
 					inner join grupos g on g.id=m.grupo_id
 					left join images i on i.id=u.imagen_id
 					left join images i2 on i2.id=a.foto_id
@@ -474,7 +474,7 @@ class PerfilesController extends Controller {
 					g.id as grupo_id, g.nombre as nombre_grupo, g.abrev as abrev_grupo, g.year_id
 					from alumnos a 
 					inner join users u on a.user_id=u.id
-					left join matriculas m on m.alumno_id=a.id and m.matriculado=true
+					left join matriculas m on m.alumno_id=a.id and (m.estado="MATR" or m.estado="ASIS")
 					left join grupos g on g.id=m.grupo_id
 					left join images i on i.id=u.imagen_id
 					left join images i2 on i2.id=a.foto_id
@@ -512,7 +512,7 @@ class PerfilesController extends Controller {
 						)
 					and u.deleted_at is null ) usus';
 
-		$users = DB::select(DB::raw($consulta), [':year_id' => $year_id]);
+		$users = DB::select($consulta, [':year_id' => $year_id]);
 
 		foreach ($users as $usuario) {
 
