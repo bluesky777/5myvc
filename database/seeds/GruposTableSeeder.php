@@ -1,4 +1,7 @@
 <?php
+use Illuminate\Database\Seeder;
+use Illuminate\Database\Eloquent\Model;
+use App\Models\Grupo;
 
 class GruposTableSeeder extends Seeder {
 

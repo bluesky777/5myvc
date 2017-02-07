@@ -1,4 +1,9 @@
 <?php
+use Illuminate\Database\Seeder;
+use Illuminate\Database\Eloquent\Model;
+use App\Models\Role;
+use App\Models\Permission;
+use App\Models\User;
 
 class RoleTableSeeder extends Seeder {
 
@@ -7,7 +12,7 @@ class RoleTableSeeder extends Seeder {
 		Eloquent::unguard();
 
 		$this->command->info('Borrando roles y permisos...');
-		DB::table('assigned_roles')->delete();
+		DB::table('role_user')->delete();
 		DB::table('permission_role')->delete();
 		DB::table('roles')->delete();
 		DB::table('permissions')->delete();

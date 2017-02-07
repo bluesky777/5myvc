@@ -223,6 +223,7 @@ class MatriculasController extends Controller {
 	{
 		$user = User::fromToken();
 		$matri = Matricula::findOrFail($id);
+		$matri->estado = 'RETI';
 		$matri->delete();
 		return $matri;
 	}

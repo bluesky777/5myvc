@@ -1,11 +1,14 @@
 <?php
+use Illuminate\Database\Seeder;
+use Illuminate\Database\Eloquent\Model;
+use App\Models\Pais;
 
 class PaisesTableSeeder extends Seeder {
 
 	public function run()
 	{
 		Eloquent::unguard();
-		// Borramos todas las cuidades
+		// Borramos todos los paises
 		DB::table('paises')->delete();
 
 		Pais::create([

@@ -1,5 +1,7 @@
 <?php
-
+use Illuminate\Database\Seeder;
+use Illuminate\Database\Eloquent\Model;
+use App\Models\Grado;
 
 class GradosTableSeeder extends Seeder {
 

@@ -1,5 +1,7 @@
 <?php
-
+use Illuminate\Database\Seeder;
+use Illuminate\Database\Eloquent\Model;
+use App\Models\ImageModel as Image;
 
 class ImagesTableSeeder extends Seeder {
 
