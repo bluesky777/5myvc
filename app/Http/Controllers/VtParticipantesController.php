@@ -5,6 +5,7 @@ use DB;
 
 
 use App\Models\User;
+use App\Models\Alumno;
 use App\Models\VtAspiracion;
 use App\Models\VtVotacion;
 use App\Models\VtParticipante;

@@ -162,6 +162,12 @@ class AlumnosController extends Controller {
 			$periodo_actual = Periodo::where('actual', true)
 									->where('year_id', $yearactual->id)->first();
 
+			if (!is_object($periodo_actual)) {
+				$periodo_actual = Periodo::where('year_id', $yearactual->id)->first();
+				$periodo_actual->actual = true;
+				$periodo_actual->save();
+			}
+
 			$usuario = new User;
 			$usuario->username		=	Request::input('username');
 			$usuario->password		=	Hash::make(Request::input('password', '123456'));

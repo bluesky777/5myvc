@@ -78,15 +78,15 @@ class MatriculasController extends Controller {
 	{
 		$user = User::fromToken();
 
-		$alumno_id 		= Request::input('alumno_id');
-		$matricula_id 	= Request::input('matricula_id');
-		/*
+		$alumno_id 	= Request::input('alumno_id');
+		$grupo_id 	= Request::input('grupo_id');
+
 		$matricula = new Matricula;
 		$matricula->alumno_id 	= $alumno_id;
 		$matricula->grupo_id	= $grupo_id;
-		$matricula->estado 		= 'MATR';
+		$matricula->estado 		= 'ASIS';
 		$matricula->save();
-		*/
+
 
 		return $alumno;
 	}
@@ -130,14 +130,17 @@ class MatriculasController extends Controller {
 		$grupo_actual 	= Request::input('grupo_actual');
 		$grado_ant_id 	= Request::input('grado_ant_id');
 		$year_ant 		= Request::input('year_ant');
+		$year_ant_id	= null;
 		
-
+		if (!$grupo_actual) {
+			return;
+		}
 
 		$sqlYearAnt = 'SELECT id from years where year=:year_ant';
 		
 		$year_cons = DB::select($sqlYearAnt, [ ':year_ant'	=> $year_ant ]);
 		if (count($year_cons) > 0) {
-			$year_ant = $year_cons[0];
+			$year_ant_id = $year_cons[0]->id;
 		}
 
 
@@ -194,7 +197,7 @@ class MatriculasController extends Controller {
 
 		$res = DB::select($consulta, [ ':grupo_id'	=> $grupo_actual['id'], 
 									':grupo_id2'	=> $grupo_actual['id'], 
-									':year_id'		=> $year_ant->id, 
+									':year_id'		=> $year_ant_id, 
 									':grado_id'		=> $grado_ant_id, 
 									':grupo_id3'	=> $grupo_actual['id'] ]);
 

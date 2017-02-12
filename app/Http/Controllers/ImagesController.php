@@ -291,7 +291,12 @@ class ImagesController extends Controller {
 			$year->save();
 		}
 		
-		$asks = ChangeAsked::where('oficial_image_id', $id)->destroy();
+		$asks = ChangeAsked::where('oficial_image_id', $id);
+
+		if (count($asks) > 0) {
+			$asks->destroy();
+		}
+		
 		
 
 		
