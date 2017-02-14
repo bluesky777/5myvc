@@ -66,6 +66,9 @@ class VtCandidatosController extends Controller {
 			$votacion = VtVotacion::actualInscrito($user);
 		}else{
 			$votacion = VtVotacion::actual($user);
+			if (count($votacion) > 0) {
+				return [];
+			}
 		}
 		
 		$aspiraciones = VtAspiracion::where('votacion_id', $votacion->id)->get();

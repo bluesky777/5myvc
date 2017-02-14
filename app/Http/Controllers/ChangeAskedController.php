@@ -72,10 +72,8 @@ class ChangeAskedController extends Controller {
 
 		}elseif ($user->tipo == 'Profesor') {
 
-			$consulta = 'SELECT c.id, c.asked_by_user_id, c.comentario_pedido, c.main_image_id, c.oficial_image_id, c.nombres as nombres_asked,
-						c.apellidos as apellidos_asked, c.somebody_id, c.somebody_nombres, c.somebody_apellidos, 
-						c.somebody_nota_id, c.somebody_nota_old, c.somebody_nota_new, c.somebody_image_id_to_delete, c.materia_to_remove_id, c.materia_to_add_id,
-						c.asked_nota_id, c.nota_old, c.nota_new, c.rechazado_at, c.accepted_at, c.periodo_asked_id, c.year_asked_id, c.created_at,
+			$consulta = 'SELECT c.id, c.asked_by_user_id, c.comentario_pedido, c.main_image_id, c.oficial_image_id,
+						c.rechazado_at, c.accepted_at, c.periodo_asked_id, c.year_asked_id, c.created_at,
 						c.deleted_at, c.deleted_by,
 						u.tipo, a.id as alumno_id, a.nombres, a.apellidos, 
 						IFNULL(i.nombre, IF(a.sexo="F","default_female.jpg", "default_male.jpg")) as foto_nombre, 
