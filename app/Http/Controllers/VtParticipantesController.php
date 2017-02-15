@@ -175,7 +175,11 @@ class VtParticipantesController extends Controller {
 
 	public function getAllinscritos()
 	{
-		$votacion = VtVotacion::where('actual', '=', true)->first();
+		$user = User::fromToken();
+		$votacion = VtVotacion::actual($user);
+		if (!$votacion) {
+			return [['sin_votacion_actual' => true]];
+		}
 
 		$consulta = 'SELECT usus.persona_id, vp.id as participante_id, usus.nombres, usus.apellidos, usus.user_id, usus.username, usus.tipo from 
 						(select p.id as persona_id, p.nombres, p.apellidos, p.user_id, u.username, ("Pr") as tipo from profesores p inner join users u on p.user_id=u.id
@@ -186,7 +190,7 @@ class VtParticipantesController extends Controller {
 						)usus
 					inner join vt_participantes vp on vp.user_id=usus.user_id and vp.votacion_id = :votacion_id';
 		
-		$participantes = DB::select(DB::raw($consulta), array('votacion_id' => $votacion->id));
+		$participantes = DB::select(DB::raw($consulta), ['votacion_id' => $votacion->id]);
 
 		return $participantes;
 	}

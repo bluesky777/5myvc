@@ -37,7 +37,8 @@ class VtCandidatosController extends Controller {
 								->where('aspiracion_id', $aspiracion_id)->first();
 
 		if ( $busqueda ) {
-			return abort(400, 'Candidato ya inscrito.');
+			//return abort(400, 'Candidato ya inscrito.');
+			return response()->json([ 'error'=> 400, 'message'=> 'Candidato ya inscrito' ], 400);
 		}else{
 			$candidato = new VtCandidato;
 			$candidato->participante_id		=	$participante_id;
@@ -66,8 +67,8 @@ class VtCandidatosController extends Controller {
 			$votacion = VtVotacion::actualInscrito($user);
 		}else{
 			$votacion = VtVotacion::actual($user);
-			if (count($votacion) > 0) {
-				return [];
+			if (!$votacion) {
+				return [['sin_votaciones_propias' => true]];
 			}
 		}
 		
