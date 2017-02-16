@@ -255,6 +255,20 @@ class VtVotacionesController extends Controller {
 
 						$candidatos = VtCandidato::porAspiracion($aspiraciones[$j]->id, $votaciones[$i]->year_id);
 
+						// Verificamos si ya votó en esta aspiración
+						$consulta = "SELECT * FROM vt_votos v 
+								inner join vt_participantes p on p.id=v.participante_id and p.deleted_at is null
+								inner join users u on u.id=p.user_id and u.id=:user_id 
+								inner join vt_candidatos c on c.id=v.candidato_id and c.deleted_at is null
+								where c.aspiracion_id=:aspiracion_id and v.deleted_at is null";
+						
+						$votado = DB::select($consulta, ["user_id"=>$user->user_id, "aspiracion_id"=>$aspiraciones[$j]->id]);
+
+						if (count($votado)>0) {
+							$aspiraciones[$j]->votado = true;
+						}
+
+						// Traemos los votos que tiene cada candidato
 						for ($k=0; $k<count($candidatos); $k++) {
 
 							$votos = VtVoto::deCandidato($candidatos[$k]->candidato_id, $aspiraciones[$j]->id)[0];

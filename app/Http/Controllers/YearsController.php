@@ -169,15 +169,16 @@ class YearsController extends Controller {
 
 
 				$asigs_ant = Asignatura::where('grupo_id', $grupo->id)->get();
-			
-				foreach ($asigs_ant as $key => $asig) {
+				
+				for ($i=0; $i < count($asigs_ant); $i++) { 
 					$newAsig = new Asignatura;
-					$newAsig->materia_id 	= $asig->materia_id;
-					$newAsig->grupo_id 		= $asig->grupo_id;
-					$newAsig->creditos 		= $asig->creditos;
-					$newAsig->orden 		= $asig->orden;
+					$newAsig->materia_id 	= $asigs_ant[$i]->materia_id;
+					$newAsig->grupo_id 		= $newGr->id;
+					$newAsig->creditos 		= $asigs_ant[$i]->creditos;
+					$newAsig->orden 		= $asigs_ant[$i]->orden;
 					$newAsig->save();
 				}
+				
 				$grupo->asigs_ant = $asigs_ant;
 			}
 			$year->grupos_ant = $grupos_ant;
