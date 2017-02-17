@@ -4,6 +4,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 use \stdClass;
+use DB;
 
 class Periodo extends Model {
 	protected $fillable = [];
@@ -37,4 +38,13 @@ class Periodo extends Model {
 
 		return $periodos;
 	}
+
+	public static function delYear($year_id)
+	{
+		$consulta = 'SELECT * FROM periodos p WHERE p.year_id=:year_id and p.deleted_at is null order by p.numero';
+		$periodos = DB::select($consulta, ['year_id' => $year_id]);
+		return $periodos;
+	}
+
 }
+

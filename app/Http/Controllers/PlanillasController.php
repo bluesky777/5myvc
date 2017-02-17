@@ -21,7 +21,8 @@ class PlanillasController extends Controller {
 
 		$year 			= Year::datos_basicos($user->year_id);
 		$asignaturas 	= Grupo::detailed_materias($grupo_id);
-		$periodos 		= Periodo::where('year_id', $user->year_id)->get();
+		$periodos 		= Periodo::delYear($user->year_id);
+		
 
 		$year->periodos = $periodos;
 		
@@ -32,12 +33,12 @@ class PlanillasController extends Controller {
 			$alumnos	= Grupo::alumnos($grupo_id);
 			$asignatura->nombre_grupo = $grupo->nombre_grupo;
 
-			$asignatura->periodosProm = Periodo::where('year_id', '=', $user->year_id)->get();
+			$asignatura->periodosProm = Periodo::delYear($user->year_id);
 
 			// A cada alumno le daremos los periodos y la definitiva de cada periodo
 			foreach ($alumnos as $keyAl => $alumno) {
 
-				$periodosTemp = Periodo::where('year_id', '=', $user->year_id)->get();
+				$periodosTemp = Periodo::delYear($user->year_id);
 
 				foreach ($periodosTemp as $keyPer => $periodo) {
 
@@ -63,7 +64,7 @@ class PlanillasController extends Controller {
 
 
 				foreach ($asignatura->periodosProm as $keyPer => $periodo) {
-					if (!$periodo->sumatoria) {
+					if (! isset($periodo->sumatoria)) {
 						$periodo->sumatoria = 0;
 					}
 

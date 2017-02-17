@@ -27,7 +27,7 @@ class Grupo extends Model {
 							u.imagen_id, IFNULL(i.nombre, IF(a.sexo="F","default_female.jpg", "default_male.jpg")) as imagen_nombre, 
 							a.foto_id, IFNULL(i2.nombre, IF(a.sexo="F","default_female.jpg", "default_male.jpg")) as foto_nombre
 						FROM alumnos a 
-						inner join matriculas m on a.id=m.alumno_id and m.grupo_id=? and m.estado="MATR" and m.deleted_at is null
+						inner join matriculas m on a.id=m.alumno_id and m.grupo_id=? and (m.estado="MATR" or m.estado="ASIS") and m.deleted_at is null
 						left join users u on a.user_id=u.id and u.deleted_at is null
 						left join images i on i.id=u.imagen_id and i.deleted_at is null
 						left join images i2 on i2.id=a.foto_id and i2.deleted_at is null
@@ -97,7 +97,7 @@ class Grupo extends Model {
 					left join images i2 on p.firma_id=i2.id and i.deleted_at is null
 					where g.id=:grupo_id and g.deleted_at is null';
 
-		$datos = DB::select(DB::raw($consulta), array(':grupo_id' => $grupo_id))[0];
+		$datos = DB::select($consulta, [':grupo_id' => $grupo_id])[0];
 
 		return $datos;
 	}
