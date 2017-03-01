@@ -63,6 +63,7 @@ Route::controller('certificados', 'ConfigCertificadosController');
 Route::controller('periodos', 'PeriodosController');
 Route::controller('bolfinales', 'Informes\BolfinalesController');
 Route::controller('puestos', 'Informes\PuestosAnualesController');
+Route::controller('planillas-ausencias', 'Informes\PlanillasAusenciasController');
 
 Route::controller('editnota', 'EditnotaController');
 

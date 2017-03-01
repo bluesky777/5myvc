@@ -37,9 +37,9 @@ class AlumnosController extends Controller {
 	{
 		$user = User::fromToken();
 
-		$previous_year = $user->year - 1;
-		$id_previous_year = 0;
-		$previous_year = Year::where('year', $previous_year)->first();
+		$previous_year 		= $user->year - 1;
+		$id_previous_year 	= 0;
+		$previous_year 		= Year::where('year', $previous_year)->first();
 
 		if ($previous_year) {
 			$id_previous_year = $previous_year->id;

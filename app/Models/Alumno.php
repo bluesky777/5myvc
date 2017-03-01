@@ -70,7 +70,7 @@ class Alumno extends Model {
 				left join images i2 on i2.id=a.foto_id
 				where a.id=? and a.deleted_at is null';
 
-		$datos = DB::select(DB::raw($consulta), array($alumno_id));
+		$datos = DB::select($consulta, [$alumno_id]);
 		return $datos[0];
 	}
 }

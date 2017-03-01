@@ -69,7 +69,7 @@ class Grupo extends Model {
 			where a.grupo_id=:grupo_id and a.deleted_at is null
 			order by a.orden, m.orden';
 
-		$asignaturas = DB::select(DB::raw($consulta), array(':grupo_id' => $grupo_id));
+		$asignaturas = DB::select($consulta, [':grupo_id' => $grupo_id]);
 
 		return $asignaturas;
 	}
