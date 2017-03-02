@@ -48,7 +48,9 @@ class CarteraController extends Controller {
 	public function putAlumnos()
 	{
 		//$user = User::fromToken();
-
+		if (Request::input('grupo_actual') == ''){
+			return '';
+		}
 		$grupo_actual 	= Request::input('grupo_actual');
 		
 

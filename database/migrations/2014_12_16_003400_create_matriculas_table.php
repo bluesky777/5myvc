@@ -20,7 +20,7 @@ class CreateMatriculasTable extends Migration {
 			$table->integer('grupo_id')->unsigned();
 			//$table->boolean('matriculado')->default(true);
 			$table->string('estado', 4)->default('MATR'); // MATR, ASIS, RETI     == Matriculado, Asistente y Retirado
-			$table->date('fecha_retiro')->nullable(); // Cuando fue retirado
+			$table->date('fecha_retiro')->nullable(); // Cuando fue retirado o desertado
 			$table->date('fecha_matricula')->nullable(); // Cuando por fin lo matricularon
 			$table->integer('created_by')->nullable();
 			$table->integer('updated_by')->nullable();
