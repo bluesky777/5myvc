@@ -18,6 +18,7 @@ use App\Models\Profesor;
 use App\Models\Nota;
 use App\Models\ConfigCertificado;
 use App\Models\EscalaDeValoracion;
+use App\Models\Debugging;
 
 
 class BolfinalesController extends Controller {
@@ -312,17 +313,22 @@ class BolfinalesController extends Controller {
 	}
 
 
+
+
 	public function valoracion($nota)
 	{
 		$nota = floatval($nota);
 
 		foreach ($this->escalas_val as $key => $escala_val) {
-			if (($escala_val->porc_inicial <= $nota) &&  ($escala_val->porc_final <= $nota)) {
+			//Debugging::pin($escala_val->porc_inicial, $escala_val->porc_final, $nota);
+
+			if (($escala_val->porc_inicial <= $nota) &&  ($escala_val->porc_final >= $nota)) {
 				return $escala_val;
 			}
 		}
 		return [];
 	}
+
 
 
 	public function asignaturasPerdidasDeAlumno($alumno, $grupo_id, $year_id)

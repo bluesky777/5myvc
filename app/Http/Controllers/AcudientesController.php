@@ -11,9 +11,38 @@ use App\Models\Acudiente;
 
 class AcudientesController extends Controller {
 
-	public function index()
+	public function putDatos()
 	{
-		return Acudiente::all();
+		
+		$grupo_actual 	= Request::input('grupo_actual');
+		return $grupo_actual;
+		if (!$grupo_actual) {
+			return;
+		}
+
+
+		// Alumnos asistentes o matriculados del grupo
+		$sql1 = 'SELECT m.id as matricula_id, m.alumno_id, a.no_matricula, a.nombres, a.apellidos, a.sexo, a.user_id, 
+							a.fecha_nac, a.ciudad_nac, a.celular, a.direccion, a.religion,
+							m.grupo_id, 
+							u.imagen_id, IFNULL(i.nombre, IF(a.sexo="F","default_female.jpg", "default_male.jpg")) as imagen_nombre, 
+							a.foto_id, IFNULL(i2.nombre, IF(a.sexo="F","default_female.jpg", "default_male.jpg")) as foto_nombre,
+							m.fecha_retiro as fecha_retiro, m.estado, m.fecha_matricula 
+						FROM alumnos a 
+						inner join matriculas m on a.id=m.alumno_id and m.grupo_id=:grupo_id and (m.estado="ASIS" or m.estado="MATR")
+						left join users u on a.user_id=u.id and u.deleted_at is null
+						left join images i on i.id=u.imagen_id and i.deleted_at is null
+						left join images i2 on i2.id=a.foto_id and i2.deleted_at is null
+						where a.deleted_at is null and m.deleted_at is null
+						order by a.apellidos, a.nombres';
+		
+		$res = DB::select($consulta, [ ':grupo_id'	=> $grupo_actual['id'], 
+									':grupo_id2'	=> $grupo_actual['id'], 
+									':year_id'		=> $year_ant_id, 
+									':grado_id'		=> $grado_ant_id, 
+									':grupo_id3'	=> $grupo_actual['id'] ]);
+
+		return $res;
 	}
 
 

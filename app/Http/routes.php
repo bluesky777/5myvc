@@ -24,6 +24,7 @@ Route::get('/app', function()
 Route::controller('login', 'LoginController');
 
 Route::controller('alumnos', 'AlumnosController');
+Route::controller('acudientes', 'AcudientesController');
 Route::controller('buscar', 'BuscarController');
 Route::resource('paises', 'PaisesController');
 Route::controller('ciudades', 'CiudadesController');
@@ -80,6 +81,9 @@ Route::controller('certificados-estudio', 'CertificadosEstudioController');
 
 
 Route::controller('password', 'RemindersController');
+
+
+Route::controller('tardanzas/login', 'Tardanzas\TLoginController');
 
 
 /*
