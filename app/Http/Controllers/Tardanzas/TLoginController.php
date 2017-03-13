@@ -257,6 +257,74 @@ class TLoginController extends Controller {
 		return json_decode(json_encode($usuario), true);
 	}
 
+
+	public function postTraerDatosAusencias()
+	{
+
+		$userTemp 	= [];
+		$usuario 	= [];
+
+
+
+		$credentials = [
+			'username' => Request::input('username'),
+			'password' => (string)Request::input('password')
+		];
+		
+		if (Auth::attempt($credentials)) {
+			$userTemp = Auth::user();
+
+		}else if (Request::has('username') && Request::input('username') != ''){
+
+			$pass = Hash::make((string)Request::input('password'));
+			$usuario = User::where('password', '=', $pass)
+							->where('username', '=', Request::input('username'))
+							->get();
+
+			if ( count( $usuario) > 0) {
+				$userTemp = Auth::login($usuario[0]);
+			}else{
+				$usuario = User::where('password', '=', (string)Request::input('password'))
+							->where('username', '=', Request::input('username'))
+							->get();
+				if ( count( $usuario) > 0) {
+					$usuario[0]->password = Hash::make((string)$usuario[0]->password);
+					$usuario[0]->save();
+					$userTemp = Auth::loginUsingId($usuario[0]->id);
+				}else{
+					return abort(400, 'Credenciales inválidas.');
+				}
+			}
+		}else{
+			return abort(401, 'Por favor ingrese de nuevo.');
+		}
+
+
+		$consulta = 'SELECT u.username, per.id as periodo_id, per.numero as numero_periodo, per.year_id
+							from users u 
+							inner join periodos per on per.id=u.periodo_id
+							where u.deleted_at is null and u.id=:user_id';
+
+		$usuario = DB::select($consulta, [
+			':user_id'		=> $userTemp->id, 
+		]);
+				
+
+		$usuario 	= (array)$usuario[0];
+		$userTemp 	= (array)$userTemp['attributes'];
+		$usuario 	= array_merge($usuario, $userTemp);
+		$usuario 	= (object)$usuario;
+				
+
+		// Ausencias
+		$cons_aus = "SELECT  a.id, a.asignatura_id, a.alumno_id, a.periodo_id, a.cantidad_ausencia, a.cantidad_tardanza, a.entrada, a.fecha_hora, a.uploaded, a.created_by FROM ausencias a
+					inner join periodos p on p.id=a.periodo_id and p.year_id=:year_id
+					WHERE a.deleted_at is null;";
+		$ausencias = DB::select($cons_aus, [":year_id" => $usuario->year_id]);
+
+		return json_decode(json_encode($ausencias), true);
+	}
+
 	function default_image_id($sexo)
 	{
 		if ($sexo == 'F') {
