@@ -8,6 +8,8 @@ use App\Models\User;
 use App\Models\Unidad;
 use App\Models\Subunidad;
 
+use Carbon\Carbon;
+
 
 class UnidadesController extends Controller {
 
@@ -68,6 +70,7 @@ class UnidadesController extends Controller {
 		$unidad->definicion		= Request::input('definicion');
 		$unidad->porcentaje		= Request::input('porcentaje');
 		$unidad->periodo_id		= $user->periodo_id;
+		$unidad->created_by		= $user->user_id;
 		$unidad->asignatura_id	= Request::input('asignatura_id');
 		$unidad->orden			= $cant;
 		$unidad->save();
@@ -101,6 +104,7 @@ class UnidadesController extends Controller {
 		$unidad = Unidad::findOrFail($id);
 		$unidad->definicion		= Request::input('definicion');
 		$unidad->porcentaje		= Request::input('porcentaje');
+		$unidad->updated_by		= $user->user_id;
 		$unidad->save();
 
 		return $unidad;
@@ -111,11 +115,11 @@ class UnidadesController extends Controller {
 	{
 		$user = User::fromToken();
 		$unidad = Unidad::find($id);
-		//$queries = DB::getQueryLog();
-		//$last_query = end($queries);
-		//return $last_query;
+		
 
 		if ($unidad) {
+			$unidad->deleted_by = $user->user_id;
+			$unidad->save();
 			$unidad->delete();
 		}else{
 			return App::abort(400, 'Unidad no existe o está en Papelera.');

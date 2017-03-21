@@ -22,8 +22,9 @@ class CreateAusenciasTable extends Migration {
 			$table->integer('cantidad_ausencia')->nullable();
 			$table->integer('cantidad_tardanza')->nullable();
 			$table->boolean('entrada')->default(false);
+			$table->string('tipo', 100)->nullable(); // ausencia o tardanza
 			$table->dateTime('fecha_hora')->nullable();
-			$table->boolean('uploaded')->default(false);
+			$table->string('uploaded', 20)->nullable();
 			$table->integer('created_by')->nullable();
 			$table->integer('updated_by')->nullable();
 			$table->integer('deleted_by')->nullable();

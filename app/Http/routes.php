@@ -65,6 +65,7 @@ Route::controller('periodos', 'PeriodosController');
 Route::controller('bolfinales', 'Informes\BolfinalesController');
 Route::controller('puestos', 'Informes\PuestosAnualesController');
 Route::controller('planillas-ausencias', 'Informes\PlanillasAusenciasController');
+Route::controller('notas-perdidas', 'Informes\NotasPerdidasController');
 
 Route::controller('editnota', 'EditnotaController');
 

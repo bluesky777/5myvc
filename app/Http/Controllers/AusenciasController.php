@@ -31,7 +31,7 @@ class AusenciasController extends Controller {
 			$userData = Alumno::userData($alumno->alumno_id);
 			$alumno->userData = $userData;
 
-			$consulta = 'SELECT * FROM ausencias a WHERE a.asignatura_id = ? and a.periodo_id = ? and a.alumno_id=?';
+			$consulta = 'SELECT * FROM ausencias a WHERE a.asignatura_id = ? and a.periodo_id = ? and a.alumno_id=? and a.deleted_at is null';
 
 			$ausencias = DB::select(DB::raw($consulta), array($asignatura_id, $user->periodo_id, $alumno->alumno_id));
 

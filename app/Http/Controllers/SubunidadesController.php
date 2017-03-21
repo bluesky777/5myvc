@@ -14,6 +14,8 @@ class SubunidadesController extends Controller {
 
 	public function postIndex()
 	{
+		$user = User::fromToken();
+
 		$cant = Subunidad::where('unidad_id', Request::input('unidad_id'))->count();
 
 		$subunidad = new Subunidad;
@@ -30,6 +32,7 @@ class SubunidadesController extends Controller {
 		$subunidad->unidad_id		= Request::input('unidad_id');
 		$subunidad->nota_default	= $nota_def;
 		$subunidad->orden			= $cant;
+		$subunidad->created_by		= $user->user_id;
 
 		$subunidad->save();
 
@@ -91,6 +94,7 @@ class SubunidadesController extends Controller {
 
 	public function putUpdate($id)
 	{
+		$user = User::fromToken();
 		$subunidad = Subunidad::findOrFail($id);
 
 		$nota_def = Request::input('nota_default');
@@ -102,6 +106,7 @@ class SubunidadesController extends Controller {
 		$subunidad->definicion		= Request::input('definicion');
 		$subunidad->porcentaje		= Request::input('porcentaje');
 		$subunidad->nota_default	= $nota_def;
+		$subunidad->updated_by		= $user->user_id;
 
 		if ( Request::has('orden') ) {
 			$subunidad->orden	= Request::input('orden');
@@ -125,6 +130,8 @@ class SubunidadesController extends Controller {
 		//return $last_query;
 
 		if ($subunidad) {
+			$subunidad->deleted_by = $user->user_id;
+			$subunidad->save();
 			$subunidad->delete();
 		}else{
 			return App::abort(400, 'Subunidad no existe o está en Papelera.');
@@ -153,6 +160,8 @@ class SubunidadesController extends Controller {
 		$subunidad = Subunidad::onlyTrashed()->findOrFail($id);
 
 		if ($subunidad) {
+			$subunidad->updated_by = $user->user_id;
+			$subunidad->save();
 			$subunidad->restore();
 		}else{
 			return App::abort(400, 'Subunidad no encontrada en la Papelera.');

@@ -110,12 +110,12 @@ class PlanillasController extends Controller {
 			$asignatura->sexo 					= $profesor->sexo;
 
 
-			$asignatura->periodosProm = Periodo::where('year_id', '=', $user->year_id)->get();
+			$asignatura->periodosProm = Periodo::where('year_id', $user->year_id)->get();
 
 			// A cada alumno le daremos los periodos y la definitiva de cada periodo
 			foreach ($alumnos as $keyAl => $alumno) {
 
-				$periodosTemp = Periodo::where('year_id', '=', $user->year_id)->get();
+				$periodosTemp = Periodo::where('year_id', $user->year_id)->get();
 
 				foreach ($periodosTemp as $keyPer => $periodo) {
 
