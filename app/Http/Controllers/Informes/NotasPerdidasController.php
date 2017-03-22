@@ -53,7 +53,7 @@ class NotasPerdidasController extends Controller {
 
 				$consulta = "SELECT a.id as alumno_id, a.nombres, a.apellidos, a.sexo, a.user_id, a.celular, a.email, a.foto_id, a.pazysalvo
 					from alumnos a
-					inner join matriculas m on m.alumno_id=a.id and (m.estado='MATR' or m.estado='ASIS')
+					inner join matriculas m on m.alumno_id=a.id and (m.estado='MATR' or m.estado='ASIS') and m.deleted_at is null
 					inner join notas n on n.alumno_id=a.id and n.nota < :nota_minima_aceptada
 					inner join subunidades s on s.id=n.subunidad_id and s.deleted_at is null 
 					inner join unidades u on u.id=s.unidad_id and u.asignatura_id=:asignatura_id and u.deleted_at is null 
