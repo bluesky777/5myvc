@@ -163,11 +163,12 @@ class TLoginController extends Controller {
 				
 				$consulta = 'SELECT p.id as persona_id, p.nombres, p.apellidos, p.sexo, p.fecha_nac, p.user_id, u.username, u.password,
 								IFNULL(i.nombre, IF(p.sexo="F","default_female.jpg", "default_male.jpg")) as imagen_nombre,  
-								per.id as periodo_id, per.numero as numero_periodo, per.year_id
+								per.id as periodo_id, per.numero as numero_periodo, per.year_id, y.year
 							from profesores p 
 							inner join users u on u.id=p.user_id 
 							left join images i on i.id=:imagen_id
 							left join periodos per on per.id=:periodo_id
+							inner join years y on y.id=per.year_id
 							where p.deleted_at is null and p.user_id=:user_id';
 
 				$usuario = DB::select($consulta, [
@@ -185,9 +186,10 @@ class TLoginController extends Controller {
 				$consulta = 'SELECT u.id as persona_id, "" as nombres, "" as apellidos, u.id as user_id, u.username, u.is_superuser, u.tipo, 
 								u.sexo, u.email, "N/A" as fecha_nac, u.password, 
 								u.imagen_id, IFNULL(i.nombre, IF(u.sexo="F","default_female.jpg", "default_male.jpg")) as imagen_nombre, 
-								per.id as periodo_id, per.numero as numero_periodo, per.year_id
+								per.id as periodo_id, per.numero as numero_periodo, per.year_id, y.year
 							from users u
 							left join periodos per on per.id=u.periodo_id
+							inner join years y on y.id=per.year_id
 							left join images i on i.id=u.imagen_id 
 							where u.id=:user_id and u.deleted_at is null';
 
