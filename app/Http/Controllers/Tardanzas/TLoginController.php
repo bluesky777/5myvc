@@ -118,9 +118,7 @@ class TLoginController extends Controller {
 
 		$userTemp 	= [];
 		$usuario 	= [];
-
-
-
+		
 		$credentials = [
 			'username' => Request::input('username'),
 			'password' => (string)Request::input('password')
@@ -206,6 +204,11 @@ class TLoginController extends Controller {
 		$usuario = array_merge($usuario, $userTemp);
 		$usuario = (object)$usuario;
 				
+		$year_id 	= $usuario->year_id;
+
+		if (Request::has('year_id')) {
+		 	$year_id 	= Request::input('year_id');
+		} 
 
 		// Alumnos
 		$cons_alum = "SELECT a.id, a.nombres, a.apellidos, sexo, user_id, a.fecha_nac, a.religion, a.pazysalvo, a.deuda from alumnos a";
@@ -238,7 +241,7 @@ class TLoginController extends Controller {
 		$cons_aus = "SELECT  a.id, a.asignatura_id, a.alumno_id, a.periodo_id, a.cantidad_ausencia, a.cantidad_tardanza, a.entrada, a.fecha_hora, a.uploaded, a.created_by FROM ausencias a
 					inner join periodos p on p.id=a.periodo_id and p.year_id=:year_id
 					WHERE a.deleted_at is null;";
-		$ausencias = DB::select($cons_aus, [":year_id" => $usuario->year_id]);
+		$ausencias = DB::select($cons_aus, [":year_id" => $year_id]);
 
 
 		// Años
@@ -265,8 +268,7 @@ class TLoginController extends Controller {
 
 		$userTemp 	= [];
 		$usuario 	= [];
-
-
+		
 
 		$credentials = [
 			'username' => Request::input('username'),
@@ -317,12 +319,18 @@ class TLoginController extends Controller {
 		$usuario 	= array_merge($usuario, $userTemp);
 		$usuario 	= (object)$usuario;
 				
+		$year_id 	= $usuario->year_id;
+
+		if (Request::has('year_id')) {
+		 	$year_id 	= Request::input('year_id');
+		} 
+
 
 		// Ausencias
 		$cons_aus = "SELECT  a.id, a.asignatura_id, a.alumno_id, a.periodo_id, a.cantidad_ausencia, a.cantidad_tardanza, a.entrada, a.fecha_hora, a.uploaded, a.created_by FROM ausencias a
 					inner join periodos p on p.id=a.periodo_id and p.year_id=:year_id
 					WHERE a.deleted_at is null;";
-		$ausencias = DB::select($cons_aus, [":year_id" => $usuario->year_id]);
+		$ausencias = DB::select($cons_aus, [":year_id" => $year_id]);
 
 		return json_decode(json_encode($ausencias), true);
 	}
