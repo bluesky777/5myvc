@@ -53,7 +53,7 @@ class NotasPerdidasController extends Controller {
 
 				$consulta = "SELECT a.id as alumno_id, a.nombres, a.apellidos, a.sexo, a.user_id, a.celular, a.email, a.foto_id, a.pazysalvo
 					from alumnos a
-					inner join matriculas m on m.alumno_id=a.id and (m.estado='MATR' or m.estado='ASIS') and m.deleted_at is null
+					inner join matriculas m on m.alumno_id=a.id and (m.estado='MATR' or m.estado='ASIS') and m.grupo_id=:grupo_id and m.deleted_at is null
 					inner join notas n on n.alumno_id=a.id and n.nota < :nota_minima_aceptada
 					inner join subunidades s on s.id=n.subunidad_id and s.deleted_at is null 
 					inner join unidades u on u.id=s.unidad_id and u.asignatura_id=:asignatura_id and u.deleted_at is null 
@@ -61,7 +61,7 @@ class NotasPerdidasController extends Controller {
 					where a.deleted_at is null
 					group by a.id order by a.apellidos";
 
-				$alumn_all 		= DB::select($consulta, [':nota_minima_aceptada' => $user->nota_minima_aceptada, ':asignatura_id' => $asign_all[$j]->asignatura_id, 'periodo' => $periodo_a_calcular ]);
+				$alumn_all 		= DB::select($consulta, [ ':grupo_id' => $grupos_all[$i]->grupo_id, ':nota_minima_aceptada' => $user->nota_minima_aceptada, ':asignatura_id' => $asign_all[$j]->asignatura_id, 'periodo' => $periodo_a_calcular ]);
 				$cant_alum		= count($alumn_all);
 				
 				for ($k=0; $k < $cant_alum; $k++) { 
