@@ -85,14 +85,16 @@ class NotasPerdidasController extends Controller {
 				$asign_all[$j]->alumnos = $alumn_all;
 
 			}
-
+			$res_asi = [];
 			foreach ($asign_all as $keyAsig => $asignatura) {
 				if (! count($asignatura->alumnos ) > 0) {
 					unset($asign_all[$keyAsig]);
+				}else{
+					array_push($res_asi, $asign_all[$keyAsig]);
 				}
 			}
 
-			$grupos_all[$i]->asignaturas = $asign_all;
+			$grupos_all[$i]->asignaturas = $res_asi;
 
 		}
 
