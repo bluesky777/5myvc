@@ -422,9 +422,9 @@ class AlumnosController extends Controller {
 	{
 		$user = User::fromToken();
 
-		$periodos_a_calcular = Request::input('periodos_a_calcular');
+		$periodo_a_calcular = Request::input('periodo_a_calcular', 10);
 
-		$boletines = $this->detailedNotasGrupo($grupo_id, $user, '', $periodos_a_calcular, $user->numero_periodo);
+		$boletines = $this->detailedNotasGrupo($grupo_id, $user, '', $periodo_a_calcular);
 
 		//$grupo->alumnos = $alumnos;
 		//$grupo->asignaturas = $asignaturas;
@@ -435,7 +435,7 @@ class AlumnosController extends Controller {
 
 	}
 
-	public function getDetailedNotasYear($grupo_id, $periodos_a_calcular='de_usuario')
+	public function getDetailedNotasYear($grupo_id, $periodo_a_calcular=10)
 	{
 		$user = User::fromToken();
 
@@ -448,7 +448,7 @@ class AlumnosController extends Controller {
 		//return Nota::alumnoAsignaturasPeriodosDetailed($alumno->alumno_id, $user->year_id, $periodos_a_calcular, $user->numero_periodo); // borrar
 
 		foreach ($alumnos as $keyAlum => $alumno) {
-			$alumno = Nota::alumnoAsignaturasPeriodosDetailed($alumno->alumno_id, $user->year_id, $periodos_a_calcular, $user->numero_periodo);
+			$alumno = Nota::alumnoAsignaturasPeriodosDetailed($alumno->alumno_id, $user->year_id, $periodo_a_calcular, $user->numero_periodo);
 			array_push($alumnos_response, $alumno);
 		}
 
@@ -464,19 +464,10 @@ class AlumnosController extends Controller {
 	{
 		$user = User::fromToken();
 
-		$periodos_a_calcular = 'de_colegio';
+		$periodo_a_calcular 	= Request::input('periodo_a_calcular', 10);
+		$requested_alumnos 		= Request::input('requested_alumnos', '');
 
-		if (Request::has('requested_alumnos')) {
-			$periodos_a_calcular = Request::input('periodos_a_calcular');
-		}
-
-		$requested_alumnos = '';
-
-		if (Request::has('requested_alumnos')) {
-			$requested_alumnos = Request::input('requested_alumnos');
-		}
-
-		$boletines = $this->detailedNotasGrupo($grupo_id, $user, $requested_alumnos, $periodos_a_calcular, $user->numero_periodo);
+		$boletines = $this->detailedNotasGrupo($grupo_id, $user, $requested_alumnos, $periodo_a_calcular);
 
 		//$grupo->alumnos = $alumnos;
 		//$grupo->asignaturas = $asignaturas;
@@ -487,14 +478,16 @@ class AlumnosController extends Controller {
 
 	}
 
-	public function detailedNotasGrupo($grupo_id, $user, $requested_alumnos='', $periodos_a_calcular='de_usuario', $periodo_usuario=0)
+	public function detailedNotasGrupo($grupo_id, $user, $requested_alumnos='', $periodo_a_calcular=10)
 	{
 		
 		$grupo			= Grupo::datos($grupo_id);
 		$year			= Year::datos($user->year_id);
 		$alumnos		= Grupo::alumnos($grupo_id, $requested_alumnos);
 
-		$year->periodos = Periodo::hastaPeriodo($user->year_id, $periodos_a_calcular, $periodo_usuario);
+		$year->periodos = Periodo::hastaPeriodoN($user->year_id, $periodo_a_calcular);
+		
+		//$year->periodos = Periodo::hastaPeriodo($user->year_id, $periodo_a_calcular, $periodo_usuario);
 
 		$grupo->cantidad_alumnos = count($alumnos);
 
@@ -507,13 +500,13 @@ class AlumnosController extends Controller {
 			$this->allNotasAlumno($alumno, $grupo_id, $user->periodo_id, true);
 
 
-			$asignaturas_perdidas = $this->asignaturasPerdidasDeAlumno($alumno, $grupo_id, $user->year_id, $periodos_a_calcular, $periodo_usuario);
+			$asignaturas_perdidas = $this->asignaturasPerdidasDeAlumno($alumno, $grupo_id, $user->year_id, $periodo_a_calcular);
 
 			if (count($asignaturas_perdidas) > 0) {
 				
 				$alumno->asignaturas_perdidas = $asignaturas_perdidas;
 				$alumno->notas_perdidas_year = 0;
-				$alumno->periodos_con_perdidas = Periodo::hastaPeriodo($user->year_id, $periodos_a_calcular, $periodo_usuario);
+				$alumno->periodos_con_perdidas = Periodo::hastaPeriodoN($user->year_id, $periodo_a_calcular);
 
 				foreach ($alumno->periodos_con_perdidas as $keyPerA => $periodoAlone) {
 
@@ -639,14 +632,14 @@ class AlumnosController extends Controller {
 	}
 
 
-	public function asignaturasPerdidasDeAlumno($alumno, $grupo_id, $year_id, $periodos_a_calcular, $periodo_usuario)
+	public function asignaturasPerdidasDeAlumno($alumno, $grupo_id, $year_id, $periodo_a_calcular)
 	{
 		$asignaturas	= Grupo::detailed_materias($grupo_id);
 
 
 		foreach ($asignaturas as $keyAsig => $asignatura) {
 			
-			$periodos = Periodo::hastaPeriodo($year_id, $periodos_a_calcular, $periodo_usuario);
+			$periodos = Periodo::hastaPeriodoN($year_id, $periodo_a_calcular);
 
 			$asignatura->cantTotal = 0;
 

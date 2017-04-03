@@ -13,6 +13,14 @@ class Periodo extends Model {
 	protected $softDelete = true;
 
 
+	public static function hastaPeriodoN($year_id, $periodo_a_calcular=10)
+	{
+		$consulta = 'SELECT id as periodo_id, id, actual, created_at, created_by, deleted_at, fecha_fin, fecha_inicio, fecha_plazo, numero, updated_at, updated_by, year_id
+					FROM periodos p WHERE p.year_id=:year_id and p.numero <=:periodo_a_calcular and p.deleted_at is null order by p.numero';
+		$periodos = DB::select($consulta, ['year_id' => $year_id, 'periodo_a_calcular' => $periodo_a_calcular] );
+		return $periodos;
+	}
+
 	public static function hastaPeriodo($year_id, $periodos_a_calcular='de_usuario', $numero_periodo=0)
 	{
 		$periodos = new stdClass();

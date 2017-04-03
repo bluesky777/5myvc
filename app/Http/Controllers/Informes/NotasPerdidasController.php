@@ -1,4 +1,4 @@
-<?php namespace App\Http\Controllers\informes;
+<?php namespace App\Http\Controllers\Informes;
 
 use App\Http\Controllers\Controller;
 

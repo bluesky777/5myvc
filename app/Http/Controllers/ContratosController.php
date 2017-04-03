@@ -30,7 +30,7 @@ class ContratosController extends Controller {
 				where p.deleted_at is null
 				order by p.nombres, p.apellidos';
 
-		$profesores = DB::select(DB::raw($consulta), array(':year_id'=>$user->year_id));
+		$profesores = DB::select($consulta, array(':year_id'=>$user->year_id));
 		return $profesores;
 	}
 

@@ -62,6 +62,7 @@ Route::controller('eventos', 'EventosController');
 Route::controller('years', 'YearsController');
 Route::controller('certificados', 'ConfigCertificadosController');
 Route::controller('periodos', 'PeriodosController');
+Route::controller('informes', 'Informes\InformesController');
 Route::controller('bolfinales', 'Informes\BolfinalesController');
 Route::controller('puestos', 'Informes\PuestosAnualesController');
 Route::controller('planillas-ausencias', 'Informes\PlanillasAusenciasController');

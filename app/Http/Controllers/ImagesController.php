@@ -22,19 +22,24 @@ class ImagesController extends Controller {
 		$user = User::fromToken();
 		
 
-		if ($user->tipo == "Alumno" and $user->tipo == "Acudiente") {
-			return ImageModel::where('user_id', $user->user_id)->get();
-		}
-
-		$imagenes_privadas = ImageModel::where('user_id', $user->user_id)
+		$imagenes_privadas 	= ImageModel::where('user_id', $user->user_id)
 								->whereNull('publica')
 								->get();
 
-		$imagenes_publicas = ImageModel::where('user_id', $user->user_id)
-								->where('publica', true)
-								->get();
+		$imagenes_publicas 	= [];
+		$logo 				= [];
 
-		return array('imagenes_privadas' => $imagenes_privadas, 'imagenes_publicas' => $imagenes_publicas);
+		if ($user->is_superuser || $user->tipo == 'Profesor') {
+			
+			$imagenes_publicas = ImageModel::where('publica', true)->get();
+
+			$year = Year::datos($user->year_id);
+
+			$logo = ['logo_id' => $year->logo_id, 'logo' => $year->logo];
+
+		}
+		
+		return array('imagenes_privadas' => $imagenes_privadas, 'imagenes_publicas' => $imagenes_publicas, 'logo' => $logo);
 	}
 
 
@@ -56,6 +61,13 @@ class ImagesController extends Controller {
 	public function postStore()
 	{
 		$user = User::fromToken();
+
+		if ($user->tipo == 'Acudiente' || $user->tipo == 'Alumno') {
+			$imagenes_user 	= ImageModel::where('user_id', $user->user_id)->get();
+			if (count($imagenes_user) > 2) {
+				abort('400', 'No tiene permisos para subir más de 3 imágenes');
+			}
+		}
 
 		$folder = 'images/perfil/';
 
@@ -142,6 +154,12 @@ class ImagesController extends Controller {
 
 	public function putPublicarImagen($imagen_id)
 	{
+		$user = User::fromToken();
+
+		if ($user->tipo == 'Acudiente' || $user->tipo == 'Alumno') {
+			return 'No tiene permisos para establecer imágenes públicas.';
+		}
+
 		$imagen = ImageModel::findOrFail($imagen_id);
 		$imagen->publica = true;
 		$imagen->save();
@@ -294,7 +312,9 @@ class ImagesController extends Controller {
 		$asks = ChangeAsked::where('oficial_image_id', $id);
 
 		if (count($asks) > 0) {
-			$asks->destroy();
+			if (method_exists( $asks, 'destroy') ){
+				$asks->destroy();
+			}
 		}
 		
 		
