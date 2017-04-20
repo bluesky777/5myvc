@@ -9,7 +9,7 @@
 		"barryvdh/laravel-cors": "0.5.x@dev",
 		"patchwork/utf8": "~1.2",
 		"fzaninotto/faker": "1.4.0",
-		"zizaco/entrust": "dev-laravel-5",
+		"zizaco/entrust": "1.4.1",
 		"tymon/jwt-auth": "0.5.*",
 		"barryvdh/laravel-dompdf": "0.6.*",
 		"intervention/image": "~2.2"

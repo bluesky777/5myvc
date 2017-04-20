@@ -48,12 +48,10 @@ Route::controller('contratos', 'ContratosController');
 Route::controller('nota_comportamiento', 'NotaComportamientoController');
 Route::controller('definiciones_comportamiento', 'DefinicionesComportamientoController');
 Route::controller('frases', 'FrasesController');
-Route::controller('myimages', 'ImagesController');
 Route::controller('ChangesAsked', 'ChangeAskedController');
 Route::controller('ausencias', 'AusenciasController');
 Route::controller('parentescos', 'ParentescosController');
 Route::controller('bitacoras', 'BitacorasController');
-Route::controller('perfiles', 'PerfilesController');
 Route::controller('roles', 'RolesController');
 Route::controller('permissions', 'PermissionsController');
 Route::controller('escalas', 'EscalasDeValoracionController');
@@ -63,12 +61,18 @@ Route::controller('years', 'YearsController');
 Route::controller('certificados', 'ConfigCertificadosController');
 Route::controller('periodos', 'PeriodosController');
 
+# Informes
 Route::controller('informes', 'Informes\InformesController');
 Route::controller('bolfinales', 'Informes\BolfinalesController');
 Route::controller('puestos', 'Informes\PuestosAnualesController');
 Route::controller('planillas-ausencias', 'Informes\PlanillasAusenciasController');
 Route::controller('notas-perdidas', 'Informes\NotasPerdidasController');
 Route::controller('boletines', 'Informes\BoletinesController');
+
+# Pefiles
+Route::controller('perfiles', 'Perfiles\PerfilesController');
+Route::controller('myimages', 'Perfiles\ImagesController');
+Route::controller('images-users', 'Perfiles\ImagesUsuariosController');
 
 Route::controller('editnota', 'EditnotaController');
 

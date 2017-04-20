@@ -22,6 +22,7 @@ class CreateUsersTable extends Migration {
 			$table->boolean('is_superuser')->default(false);
 			$table->string('tipo')->nullable(); // Alumno, Profesor, Acudiente, Usuario.
 			$table->boolean('is_active')->default(true);
+			$table->boolean('can_ask')->default(true); // Si es False, el usuario no podrá pedir cambios de imagen ni nada.
 			$table->integer('periodo_id')->unsigned()->nullable();
 			$table->integer('created_by')->nullable();
 			$table->integer('updated_by')->nullable();

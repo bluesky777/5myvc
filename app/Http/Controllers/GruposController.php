@@ -19,7 +19,7 @@ class GruposController extends Controller {
 	{
 		$user = User::fromToken();
 		$consulta = 'SELECT g.id, g.nombre, g.abrev, g.orden, gra.orden as orden_grado, g.grado_id, g.year_id, g.titular_id,
-			p.nombres as nombres_titular, p.apellidos as apellidos_titular, p.titulo,
+			p.nombres as nombres_titular, p.apellidos as apellidos_titular, p.titulo, g.caritas, 
 			g.created_at, g.updated_at, gra.nombre as nombre_grado 
 			from grupos g
 			inner join grados gra on gra.id=g.grado_id and g.year_id=:year_id 
@@ -27,7 +27,7 @@ class GruposController extends Controller {
 			where g.deleted_at is null
 			order by g.orden';
 
-		$grados = DB::select($consulta, array(':year_id'=>$user->year_id));
+		$grados = DB::select($consulta, [':year_id'=>$user->year_id] );
 
 		return $grados;
 	}

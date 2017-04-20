@@ -6,6 +6,7 @@ use DB;
 
 use App\Models\User;
 use App\Models\ChangeAsked;
+use App\Models\ChangeAskedDetails;
 use App\Models\Alumno;
 
 use Carbon\Carbon;
@@ -25,50 +26,27 @@ class ChangeAskedController extends Controller {
 		// toca quitar los campos somebody, ya que esta consulta solo será para buscar los pedidos que han hecho alumnos.
 		if ($user->tipo == 'Usuario' && $user->is_superuser) {
 
-			$consulta = 'SELECT c.id, c.asked_by_user_id, c.asked_to_user_id, c.asked_to_user_id, c.comentario_pedido, 
-							a.id as alumno_id, a.nombres as nombres_alum, a.apellidos as apellidos_alum,
-							a.id as profe_id, p.nombres as nombres_profe, p.apellidos as apellidos_profe,
-							a.id as acud_id, ac.nombres as nombres_acud, ac.apellidos as apellidos_acud,
-							c.rechazado_at, c.accepted_at, c.periodo_asked_id, c.year_asked_id, c.created_at,
-							c.deleted_at, c.deleted_by, u.tipo, 
-							IFNULL(i.nombre, IF(a.sexo="F","default_female.jpg", "default_male.jpg")) as foto_nombre_alum, 
-							IFNULL(i2.nombre, IF(p.sexo="F","default_female.jpg", "default_male.jpg")) as foto_nombre_profe, 
-							IFNULL(i3.nombre, IF(ac.sexo="F","default_female.jpg", "default_male.jpg")) as foto_nombre_acud
-						FROM change_asked c
-						inner join users u on u.id=c.asked_by_user_id
-						left join alumnos a on a.user_id=u.id
-						left join profesores p on p.user_id=u.id
-						left join acudientes ac on ac.user_id=u.id
-						left join images i on i.id=a.foto_id and i.deleted_at is null
-						left join images i2 on i2.id=p.foto_id and i2.deleted_at is null
-						left join images i3 on i3.id=ac.foto_id and i3.deleted_at is null
-						WHERE c.deleted_at is null';
+			$consulta = 'SELECT m.id as matricula_id, m.alumno_id, a.no_matricula, a.nombres, a.apellidos, a.sexo, a.user_id, u.username, 
+							a.fecha_nac, a.ciudad_nac, a.celular, a.direccion, a.religion,
+							m.grupo_id, m.estado, g.nombre as grupo_nombre, g.abrev as grupo_abrev,
+							u.imagen_id, IFNULL(i.nombre, IF(a.sexo="F","default_female.jpg", "default_male.jpg")) as imagen_nombre, 
+							a.foto_id, IFNULL(i2.nombre, IF(a.sexo="F","default_female.jpg", "default_male.jpg")) as foto_nombre,
+							c.id as asked_id, c.asked_by_user_id, c.asked_to_user_id
+						FROM alumnos a 
+						inner join matriculas m on a.id=m.alumno_id and m.deleted_at is null
+						inner join grupos g on g.id=m.grupo_id and g.year_id=3 and g.deleted_at is null
+						inner join users u on a.user_id=u.id and u.deleted_at is null
+						inner join change_asked c on c.asked_by_user_id=u.id and c.deleted_at is null
+						left join images i on i.id=u.imagen_id and i.deleted_at is null
+						left join images i2 on i2.id=a.foto_id and i2.deleted_at is null
+						where a.deleted_at is null and m.deleted_at is null
+						order by a.apellidos, a.nombres';
 
-			$cambios = DB::select($consulta);
+			$cambios_alum = DB::select($consulta);
 
-			$consulta2 = 'SELECT c.id, c.asked_by_user_id, c.asked_to_user_id, c.asked_to_user_id, c.comentario_pedido, 
-							a.id as alumno_id, a.nombres as nombres_alum, a.apellidos as apellidos_alum,
-							p.id as profe_id, p.nombres as nombres_profe, p.apellidos as apellidos_profe,
-							ac.id as acud_id, ac.nombres as nombres_acud, ac.apellidos as apellidos_acud,
-							c.rechazado_at, c.accepted_at, c.periodo_asked_id, c.year_asked_id, c.created_at,
-							c.deleted_at, c.deleted_by, u.tipo, 
-							IFNULL(i.nombre, IF(a.sexo="F","default_female.jpg", "default_male.jpg")) as foto_nombre_alum, 
-							IFNULL(i2.nombre, IF(p.sexo="F","default_female.jpg", "default_male.jpg")) as foto_nombre_profe, 
-							IFNULL(i3.nombre, IF(ac.sexo="F","default_female.jpg", "default_male.jpg")) as foto_nombre_acud, 
-							u2.username, u2.tipo
-						FROM change_asked c
-						inner join users u on u.id=c.asked_by_user_id
-						left join alumnos a on a.user_id=u.id
-						left join profesores p on p.user_id=u.id
-						left join acudientes ac on ac.user_id=u.id
-						left join images i on i.id=a.foto_id and i.deleted_at is null
-						left join images i2 on i2.id=p.foto_id and i2.deleted_at is null
-						left join images i3 on i3.id=ac.foto_id and i3.deleted_at is null
-						left join users u2 on u2.id=c.deleted_by and u2.deleted_at is null
-						WHERE c.deleted_at is not null
-						ORDER BY c.deleted_at ASC, c.id DESC LIMIT 10';
+			# Luego haré los profesores ....
 
-			$cambios_elim = DB::select($consulta2);
+			return [ 'alumnos'=>$cambios_alum, 'profesores'=>[] ];
 
 		}elseif ($user->tipo == 'Profesor') {
 
@@ -99,6 +77,16 @@ class ChangeAskedController extends Controller {
 		$respuesta = ['cambios'=>$cambios, 'cambios_elim'=>$cambios_elim];
 		return $respuesta;
 	}
+
+
+	
+	public function putVerDetalles(){
+		$user 		= User::fromToken();
+		$asked_id 	= Request::input('asked_id');
+		$detalles 	= ChangeAskedDetails::detalles($asked_id);
+		return [ 'detalles' => $detalles ];
+	}
+
 
 
 	public function putAceptar()
