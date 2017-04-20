@@ -15,7 +15,7 @@ class ChangeAskedDetails {
 	protected $softDelete = true;
 
 	static $consulta = 'SELECT c.*, c.id as asked_id, d.*,
-							i.nombre as image_new_nombre, i2.nombre as foto_new_nombre, i2.nombre as image_to_delete_nombre
+							i.nombre as image_new_nombre, i2.nombre as foto_new_nombre, i3.nombre as image_to_delete_nombre
 						FROM change_asked c
 						left join change_asked_assignment a on a.id=c.assignment_id
 						left join change_asked_data d on d.id=c.data_id
@@ -63,16 +63,12 @@ class ChangeAskedDetails {
 				$pedido->asked_for_user = $asked_for_user[0];
 			}
 		}
-		/*
+		
 		if ($pedido->data_id) {
 			
-			$consulta = 'SELECT * FROM users WHERE id=:user_id and deleted_at is null';
-			$asked_for_user = DB::select($consulta, [ ':user_id'	=> $pedido->user_id ]);
-			if (count($asked_for_user)>0) {
-				$pedido->asked_for_user = $asked_for_user[0];
-			}
+			
 		}
-		*/
+		
 
 
 	}

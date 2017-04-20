@@ -54,6 +54,27 @@ class ChangeAsked extends Model {
 	}
 
 
+	public static function pedido($asked_id)
+	{
+
+		$consulta = 'SELECT *, c.id as asked_id FROM change_asked c
+					left join change_asked_assignment a on a.id=c.assignment_id
+					left join change_asked_data d on d.id=c.data_id
+					WHERE c.id=:asked_id and c.deleted_at is null';
+
+
+		$pedido = DB::select( $consulta, [ ':asked_id'	=> $asked_id ]);
+
+		if (count($pedido) > 0) {
+			$pedido = $pedido[0];
+			ChangeAsked::extender_datos($pedido);
+
+		}
+
+		return $pedido;
+	}
+
+
 	public static function extender_datos(&$pedido)
 	{
 

@@ -254,55 +254,7 @@ class ImagesController extends Controller {
 			return ['pedido' => $pedido];
 		}
 		
-		$filename = 'images/perfil/'.$img->nombre;
-
-
-		// Debería crear un código que impida borrar si la imagen es usada.
-
-
-		if (File::exists($filename)) {
-			File::delete($filename);
-			$img->delete();
-		}else{
-			return 'No se encuentra la imagen a eliminar. '.$img->nombre;
-		}
-
-
-		// Elimino cualquier referencia que otros tengan a esa imagen borrada.
-		$alumnos = Alumno::where('foto_id', $id)->get();
-		foreach ($alumnos as $alum) {
-			$alum->foto_id = null;
-			$alum->save();
-		}
-		$profesores = Profesor::where('foto_id', $id)->get();
-		foreach ($profesores as $prof) {
-			$prof->foto_id = null;
-			$prof->save();
-		}
-		$acudientes = Acudiente::where('foto_id', $id)->get();
-		foreach ($acudientes as $acud) {
-			$acud->foto_id = null;
-			$acud->save();
-		}
-		$users = User::where('imagen_id', $id)->get();
-		foreach ($users as $user) {
-			$user->imagen_id = null;
-			$user->save();
-		}
-		$years = Year::where('logo_id', $id)->get();
-		foreach ($years as $year) {
-			$year->logo_id = null;
-			$year->save();
-		}
-		
-		$asks = ChangeAsked::where('oficial_image_id', $id);
-
-		if (count($asks) > 0) {
-			if (method_exists( $asks, 'destroy') ){
-				$asks->destroy();
-			}
-		}
-		
+		ImageModel::eliminar_imagen_y_enlaces($id);
 		
 
 		

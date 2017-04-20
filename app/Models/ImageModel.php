@@ -4,6 +4,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 use DB;
+use File;
 
 
 class ImageModel extends Model {
@@ -47,6 +48,51 @@ class ImageModel extends Model {
 		$datos_imagen = array('oficiales' => $oficiales, 'de_usuario' => $de_usuario);
 
 		return $datos_imagen;
+	}
+
+
+
+	public static function eliminar_imagen_y_enlaces($imagen_id)
+	{
+		$img 		= ImageModel::findOrFail($imagen_id);
+		$filename 	= 'images/perfil/'.$img->nombre;
+
+		if (File::exists($filename)) {
+			File::delete($filename);
+			$img->delete();
+		}else{
+			return 'No existe';
+		}
+
+
+		// Elimino cualquier referencia que otros tengan a esa imagen borrada.
+		$alumnos = Alumno::where('foto_id', $imagen_id)->get();
+		foreach ($alumnos as $alum) {
+			$alum->foto_id = null;
+			$alum->save();
+		}
+		$profesores = Profesor::where('foto_id', $imagen_id)->get();
+		foreach ($profesores as $prof) {
+			$prof->foto_id = null;
+			$prof->save();
+		}
+		$acudientes = Acudiente::where('foto_id', $imagen_id)->get();
+		foreach ($acudientes as $acud) {
+			$acud->foto_id = null;
+			$acud->save();
+		}
+		$users = User::where('imagen_id', $imagen_id)->get();
+		foreach ($users as $user) {
+			$user->imagen_id = null;
+			$user->save();
+		}
+		$years = Year::where('logo_id', $imagen_id)->get();
+		foreach ($years as $year) {
+			$year->logo_id = null;
+			$year->save();
+		}
+		
+		
 	}
 
 

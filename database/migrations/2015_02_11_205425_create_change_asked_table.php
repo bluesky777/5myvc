@@ -32,7 +32,7 @@ class CreateChangeAskedTable extends Migration {
 			$table->integer('periodo_asked_id')->nullable(); // Periodo para el que fue hecha la petición
 			$table->integer('year_asked_id')->nullable(); // Año para el que fue hecha la petición
 
-			$table->integer('answered_by')->nullable(); // Usuario que se hizo cargo de aprobar o rechazar estos cambios solicitados
+			$table->integer('answered_by')->nullable(); // Usuario que se hizo cargo de aprobar o rechazar por lo menos el último cambios solicitados
 			$table->integer('created_by')->nullable();
 			$table->integer('updated_by')->nullable();
 			$table->integer('deleted_by')->nullable();
