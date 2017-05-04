@@ -317,7 +317,7 @@ class BolfinalesController extends Controller {
 
 	public function valoracion($nota)
 	{
-		$nota = floatval($nota);
+		$nota = round($nota);
 
 		foreach ($this->escalas_val as $key => $escala_val) {
 			//Debugging::pin($escala_val->porc_inicial, $escala_val->porc_final, $nota);
