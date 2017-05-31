@@ -12,6 +12,7 @@ use App\Models\Periodo;
 use App\Models\Asignatura;
 use App\Models\Subunidad;
 use App\Models\Profesor;
+use App\Models\Alumno;
 
 
 class PlanillasAusenciasController extends Controller {
@@ -41,6 +42,10 @@ class PlanillasAusenciasController extends Controller {
 
 			$grupos[$i]->alumnos = $alumnos;
 
+			$cant_alum		= count($alumnos);
+			for ($k=0; $k < $cant_alum; $k++) { 
+				$alumnos[$k]->userData = Alumno::userData($alumnos[$k]->alumno_id);
+			}
 		}
 
 		$year->grupos = $grupos;

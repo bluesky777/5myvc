@@ -109,6 +109,7 @@ class BoletinesController extends Controller {
 			// Todas las materias con sus unidades y subunides
 			$this->allNotasAlumno($alumno, $grupo_id, $user->periodo_id, true);
 
+			$alumno->userData = Alumno::userData($alumno->alumno_id);
 
 			$asignaturas_perdidas = $this->asignaturasPerdidasDeAlumno($alumno, $grupo_id, $user->year_id, $periodo_a_calcular);
 

@@ -12,6 +12,7 @@ use App\Models\Periodo;
 use App\Models\Asignatura;
 use App\Models\Subunidad;
 use App\Models\Profesor;
+use App\Models\Alumno;
 
 
 class NotasPerdidasController extends Controller {
@@ -80,6 +81,7 @@ class NotasPerdidasController extends Controller {
 					$notas 		= DB::select($consulta, [':nota_minima_aceptada' => $user->nota_minima_aceptada, ':asignatura_id' => $asign_all[$j]->asignatura_id, 
 															'periodo' => $periodo_a_calcular, ':alumno_id' => $alumn_all[$k]->alumno_id ]);
 					$alumn_all[$k]->notas = $notas;
+					$alumn_all[$k]->userData = Alumno::userData($alumn_all[$k]->alumno_id);
 				}
 
 				$asign_all[$j]->alumnos = $alumn_all;

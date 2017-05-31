@@ -11,6 +11,7 @@ use App\Models\Asignatura;
 use App\Models\Grupo;
 use App\Models\Alumno;
 use App\Models\Bitacora;
+use App\Models\FraseAsignatura;
 
 
 class NotasController extends Controller {
@@ -65,7 +66,8 @@ class NotasController extends Controller {
 
 			$userData = Alumno::userData($alumno->alumno_id);
 			$alumno->userData = $userData;
-
+			$frases = FraseAsignatura::deAlumno($asignatura->asignatura_id, $alumno->alumno_id, $user->periodo_id);
+			$alumno->frases = $frases;
 		}
 
 		// No cambiar el orden!

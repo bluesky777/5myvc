@@ -48,6 +48,7 @@ class PuestosAnualesController extends Controller {
 		foreach ($alumnos as $keyAlum => $alumno) {
 			$alumno->notas_asig = $this->definitivas_year_alumno($alumno->alumno_id, $user->year_id, $periodo_a_calcular);
 
+			$alumno->userData = Alumno::userData($alumno->alumno_id);
 
 			$sumatoria_asignaturas_year = 0;
 			$perdidos_year = 0;
