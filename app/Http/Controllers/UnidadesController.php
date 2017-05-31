@@ -87,15 +87,15 @@ class UnidadesController extends Controller {
 		for($row = 0; $row < count($sortHash); $row++){
 			foreach($sortHash[$row] as $key => $value){
 
-				$subunidad 			= Subunidad::find((int)$key);
-				$subunidad->orden 	= (int)$value;
-				$subunidad->save();
-
+				$unidad 			= Unidad::find((int)$key);
+				$unidad->orden 		= (int)$value;
+				$unidad->save();
 			}
 		}
 
 		return 'Ordenado correctamente';
 	}
+
 
 	public function putUpdate($id)
 	{

@@ -43,50 +43,63 @@ class SubunidadesController extends Controller {
 
 
 
-	public function putSubirSubunidad()
+	
+	public function putUpdateOrden()
 	{
+		$user = User::fromToken();
 
-		$subunidad2 = Subunidad::where('unidad_id', Request::input('unidad_id'))
-							->where('orden', Request::input('indice_new'))
-							->orderBy('id', 'desc')->first();
-		if ($subunidad2) {
-			$subunidad2->orden = Request::input('indice_new') + 1;
-			$subunidad2->save();
+		$sortHash = Request::input('sortHash');
+
+		for($row = 0; $row < count($sortHash); $row++){
+			foreach($sortHash[$row] as $key => $value){
+
+				$subunidad 			= Subunidad::find((int)$key);
+				$subunidad->orden 	= (int)$value;
+				$subunidad->save();
+
+			}
 		}
-		
-		
 
-		$subunidad 				= Subunidad::find(Request::input('subunidad_id'));
-		$subunidad->orden 		= Request::input('indice_new');
-		$subunidad->save();
-
-
-		return $subunidad;
+		return 'Ordenado correctamente';
 	}
 
 
-	public function putBajarSubunidad()
+
+	
+	public function putUpdateOrdenVarias()
 	{
+		$user = User::fromToken();
 
-		$subunidad2 = Subunidad::where('unidad_id', Request::input('unidad_id'))
-							->where('orden', Request::input('indice_new'))->first();
+		$sortHash1 	= Request::input('sortHash1');
+		$sortHash2 	= Request::input('sortHash2');
+		$unidad1_id = Request::input('unidad1_id');
+		$unidad2_id = Request::input('unidad2_id');
 
-		if ($subunidad2) {
-			$subunidad2->orden = Request::input('indice_new') - 1;
-			$subunidad2->save();
+		for($row = 0; $row < count($sortHash1); $row++){
+			foreach($sortHash1[$row] as $key => $value){
+
+				$subunidad 				= Subunidad::find((int)$key);
+				$subunidad->orden 		= (int)$value;
+				$subunidad->unidad_id 	= (int)$unidad1_id;
+				$subunidad->save();
+
+			}
 		}
 
-		$subunidad2->orden = Request::input('indice_new') - 1;
-		$subunidad2->save();
+		for($row = 0; $row < count($sortHash2); $row++){
+			foreach($sortHash2[$row] as $key => $value){
 
+				$subunidad 				= Subunidad::find((int)$key);
+				$subunidad->orden 		= (int)$value;
+				$subunidad->unidad_id 	= (int)$unidad2_id;
+				$subunidad->save();
 
-		$subunidad 				= Subunidad::find(Request::input('subunidad_id'));
-		$subunidad->orden 		= Request::input('indice_new');
-		$subunidad->save();
+			}
+		}
 
-
-		return $subunidad;
+		return 'Ordenado correctamente';
 	}
+
 
 
 

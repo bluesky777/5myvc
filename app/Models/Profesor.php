@@ -41,10 +41,12 @@ class Profesor extends Model {
 	public static function asignaturas($year_id, $profesor_id)
 	{
 		$consulta = 'SELECT a.id as asignatura_id, a.grupo_id, a.profesor_id, a.creditos, a.orden,
-							m.materia, m.alias as alias_materia, g.nombre as nombre_grupo, g.abrev as abrev_grupo, g.titular_id, g.caritas
+							m.materia, m.alias as alias_materia, g.nombre as nombre_grupo, g.abrev as abrev_grupo, g.titular_id, g.caritas,
+							gr.nivel_educativo_id
 						FROM asignaturas a
 						inner join materias m on m.id=a.materia_id and m.deleted_at is null
 						inner join grupos g on g.id=a.grupo_id and g.year_id=:year_id and g.deleted_at is null
+						inner join grados gr on gr.id=g.grado_id and gr.deleted_at is null 
 						where a.profesor_id=:profesor_id and a.deleted_at is null
 						order by g.orden, a.orden, a.id';
 

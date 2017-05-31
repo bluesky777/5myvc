@@ -20,15 +20,22 @@ use \DateTime;
 
 class TSubirController extends Controller {
 
-	public function postIndex()
+	public function user()
 	{
-
-		$credentials = [
-			'username' => Request::input('username'),
-			'password' => (string)Request::input('password')
-		];
-
-		$ausencias_to_create = Request::input('ausencias_to_create');
+		if (Request::has('loginData')) {
+			
+			$credentials = [
+				'username' => Request::input('loginData')['username'],
+				'password' => (string)Request::input('loginData')['password']
+			];
+		}else{
+			$credentials = [
+				'username' => Request::input('username'),
+				'password' => (string)Request::input('password')
+			];
+		}
+		
+		
 		
 		if (Auth::attempt($credentials)) {
 			$userTemp = Auth::user();
@@ -66,12 +73,25 @@ class TSubirController extends Controller {
 			return abort(400, 'No tienes permiso');
 		}
 
+		return $userTemp;
+
+
+	}
+
+
+	# Sube todos los cambios hechos
+	public function postIndex()
+	{
+		$user = $this->user();
+
+		$ausencias_to_create = Request::input('ausencias_to_create');
 
 		foreach ($ausencias_to_create as $key => $ausencia_to) {
 
 			if ($ausencia_to['uploaded'] == 'to_delete') {
-				$aus = Ausencia::find($ausencia_to['id']);
-				$aus->uploaded = 'deleted';
+				$aus 				= Ausencia::find($ausencia_to['id']);
+				$aus->uploaded 		= 'deleted';
+				$aus->deleted_by 	= $user->id;
 				$aus->save();
 				$aus->delete();
 
@@ -106,6 +126,56 @@ class TSubirController extends Controller {
 	
 
 		return json_decode(json_encode(['result' => 'Datos subidos']), true);
+	}
+
+
+
+
+	public function putEliminarAusencia()
+	{
+		$user = $this->user();
+
+		$id = Request::input('id');
+
+		$ausencia 				= Ausencia::findOrFail($id);
+		$ausencia->uploaded 	= 'deleted';
+		$ausencia->deleted_by 	= $user->id;
+		$ausencia->save();
+		$ausencia->delete();
+		return 'Eliminada';
+
+	}
+
+	# Poner ausencia o tardanza
+	public function putPonerAusencia()
+	{
+		$user = $this->user();
+
+		$uploaded = Request::input('uploaded');
+
+		$dt = Carbon::now()->format('Y-m-d G:H:i');
+
+		$consulta = 'INSERT INTO ausencias
+						(alumno_id, asignatura_id, cantidad_ausencia, cantidad_tardanza, entrada, fecha_hora, periodo_id, uploaded, created_by, created_at, updated_at)
+					VALUES (:alumno_id, :asignatura_id, :cantidad_ausencia, :cantidad_tardanza, :entrada, :fecha_hora, :periodo_id, :uploaded, :created_by, :created_at, :updated_at)';
+
+
+		$ausenc = DB::select($consulta, [
+			':alumno_id'			=> $ausencia_to['alumno_id'], 
+			':asignatura_id'		=> $ausencia_to['asignatura_id'],
+			':cantidad_ausencia'	=> $ausencia_to['cantidad_ausencia'], 
+			':cantidad_tardanza'	=> $ausencia_to['cantidad_tardanza'], 
+			':entrada'				=> $ausencia_to['entrada'], 
+			':fecha_hora'			=> $ausencia_to['fecha_hora'], 
+			':periodo_id'			=> $ausencia_to['periodo_id'],
+			':uploaded'				=> 'created',
+			':created_by'			=> $ausencia_to['created_by'],
+			':created_at'			=> $dt,
+			':updated_at'			=> $dt,
+		]);
+
+		return 'Eliminada';
+
 	}
 
 

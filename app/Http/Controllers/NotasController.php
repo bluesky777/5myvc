@@ -29,12 +29,12 @@ class NotasController extends Controller {
 		$resultado = [];
 
 		$unidades = Unidad::where('asignatura_id', '=', $asignatura_id)
-					->where('periodo_id', '=', $user->periodo_id)->orderBy('orden')->get();
+					->where('periodo_id', '=', $user->periodo_id)->orderBy('orden')->orderBy('id')->get();
 
 		$asignatura = (object)Asignatura::detallada($asignatura_id, $user->year_id);
 		
 		foreach ($unidades as $unidad) {
-			$subunidades = Subunidad::where('unidad_id', '=', $unidad->id)->orderBy('orden')->get();
+			$subunidades = Subunidad::where('unidad_id', '=', $unidad->id)->orderBy('orden')->orderBy('id')->get();
 
 			foreach ($subunidades as $subunidad) {
 
