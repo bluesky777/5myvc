@@ -3,6 +3,7 @@
 
 use DB;
 use Request;
+use DateTime;
 
 use App\Models\User;
 use App\Models\Alumno;
@@ -64,9 +65,42 @@ class AusenciasController extends Controller {
 		$aus->fecha_hora		= Request::input('fecha_hora', null);
 		$aus->created_by		= $user->user_id;
 
+		if ($aus->cantidad_ausencia) {
+			$aus->tipo = 'ausencia';
+		}
+		if ($aus->cantidad_tardanza) {
+			$aus->tipo = 'tardanza';
+		}
+
 		$aus->save();
 		return $aus;
 	}
+
+
+
+
+	public function putGuardarCambiosAusencia()
+	{
+		$user = User::fromToken();
+
+		/* Debo convertir string a fecha
+		$dato = Request::input('fecha_hora', null);
+		if ($dato) {
+			$dato = DateTime::createFromFormat('Y-m-d G:H:i', $dato);
+			return $dato;
+		}
+		*/
+		
+
+		$aus = Ausencia::findOrFail(Request::input('ausencia_id'));
+		$aus->fecha_hora		= Request::input('fecha_hora', null);
+		$aus->updated_by		= $user->user_id;
+
+		$aus->save();
+		return $aus;
+	}
+
+
 
 
 	public function deleteDestroy($id)

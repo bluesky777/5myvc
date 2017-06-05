@@ -205,7 +205,7 @@ class BoletinesController extends Controller {
 				$cantAus = 0;
 				$cantTar = 0;
 				foreach ($asignatura->ausencias as $ausencia) {
-					if ($ausencia->tipo == "tardaza") {
+					if ($ausencia->tipo == "tardanza") {
 						$cantTar += (int)$ausencia->cantidad_tardanza;
 					}elseif ($ausencia->tipo == "ausencia") {
 						$cantAus += (int)$ausencia->cantidad_ausencia;

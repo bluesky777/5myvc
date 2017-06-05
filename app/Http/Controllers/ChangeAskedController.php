@@ -25,8 +25,6 @@ class ChangeAskedController extends Controller {
 	{
 		$user = User::fromToken();
 
-		$cambios = [];
-		$cambios_elim = [];
 
 		// toca quitar los campos somebody, ya que esta consulta solo será para buscar los pedidos que han hecho alumnos.
 		if ($user->tipo == 'Usuario' && $user->is_superuser) {
@@ -39,7 +37,7 @@ class ChangeAskedController extends Controller {
 							c.id as asked_id, c.asked_by_user_id, c.asked_to_user_id
 						FROM alumnos a 
 						inner join matriculas m on a.id=m.alumno_id and m.deleted_at is null
-						inner join grupos g on g.id=m.grupo_id and g.year_id=3 and g.deleted_at is null
+						inner join grupos g on g.id=m.grupo_id and g.year_id=? and g.deleted_at is null
 						inner join users u on a.user_id=u.id and u.deleted_at is null
 						inner join change_asked c on c.asked_by_user_id=u.id and c.deleted_at is null
 						left join images i on i.id=u.imagen_id and i.deleted_at is null
@@ -47,7 +45,7 @@ class ChangeAskedController extends Controller {
 						where c.answered_by is null and a.deleted_at is null and m.deleted_at is null
 						order by a.apellidos, a.nombres';
 
-			$cambios_alum = DB::select($consulta);
+			$cambios_alum = DB::select($consulta, [$user->year_id]);
 
 			# Luego haré los profesores ....
 
@@ -55,32 +53,28 @@ class ChangeAskedController extends Controller {
 
 		}elseif ($user->tipo == 'Profesor') {
 
-			$consulta = 'SELECT c.id, c.asked_by_user_id, c.comentario_pedido, c.main_image_id, c.oficial_image_id,
-						c.rechazado_at, c.accepted_at, c.periodo_asked_id, c.year_asked_id, c.created_at,
-						c.deleted_at, c.deleted_by,
-						u.tipo, a.id as alumno_id, a.nombres, a.apellidos, 
-						IFNULL(i.nombre, IF(a.sexo="F","default_female.jpg", "default_male.jpg")) as foto_nombre, 
-						i2.nombre as foto_nombre_asked,
-						i3.nombre as somebody_imagen_nombre_to_delete,
-						u2.username, u2.tipo
-					FROM change_asked c
-					inner join users u on u.id=c.asked_by_user_id
-					inner join alumnos a on a.user_id=u.id
-					inner join matriculas m on a.id=m.alumno_id and m.deleted_at is null
-					inner join grupos g on m.grupo_id=g.id and g.titular_id=? and g.deleted_at is null
-					left join images i on i.id=a.foto_id and i.deleted_at is null
-					left join images i2 on i2.id=c.oficial_image_id and i2.deleted_at is null
-					left join images i3 on i3.id=c.somebody_image_id_to_delete and i3.deleted_at is null
-					left join users u2 on u2.id=c.deleted_by and u2.deleted_at is null
-					ORDER BY c.id DESC LIMIT 20';
+			$consulta = 'SELECT m.id as matricula_id, m.alumno_id, a.no_matricula, a.nombres, a.apellidos, a.sexo, a.user_id, u.username, 
+							a.fecha_nac, a.ciudad_nac, a.celular, a.direccion, a.religion,
+							m.grupo_id, m.estado, g.nombre as grupo_nombre, g.abrev as grupo_abrev,
+							u.imagen_id, IFNULL(i.nombre, IF(a.sexo="F","default_female.jpg", "default_male.jpg")) as imagen_nombre, 
+							a.foto_id, IFNULL(i2.nombre, IF(a.sexo="F","default_female.jpg", "default_male.jpg")) as foto_nombre,
+							c.id as asked_id, c.asked_by_user_id, c.asked_to_user_id
+						FROM alumnos a 
+						inner join matriculas m on a.id=m.alumno_id and m.deleted_at is null
+						inner join grupos g on g.id=m.grupo_id and g.year_id=? and g.titular_id=? and g.deleted_at is null
+						inner join users u on a.user_id=u.id and u.deleted_at is null
+						inner join change_asked c on c.asked_by_user_id=u.id and c.deleted_at is null
+						left join images i on i.id=u.imagen_id and i.deleted_at is null
+						left join images i2 on i2.id=a.foto_id and i2.deleted_at is null
+						where c.answered_by is null and a.deleted_at is null and m.deleted_at is null
+						order by a.apellidos, a.nombres';
 
-			$cambios = DB::select($consulta, [$user->persona_id]);
-
+			$cambios_alum = DB::select($consulta, [$user->year_id, $user->persona_id]);
+			
+			return [ 'alumnos'=>$cambios_alum, 'profesores'=>[] ];
 		}
 		
-		
-		$respuesta = ['cambios'=>$cambios, 'cambios_elim'=>$cambios_elim];
-		return $respuesta;
+		return ['msg'=> 'No puedes ver pedidos'];
 	}
 
 

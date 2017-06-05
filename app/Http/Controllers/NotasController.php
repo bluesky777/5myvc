@@ -29,17 +29,17 @@ class NotasController extends Controller {
 
 		$resultado = [];
 
-		$unidades = Unidad::where('asignatura_id', '=', $asignatura_id)
-					->where('periodo_id', '=', $user->periodo_id)->orderBy('orden')->orderBy('id')->get();
+		$unidades = Unidad::where('asignatura_id', $asignatura_id)
+					->where('periodo_id', $user->periodo_id)->orderBy('orden')->orderBy('id')->get();
 
 		$asignatura = (object)Asignatura::detallada($asignatura_id, $user->year_id);
 		
 		foreach ($unidades as $unidad) {
-			$subunidades = Subunidad::where('unidad_id', '=', $unidad->id)->orderBy('orden')->orderBy('id')->get();
+			$subunidades = Subunidad::where('unidad_id', $unidad->id)->orderBy('orden')->orderBy('id')->get();
 
 			foreach ($subunidades as $subunidad) {
 
-				$notas = Nota::where('subunidad_id', '=', $subunidad->id)->get();
+				$notas = Nota::where('subunidad_id', $subunidad->id)->get();
 
 				if (count($notas) == 0) {
 
@@ -68,6 +68,23 @@ class NotasController extends Controller {
 			$alumno->userData = $userData;
 			$frases = FraseAsignatura::deAlumno($asignatura->asignatura_id, $alumno->alumno_id, $user->periodo_id);
 			$alumno->frases = $frases;
+
+			// Ausencias
+			$cons_aus = "SELECT  a.id, a.asignatura_id, a.alumno_id, a.periodo_id, a.cantidad_ausencia, a.cantidad_tardanza, a.entrada, a.fecha_hora, a.uploaded, a.created_by FROM ausencias a
+						inner join periodos p on p.id=a.periodo_id and p.year_id=:year_id
+						WHERE a.tipo='ausencia' and a.asignatura_id=:asignatura_id and a.alumno_id=:alumno_id and a.deleted_at is null;";
+			$ausencias = DB::select($cons_aus, [":year_id" => $user->year_id, ':asignatura_id' => $asignatura->asignatura_id, ':alumno_id' => $alumno->alumno_id ]);
+			$alumno->ausencias 			= $ausencias;
+			$alumno->ausencias_count 	= count($ausencias);
+
+			// Tardanzas
+			$cons_tar = "SELECT  a.id, a.asignatura_id, a.alumno_id, a.periodo_id, a.cantidad_ausencia, a.cantidad_tardanza, a.entrada, a.fecha_hora, a.uploaded, a.created_by FROM ausencias a
+						inner join periodos p on p.id=a.periodo_id and p.year_id=:year_id
+						WHERE a.tipo='tardanza' and a.asignatura_id=:asignatura_id and a.alumno_id=:alumno_id and a.deleted_at is null;";
+			$tardanzas = DB::select($cons_tar, [":year_id" => $user->year_id, ':asignatura_id' => $asignatura->asignatura_id, ':alumno_id' => $alumno->alumno_id ]);
+			$alumno->tardanzas 			= $tardanzas;
+			$alumno->tardanzas_count 	= count($tardanzas);
+
 		}
 
 		// No cambiar el orden!
