@@ -93,6 +93,7 @@ Route::controller('password', 'RemindersController');
 
 Route::controller('tardanzas/login', 'Tardanzas\TLoginController');
 Route::controller('tardanzas/subir', 'Tardanzas\TSubirController');
+Route::controller('actividades', 'Actividades\ActividadesController');
 
 
 /*

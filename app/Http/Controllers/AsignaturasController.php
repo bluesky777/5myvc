@@ -24,7 +24,7 @@ class AsignaturasController extends Controller {
 					where a.deleted_at is null
 					order by g.orden, a.orden';
 
-		$asignaturas = DB::select(DB::raw($consulta), array($user->year_id));
+		$asignaturas = DB::select($consulta, array($user->year_id));
 		return $asignaturas;
 	}
 

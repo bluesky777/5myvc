@@ -4,6 +4,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 use DB;
+use App\Models\Debugging;
 
 class Grupo extends Model {
 	use SoftDeletes;
@@ -56,16 +57,25 @@ class Grupo extends Model {
 		//return $this->belongsToMany('Alumno', 'matriculas');
 	}
 
-	public static function detailed_materias($grupo_id)
+	public static function detailed_materias($grupo_id, $profesor_id=null, $exceptuando=false)
 	{
+		$complemento = ''; // Para complementar la consulta
+		if ($profesor_id) {
+			if ($exceptuando) {
+				$complemento = ' and p.id!='.$profesor_id. ' ';
+			}else{
+				$complemento = ' and p.id='.$profesor_id. ' ';
+			}
+		}
+
 		$consulta = 'SELECT a.id as asignatura_id, a.grupo_id, a.profesor_id, a.creditos, a.orden,
 				m.materia, m.alias as alias_materia, 
 				p.id as profesor_id, p.nombres as nombres_profesor, p.apellidos as apellidos_profesor,
 				p.foto_id, IFNULL(i.nombre, IF(p.sexo="F","default_female.jpg", "default_male.jpg")) as foto_nombre
 			FROM asignaturas a 
 			inner join materias m on m.id=a.materia_id and m.deleted_at is null
-			inner join profesores p on p.id=a.profesor_id and p.deleted_at is null
-			left join images i on p.foto_id=i.id and i.deleted_at is null
+			inner join profesores p on p.id=a.profesor_id and p.deleted_at is null' . $complemento .
+			' left join images i on p.foto_id=i.id and i.deleted_at is null
 			where a.grupo_id=:grupo_id and a.deleted_at is null
 			order by a.orden, m.orden';
 
