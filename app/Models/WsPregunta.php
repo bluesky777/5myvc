@@ -4,10 +4,11 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 
-class Actividad extends Model {
-	protected $fillable = [];
+
+class WsPregunta extends Model {
+	protected $fillable 	= [];
 
 	use SoftDeletes;
-	protected $softDelete = true;
-	protected $table = 'ws_actividades';
+	protected $softDelete 	= true;
+	protected $table 		= 'ws_preguntas';
 }

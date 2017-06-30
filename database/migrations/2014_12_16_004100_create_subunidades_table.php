@@ -22,6 +22,7 @@ class CreateSubunidadesTable extends Migration {
 			$table->integer('orden')->nullable();
 			$table->dateTime('inicia_at')->nullable();
 			$table->dateTime('finaliza_at')->nullable();
+			$table->integer('actividad_id')->nullable()->unsigned(); // No lo voy a relacionar para evitar problemas
 			$table->integer('created_by')->nullable();
 			$table->integer('updated_by')->nullable();
 			$table->integer('deleted_by')->nullable();
