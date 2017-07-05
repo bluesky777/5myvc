@@ -16,6 +16,9 @@ class CreateActividadesTable extends Migration {
                   $table->integer('periodo_id')->unsigned()->nullable();
                   $table->integer('asignatura_id')->unsigned();
                   $table->boolean('compartida')->default(false)->nullable();
+                  $table->boolean('para_alumnos')->default(false); // Solo vale si 'compartida' es true. Además debe haber al menos 1 grupo en la tabla ws_actividades_compartidas
+                  $table->boolean('para_profesores')->default(false);
+                  $table->boolean('para_acudientes')->default(false);
                   $table->boolean('can_upload')->default(false); // El alumno puede subir archivo
                   $table->string('tipo')->default('Contenido')->nullable(); // 1. Contenido: Sin preguntas, 2. Autoevaluacion, 3. Cuestionario: Free time, 4. Examen: Debe hacerlo con el tiempo establecido
                   $table->boolean('in_action')->default(false)->nullable(); // Para redireccionarlo de inmediato al loguearse
@@ -128,7 +131,7 @@ class CreateActividadesTable extends Migration {
                   $table->boolean('is_puntaje_manual')->default(0); // La nota será automáticamente generada por el sistema o se la pondrá el docente 
                   $table->integer('puntaje_manual')->default(0); // Nota que el docente decida poner si el campo is_puntaje_manual es true
                   $table->boolean('terminado')->default(false); // Indica si finalizó la actividad
-                  $table->boolean('timeout')->default(true); // Se le acabó el tiempo??
+                  $table->boolean('timeout')->default(false); // Se le acabó el tiempo??
                   $table->integer('deleted_by')->unsigned()->nullable();
 			$table->softDeletes();
                   $table->timestamps();
@@ -144,8 +147,6 @@ class CreateActividadesTable extends Migration {
                   $table->increments('id');
                   $table->integer('actividad_id')->unsigned()->nullable();
                   $table->integer('grupo_id')->unsigned()->nullable();
-                  $table->boolean('para_profesores')->default(false);
-                  $table->boolean('para_acudientes')->default(false);
                   $table->timestamps();
             });
 		Schema::table('ws_actividades_compartidas', function(Blueprint $table) {

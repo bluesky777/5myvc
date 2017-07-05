@@ -8,6 +8,7 @@ use DB;
 use App\Models\User;
 use App\Models\WsActividad;
 use App\Models\Grupo;
+use App\Models\WsActividadCompartida;
 
 
 class ActividadesController extends Controller {
@@ -20,6 +21,7 @@ class ActividadesController extends Controller {
 		$acti 					= new WsActividad;
 		$acti->asignatura_id 	= Request::input('asignatura_id');
 		$acti->periodo_id 		= $user->periodo_id;
+		$acti->tipo_calificacion = 'Por promedio';
 		$acti->created_by 		= $user->user_id;
 		$acti->save();
 
@@ -98,60 +100,23 @@ class ActividadesController extends Controller {
 		$user 			= User::fromToken();
 		$actividad_id 	= Request::input('actividad_id');
 		$datos 			= [];
-
-		$consulta 			= 'SELECT * FROM ws_actividades a WHERE a.id=? and a.deleted_at is null';
-		$actividad 			= DB::select($consulta, [ Request::input('actividad_id') ])[0];
-		
-		$consulta 			= 'SELECT * FROM (
-									SELECT p.id, TRUE as is_preg, p.actividad_id, p.enunciado, p.orden, p.added_by, p.created_at, p.updated_at, NULL as is_cuadricula,
-										p.ayuda, p.tipo_pregunta, p.puntos, p.duracion, p.aleatorias, p.texto_arriba, p.texto_abajo 
-									FROM ws_preguntas p 
-									WHERE p.actividad_id=:actividad_id1 and p.deleted_at is null
-								union
-									SELECT c.id, TRUE as is_preg, c.actividad_id, c.enunciado, c.orden, c.added_by, c.created_at, c.updated_at, c.is_cuadricula,
-										NULL as ayuda, NULL as tipo_pregunta, NULL as puntos, NULL as duracion, NULL as aleatorias, NULL as texto_arriba, NULL as texto_abajo 
-									FROM ws_contenidos_preg c 
-									WHERE c.actividad_id=:actividad_id2 and c.deleted_at is null
-								
-								)p order by orden DESC, created_at';
-		
-
-		$preguntas 			= DB::select($consulta, [ 
-										':actividad_id1' => $actividad_id,
-										':actividad_id2' => $actividad_id, 
-									]);
-
-		$cant = count($preguntas);
-
-		for ($i=0; $i < $cant; $i++) { 
-			
-			if ($preguntas[$i]->is_preg) {
-				
-				$consulta = 'SELECT o.id, o.pregunta_id, o.definicion, o.image_id, o.orden, o.is_correct, o.created_at, o.updated_at 
-						FROM ws_opciones o
-						where o.pregunta_id=:pregunta_id';
-
-				$opciones = DB::select($consulta, [':pregunta_id' => $preguntas[$i]->id] );
-				$preguntas[$i]->opciones = $opciones;
-
-			}else{
-
-				$consulta = 'SELECT p.id, TRUE as is_preg, p.actividad_id, p.enunciado, p.orden, p.added_by, p.created_at, p.updated_at, NULL as is_cuadricula,
-									p.ayuda, p.tipo_pregunta, p.puntos, p.duracion, p.aleatorias, p.texto_arriba, p.texto_abajo 
-								FROM ws_preguntas p 
-								WHERE p.actividad_id=:actividad_id1 and p.deleted_at is null';
-
-				$opciones = DB::select($consulta, [':pregunta_id' => $preguntas[$i]->id] );
-				$preguntas[$i]->opciones = $opciones;
+		$daticos 		= [];
+		$compartidas 	= [];
 
 
-			}
-		}
+		$actividad 	= WsActividad::datosActividad($actividad_id);
+
+		$consulta 	= 'SELECT * FROM grupos g WHERE g.year_id=? and g.deleted_at is null';
+		$grupos 	= DB::select($consulta, [$user->year_id]);
+
+
+		$consulta 		= 'SELECT * FROM ws_actividades_compartidas ac WHERE ac.actividad_id=? ';
+		$compartidas 	= DB::select($consulta, [$actividad_id]);
 
 		
-		$actividad->preguntas = $preguntas;
-
-		$datos['actividad'] = $actividad;
+		$datos['grupos'] 		= $grupos;
+		$datos['actividad'] 	= $actividad;
+		$datos['compartidas'] 	= $compartidas;
 		
 		return $datos;
 	}
@@ -180,9 +145,84 @@ class ActividadesController extends Controller {
 		return $act;
 	}
 
+	public function putInsertGrupoCompartido()
+	{
+		
+		$act 				= new WsActividadCompartida();
+		$act->actividad_id 	= Request::input('actividad_id');
+		$act->grupo_id 		= Request::input('grupo_id');
+		$act->save();
+		
+		return $act;
+	}
+
+
+	public function putQuitandoGrupoCompartido()
+	{
+		$user = User::fromToken();
+
+		WsActividadCompartida::where('actividad_id', Request::input('actividad_id'))
+							->where('grupo_id', Request::input('grupo_id'))
+							->delete();
+		
+		return 'Quitado';
+	}
+
+	public function putSetCompartida()
+	{
+		$user 			= User::fromToken();
+
+		$act = WsActividad::findOrFail(Request::input('actividad_id'));
+		$act->compartida 	= Request::input('compartida');
+		$act->save();
+		
+		return 'Compartida cambiada';
+	}
+
+	public function putParaAlumnosToggle()
+	{
+		$user 			= User::fromToken();
+		$para 			= Request::input('para_alumnos');
+
+		$act = WsActividad::findOrFail(Request::input('actividad_id'));
+		$act->para_alumnos 	= $para;
+		$act->save();
+		
+
+		return $act;
+	}
+
+	public function putParaProfesoresToggle()
+	{
+		$user 			= User::fromToken();
+		$para 			= Request::input('para_profesores');
+
+		$act = WsActividad::findOrFail(Request::input('actividad_id'));
+		$act->para_profesores 	= $para;
+		$act->save();
+		
+
+		return $act;
+	}
+
+	public function putParaAcudientesToggle()
+	{
+		$user 			= User::fromToken();
+		$para 			= Request::input('para_profesores');
+
+		$act = WsActividad::findOrFail(Request::input('actividad_id'));
+		$act->para_acudientes 	= $para;
+		$act->save();
+
+
+		return $act;
+	}
+
+
 	public function deleteDestroy($id)
 	{
-		$act = WsActividad::findOrFail($id);
+		$user 	= User::fromToken();
+		$act 	= WsActividad::findOrFail($id);
 		$act->delete();
 
 		return $act;

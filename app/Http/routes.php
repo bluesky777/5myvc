@@ -97,6 +97,7 @@ Route::controller('actividades', 'Actividades\ActividadesController');
 Route::controller('mis-actividades', 'Actividades\MisActividadesController');
 Route::controller('preguntas', 'Actividades\PreguntasController');
 Route::controller('opciones', 'Actividades\OpcionesController');
+Route::controller('respuestas', 'Actividades\RespuestasController');
 
 
 /*

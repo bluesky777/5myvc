@@ -6,8 +6,9 @@ use Request;
 use DB;
 
 use App\Models\User;
-use App\Models\Actividad;
-use App\Models\Grupo;
+use App\Models\WsActividad;
+use App\Models\WsRespuesta;
+use App\Models\WsActividadResuelta;
 
 
 class MisActividadesController extends Controller {
@@ -60,13 +61,23 @@ class MisActividadesController extends Controller {
 	public function putMiActividad()
 	{
 		$user 	= User::fromToken();
-		
+
+		$actividad_id 	= Request::input('actividad_id');
 		$datos 	= [];
 
-		$consulta 			= 'SELECT * FROM ws_actividades a WHERE a.id=? ';
-		$actividad 			= DB::select($consulta, [ Request::input('actividad_id') ])[0];
-		
+
+		$res = WsActividadResuelta::where('actividad_id', $actividad_id)->where('alumno_id', $user->persona_id)->first();
+		if (!$res) {
+			$res = new WsActividadResuelta();
+			$res->actividad_id 		= $actividad_id;
+			$res->alumno_id 		= $user->persona_id;
+			$res->timeout 			= false;
+			$res->save();
+		}
+		$actividad = WsActividad::datosActividadConRespuestas($actividad_id, $res->id);
+
 		$datos['actividad'] = $actividad;
+		$datos['actividad_resuelta'] 		= $res;
 		
 		return $datos;
 	}
@@ -75,7 +86,7 @@ class MisActividadesController extends Controller {
 	{
 		$user 	= User::fromToken();
 
-		$act = Actividad::findOrFail(Request::input('id'));
+		$act = WsActividad::findOrFail(Request::input('id'));
 
 		$act->descripcion	=	Request::input('descripcion');
 		$act->compartida	=	Request::input('compartida');
@@ -95,12 +106,41 @@ class MisActividadesController extends Controller {
 		return $act;
 	}
 
-	public function deleteDestroy($id)
+	public function putSeleccionarOpcion()
 	{
-		$act = Actividad::findOrFail($id);
-		$act->delete();
+		$user 	= User::fromToken();
 
-		return $act;
+		$actividad_resuelta_id 	= Request::input('actividad_resuelta_id');
+		$pregunta_id 			= Request::input('pregunta_id');
+
+
+		$consulta = 'DELETE FROM ws_respuestas WHERE actividad_resuelta_id=? AND pregunta_id=?';
+		DB::delete($consulta, [$actividad_resuelta_id, $pregunta_id]);
+
+		$res 						= new WsRespuesta;
+		$res->actividad_resuelta_id = $actividad_resuelta_id;
+		$res->pregunta_id 			= $pregunta_id;
+		//$res->tiempo 				= Request::input('tiempo');
+		$res->tipo_pregunta 		= Request::input('tipo_pregunta');
+		$res->opcion_id 			= Request::input('opcion_id');
+		$res->opcion_cuadricula_id 	= Request::input('opcion_cuadricula_id');
+		$res->save();
+
+		return $res;
+	}
+
+	public function putFinalizarActividad()
+	{
+		$user 	= User::fromToken();
+
+		$actividad_resuelta_id 	= Request::input('actividad_resuelta_id');
+
+
+		$res 						= WsActividadResuelta::findOrFail($actividad_resuelta_id);
+		$res->terminado 			= true;
+		$res->save();
+
+		return 'Terminada';
 	}
 
 }

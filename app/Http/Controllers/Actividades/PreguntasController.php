@@ -27,7 +27,7 @@ class PreguntasController extends Controller {
 
 
 		$opcion 				= new WsOpcion();
-		$opcion->definicion 	= 'Opcion 1';
+		$opcion->definicion 	= 'Opción 1';
 		$opcion->pregunta_id 	= $preg->id;
 		$opcion->orden 			= 0;
 		$opcion->is_correct 	= true;
@@ -46,9 +46,10 @@ class PreguntasController extends Controller {
 		$datos 	= [];
 
 		$consulta 	= 'SELECT p.id, TRUE as is_preg, p.actividad_id, p.enunciado, p.orden, p.added_by, p.created_at, p.updated_at, NULL as is_cuadricula,
-							p.ayuda, p.tipo_pregunta, p.puntos, p.duracion, p.aleatorias, p.texto_arriba, p.texto_abajo 
+							p.opcion_otra, p.ayuda, p.tipo_pregunta, p.puntos, p.duracion, p.aleatorias, p.texto_arriba, p.texto_abajo 
 						FROM ws_preguntas p 
-						WHERE p.id=? and p.deleted_at is null';
+						WHERE p.id=? and p.deleted_at is null
+						ORDER BY p.order, p.id';
 		$Pregunta 	= DB::select($consulta, [ Request::input('pregunta_id') ])[0];
 
 
@@ -78,6 +79,83 @@ class PreguntasController extends Controller {
 		$preg->texto_arriba 	= Request::input('texto_arriba');
 		$preg->texto_abajo 		= Request::input('texto_abajo');
 		$preg->save();
+
+		return $preg;
+	}
+
+
+
+	public function putToggleOpcionOtra()
+	{
+		$user 	= User::fromToken();
+		
+		$preg 					= WsPregunta::find(Request::input('id'));
+		$preg->opcion_otra 		= Request::input('opcion_otra');
+		$preg->save();
+
+		return 'Opción OTRA cambiada';
+	}
+
+
+
+	public function putUpdateOrden()
+	{
+		$user 	= User::fromToken();
+		
+		$sortHash = Request::input('sortHash');
+
+		for($row = 0; $row < count($sortHash); $row++){
+			foreach($sortHash[$row] as $key => $value){
+
+				$preg 			= WsPregunta::find((int)$key);
+				$preg->orden 	= (int)$value;
+				$preg->save();
+			}
+		}
+
+		return 'Ordenado correctamente';
+	}
+
+
+
+	public function putDuplicarPregunta()
+	{
+		$user 	= User::fromToken();
+		
+		$preg 					= new WsPregunta();
+		$preg->actividad_id 	= Request::input('actividad_id');
+		$preg->contenido_id 	= Request::input('contenido_id');
+		$preg->enunciado 		= Request::input('enunciado');
+		$preg->ayuda 			= Request::input('ayuda');
+		$preg->puntos 			= Request::input('puntos');
+		$preg->duracion 		= Request::input('duracion');
+		$preg->aleatorias 		= Request::input('aleatorias');
+		$preg->texto_arriba 	= Request::input('texto_arriba');
+		$preg->texto_abajo 		= Request::input('texto_abajo');
+		$preg->tipo_pregunta 	= Request::input('tipo_pregunta');
+		$preg->opcion_otra 		= Request::input('opcion_otra');
+		$preg->orden 			= Request::input('orden'); // Debo modificarlo
+		$preg->added_by 		= $user->user_id;
+		$preg->save();
+		
+		$newopciones = [];
+		$opciones = Request::input('opciones');
+		$cant = count($opciones);
+
+		for ($i=0; $i < $cant; $i++) { 
+		
+			$opcion 				= new WsOpcion();
+			$opcion->definicion 	= $opciones[$i]['definicion'];
+			$opcion->pregunta_id 	= Request::input('id');
+			$opcion->orden 			= $opciones[$i]['orden'];
+			$opcion->is_correct 	= $opciones[$i]['is_correct'];
+			$opcion->save();
+
+			array_push($newopciones, $opcion);
+
+		}
+
+		$preg->opciones = $newopciones;
 
 		return $preg;
 	}
