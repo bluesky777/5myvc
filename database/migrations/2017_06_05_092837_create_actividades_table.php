@@ -124,7 +124,7 @@ class CreateActividadesTable extends Migration {
 		Schema::create('ws_actividades_resueltas', function(Blueprint $table) {
 			$table->engine = "InnoDB";
                   $table->increments('id');
-                  $table->integer('alumno_id')->unsigned();
+                  $table->integer('persona_id')->unsigned(); // Id del alumno o profesor o acudiente que al que pertenezcan estas respuestas
                   $table->integer('actividad_id')->unsigned();
                   $table->text('respuesta_comentario')->nullable(); // El alumno podrá escribir su respuesta a la actividad Solo si es de tipo Contenido o autoevaluación
                   $table->integer('autoevaluacion')->default(0); // Nota si la actividad es de tipo Autoevaluación
@@ -137,7 +137,6 @@ class CreateActividadesTable extends Migration {
                   $table->timestamps();
             });
 		Schema::table('ws_actividades_resueltas', function(Blueprint $table) {
-			$table->foreign('alumno_id')->references('id')->on('alumnos')->onDelete('cascade');
 			$table->foreign('actividad_id')->references('id')->on('ws_actividades')->onDelete('cascade');
 		});
 

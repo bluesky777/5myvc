@@ -66,11 +66,11 @@ class MisActividadesController extends Controller {
 		$datos 	= [];
 
 
-		$res = WsActividadResuelta::where('actividad_id', $actividad_id)->where('alumno_id', $user->persona_id)->first();
+		$res = WsActividadResuelta::where('actividad_id', $actividad_id)->where('persona_id', $user->persona_id)->first();
 		if (!$res) {
 			$res = new WsActividadResuelta();
 			$res->actividad_id 		= $actividad_id;
-			$res->alumno_id 		= $user->persona_id;
+			$res->persona_id 		= $user->persona_id;
 			$res->timeout 			= false;
 			$res->save();
 		}

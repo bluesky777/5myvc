@@ -22,7 +22,7 @@ class ActividadesController extends Controller {
 		$acti->asignatura_id 	= Request::input('asignatura_id');
 		$acti->periodo_id 		= $user->periodo_id;
 		$acti->tipo_calificacion = 'Por promedio';
-		$acti->created_by 		= $user->user_id;
+		$acti->created_by 		= $user->persona_id;
 		$acti->save();
 
 		return $acti;
@@ -90,6 +90,71 @@ class ActividadesController extends Controller {
 		
 
 
+
+		return $datos;
+
+	}
+
+	public function putCompartidas()
+	{
+		$user = User::fromToken();
+
+		$datos 				= [];
+		$act_por_responder 	= [];
+		$act_creadas		= [];
+
+		$consulta = 'SELECT * FROM grupos g WHERE g.year_id=? and g.deleted_at is null';
+		$grupos = DB::select($consulta, [$user->year_id]);
+		$datos['grupos'] = $grupos;
+
+		if ($user->is_superuser) {
+			
+			$consulta 				= 'SELECT * FROM ws_actividades a 
+										WHERE a.compartida=true and a.para_alumnos=true and a.deleted_at is null and a.periodo_id=?';
+			$actividades 			= DB::select($consulta, [ $user->periodo_id ]);
+			$actv_alumnos 			= $actividades;
+			$datos['actv_alumnos'] 	= $actv_alumnos;
+
+			$consulta 				= 'SELECT * FROM ws_actividades a 
+										WHERE a.compartida=true and a.para_profesores=true and a.deleted_at is null and a.periodo_id=?';
+			$actividades 			= DB::select($consulta, [ $user->periodo_id ]);
+			$actv_profes 			= $actividades;
+			$datos['actv_profes'] 	= $actv_profes;
+			
+			$consulta 				= 'SELECT * FROM ws_actividades a 
+										WHERE a.compartida=true and a.para_acudientes=true and a.deleted_at is null and a.periodo_id=?';
+			$actividades 			= DB::select($consulta, [ $user->periodo_id ]);
+			$actv_acudi 			= $actividades;
+			$datos['actv_acudi'] 	= $actv_acudi;
+			
+		}
+
+		if ($user->tipo == 'Profesor') {
+			
+			$consulta 				= 'SELECT * FROM ws_actividades a 
+										WHERE a.compartida=true and a.created_by=? and a.para_alumnos=true and a.deleted_at is null and a.periodo_id=?';
+			$actividades 			= DB::select($consulta, [ $user->persona_id, $user->periodo_id ]);
+			$actv_alumnos 			= $actividades;
+			$datos['actv_alumnos'] 	= $actv_alumnos;
+
+			$consulta 				= 'SELECT * FROM ws_actividades a 
+										WHERE a.compartida=true and a.created_by=? and a.para_profesores=true and a.deleted_at is null and a.periodo_id=?';
+			$actividades 			= DB::select($consulta, [ $user->persona_id, $user->periodo_id ]);
+			$actv_profes 			= $actividades;
+			$datos['actv_profes'] 	= $actv_profes;
+			
+			$consulta 				= 'SELECT * FROM ws_actividades a 
+										WHERE a.compartida=true and a.para_profesores=true and a.deleted_at is null and a.periodo_id=?';
+			$actividades 			= DB::select($consulta, [ $user->periodo_id ]);
+			$actv_x_respon 			= $actividades;
+			$datos['actv_x_respon'] = $actv_x_respon;
+			
+			$consulta 				= 'SELECT * FROM ws_actividades a 
+										WHERE a.compartida=true and a.created_by=? and a.para_acudientes=true and a.deleted_at is null and a.periodo_id=?';
+			$actividades 			= DB::select($consulta, [ $user->persona_id, $user->periodo_id ]);
+			$actv_acudi 			= $actividades;
+			$datos['actv_acudi'] 	= $actv_acudi;
+		}
 
 		return $datos;
 
@@ -208,7 +273,7 @@ class ActividadesController extends Controller {
 	public function putParaAcudientesToggle()
 	{
 		$user 			= User::fromToken();
-		$para 			= Request::input('para_profesores');
+		$para 			= Request::input('para_acudientes');
 
 		$act = WsActividad::findOrFail(Request::input('actividad_id'));
 		$act->para_acudientes 	= $para;

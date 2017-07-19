@@ -120,20 +120,26 @@ class PreguntasController extends Controller {
 
 	public function putDuplicarPregunta()
 	{
-		$user 	= User::fromToken();
+		$user 			= User::fromToken();
+
+		$puntos 		= Request::input('puntos');
+		$opcion_otra 	= Request::input('opcion_otra');
+		
+		if (!$puntos) {			$puntos = 0;}
+		if (!$opcion_otra) {	$opcion_otra = 0;}
 		
 		$preg 					= new WsPregunta();
 		$preg->actividad_id 	= Request::input('actividad_id');
 		$preg->contenido_id 	= Request::input('contenido_id');
 		$preg->enunciado 		= Request::input('enunciado');
 		$preg->ayuda 			= Request::input('ayuda');
-		$preg->puntos 			= Request::input('puntos');
+		$preg->puntos 			= $puntos;
 		$preg->duracion 		= Request::input('duracion');
 		$preg->aleatorias 		= Request::input('aleatorias');
 		$preg->texto_arriba 	= Request::input('texto_arriba');
 		$preg->texto_abajo 		= Request::input('texto_abajo');
 		$preg->tipo_pregunta 	= Request::input('tipo_pregunta');
-		$preg->opcion_otra 		= Request::input('opcion_otra');
+		$preg->opcion_otra 		= $opcion_otra;
 		$preg->orden 			= Request::input('orden'); // Debo modificarlo
 		$preg->added_by 		= $user->user_id;
 		$preg->save();
@@ -146,7 +152,7 @@ class PreguntasController extends Controller {
 		
 			$opcion 				= new WsOpcion();
 			$opcion->definicion 	= $opciones[$i]['definicion'];
-			$opcion->pregunta_id 	= Request::input('id');
+			$opcion->pregunta_id 	= $preg->id;
 			$opcion->orden 			= $opciones[$i]['orden'];
 			$opcion->is_correct 	= $opciones[$i]['is_correct'];
 			$opcion->save();
