@@ -90,26 +90,31 @@ class TSubirController extends Controller {
 
 			if ($ausencia_to['uploaded'] == 'to_delete') {
 				$aus 				= Ausencia::find($ausencia_to['id']);
-				$aus->uploaded 		= 'deleted';
-				$aus->deleted_by 	= $user->id;
-				$aus->save();
-				$aus->delete();
+
+				if ($aus) {
+					$aus->uploaded 		= 'deleted';
+					$aus->deleted_by 	= $user->id;
+					$aus->save();
+					$aus->delete();
+				}
+				
 
 			}else{
 
 				$dt = Carbon::now()->format('Y-m-d G:H:i');
 
 				$consulta = 'INSERT INTO ausencias
-								(alumno_id, asignatura_id, cantidad_ausencia, cantidad_tardanza, entrada, fecha_hora, periodo_id, uploaded, created_by, created_at, updated_at)
-							VALUES (:alumno_id, :asignatura_id, :cantidad_ausencia, :cantidad_tardanza, :entrada, :fecha_hora, :periodo_id, :uploaded, :created_by, :created_at, :updated_at)';
+								(alumno_id, asignatura_id, cantidad_ausencia, cantidad_tardanza, entrada, tipo, fecha_hora, periodo_id, uploaded, created_by, created_at, updated_at)
+							VALUES (:alumno_id, :asignatura_id, :cantidad_ausencia, :cantidad_tardanza, :entrada, :tipo, :fecha_hora, :periodo_id, :uploaded, :created_by, :created_at, :updated_at)';
 
 
-				$ausenc = DB::select($consulta, [
+				$ausenc = DB::insert($consulta, [
 					':alumno_id'			=> $ausencia_to['alumno_id'], 
 					':asignatura_id'		=> $ausencia_to['asignatura_id'],
 					':cantidad_ausencia'	=> $ausencia_to['cantidad_ausencia'], 
 					':cantidad_tardanza'	=> $ausencia_to['cantidad_tardanza'], 
 					':entrada'				=> $ausencia_to['entrada'], 
+					':tipo'					=> $ausencia_to['tipo'], 
 					':fecha_hora'			=> $ausencia_to['fecha_hora'], 
 					':periodo_id'			=> $ausencia_to['periodo_id'],
 					':uploaded'				=> 'created',
@@ -135,7 +140,7 @@ class TSubirController extends Controller {
 	{
 		$user = $this->user();
 
-		$id = Request::input('id');
+		$id = Request::input('ausencia_id');
 
 		$ausencia 				= Ausencia::findOrFail($id);
 		$ausencia->uploaded 	= 'deleted';
@@ -151,30 +156,33 @@ class TSubirController extends Controller {
 	{
 		$user = $this->user();
 
-		$uploaded = Request::input('uploaded');
-
 		$dt = Carbon::now()->format('Y-m-d G:H:i');
 
 		$consulta = 'INSERT INTO ausencias
-						(alumno_id, asignatura_id, cantidad_ausencia, cantidad_tardanza, entrada, fecha_hora, periodo_id, uploaded, created_by, created_at, updated_at)
-					VALUES (:alumno_id, :asignatura_id, :cantidad_ausencia, :cantidad_tardanza, :entrada, :fecha_hora, :periodo_id, :uploaded, :created_by, :created_at, :updated_at)';
+						(alumno_id, asignatura_id, cantidad_ausencia, cantidad_tardanza, entrada, tipo, fecha_hora, periodo_id, uploaded, created_by, created_at, updated_at)
+					VALUES (:alumno_id, :asignatura_id, :cantidad_ausencia, :cantidad_tardanza, :entrada, :tipo, :fecha_hora, :periodo_id, :uploaded, :created_by, :created_at, :updated_at)';
 
 
-		$ausenc = DB::select($consulta, [
-			':alumno_id'			=> $ausencia_to['alumno_id'], 
-			':asignatura_id'		=> $ausencia_to['asignatura_id'],
-			':cantidad_ausencia'	=> $ausencia_to['cantidad_ausencia'], 
-			':cantidad_tardanza'	=> $ausencia_to['cantidad_tardanza'], 
-			':entrada'				=> $ausencia_to['entrada'], 
-			':fecha_hora'			=> $ausencia_to['fecha_hora'], 
-			':periodo_id'			=> $ausencia_to['periodo_id'],
+		$ausenc = DB::insert($consulta, [
+			':alumno_id'			=> Request::input('alumno_id'), 
+			':asignatura_id'		=> Request::input('asignatura_id'),
+			':cantidad_ausencia'	=> Request::input('cantidad_ausencia'), 
+			':cantidad_tardanza'	=> Request::input('cantidad_tardanza'), 
+			':entrada'				=> Request::input('entrada'), 
+			':tipo'					=> Request::input('tipo'), 
+			':fecha_hora'			=> Request::input('fecha_hora'), 
+			':periodo_id'			=> Request::input('periodo_id'),
 			':uploaded'				=> 'created',
-			':created_by'			=> $ausencia_to['created_by'],
+			':created_by'			=> Request::input('created_by'),
 			':created_at'			=> $dt,
 			':updated_at'			=> $dt,
 		]);
 
-		return 'Eliminada';
+		$id = DB::getPdo()->lastInsertId();
+
+		$ausencia = Ausencia::findOrFail($id);
+
+		return $ausencia;
 
 	}
 

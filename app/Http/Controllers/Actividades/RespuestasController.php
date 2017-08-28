@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Models\WsActividad;
 use App\Models\WsRespuesta;
 use App\Models\WsActividadResuelta;
+use App\Models\Grupo;
 
 
 class RespuestasController extends Controller {
@@ -21,28 +22,61 @@ class RespuestasController extends Controller {
 		$datos 				= [];
 		$actividad_id 		= Request::input('actividad_id');
 
-		$actividad = WsActividad::datosActividad($actividad_id);
+		$actividad 			= WsActividad::datosActividad($actividad_id);
+		$datos['actividad'] = $actividad;
+
+		// Averiguo los entes participantes: grupos, profesores y acudientes
+		if ($actividad->compartida) {
+			
+			if ($actividad->para_alumnos) {
+				$consulta 	= 'SELECT g.id, g.nombre, g.abrev, g.titular_id, g.orden FROM ws_actividades_compartidas ac 
+								INNER JOIN grupos g on g.id=ac.grupo_id and g.deleted_at is null
+								WHERE actividad_id=?;';
+				$grupos 	= DB::select($consulta, [$actividad->id]);
+				$cant 		= count($grupos);
+
+				for ($i=0; $i < $cant; $i++) { 
+					$consulta 	= 'SELECT g.id, g.nombre, g.abrev, g.titular_id, g.orden FROM ws_actividades_compartidas ac 
+								INNER JOIN grupos g on g.id=ac.grupo_id and g.deleted_at is null
+								WHERE actividad_id=?;';
+					$grupos 	= DB::select($consulta, [$actividad->id]);
+
+					$cant_gru 	= count($grupos);
+
+					for ($j=0; $j < $cant_gru; $j++) { 
+						$grupos[$j]->alumnos = WsActividadResuelta::alumnos_grupo($grupos[$j]->id, $actividad->id);
+
+					}
+				
+				}
+				$datos['grupos'] = $grupos;
+				return $datos;
+			}
 
 
-		$consulta = 'SELECT a.id as asignatura_id, a.grupo_id, a.profesor_id, a.creditos, a.orden,
-						m.materia, m.alias as alias_materia, 
-						p.id as profesor_id, p.nombres as nombres_profesor, p.apellidos as apellidos_profesor,
-						p.foto_id, IFNULL(i.nombre, IF(p.sexo="F","default_female.jpg", "default_male.jpg")) as foto_nombre
-					FROM asignaturas a 
-					inner join materias m on m.id=a.materia_id and m.deleted_at is null
-					inner join profesores p on p.id=a.profesor_id and p.deleted_at is null 
-					inner join grupos g on g.id=a.grupo_id and g.year_id=? and g.deleted_at is null 
-					inner join matriculas mt on mt.grupo_id=a.grupo_id and mt.deleted_at is null 
-					left join images i on p.foto_id=i.id and i.deleted_at is null
-					where a.deleted_at is null
-					order by a.orden, m.orden';
+			if ($actividad->para_profesores) {
+				return 'Profesores';
+			}
 
-		$alumnos = DB::select($consulta, [$user->year_id]);
+
+			if ($actividad->para_acudientes) {
+				return 'Acudientes';
+			}
 
 
 
-		$datos['alumnos'] 		= $alumnos;
-		$datos['actividad'] 	= $actividad;
+		}else{
+
+			$consulta = '';
+
+			$alumnos = DB::select($consulta, [$user->year_id]);
+
+		}
+		
+
+
+
+		
 
 		return $datos;
 

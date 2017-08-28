@@ -35,7 +35,7 @@ class Grupo extends Model {
 						where a.deleted_at is null and m.deleted_at is null
 						order by a.apellidos, a.nombres';
 		}else{
-			// Consulta con solo los matriculados y retirados.
+			// Consulta incluyendo los matriculados y retirados.
 			$consulta = 'SELECT m.id as matricula_id, m.alumno_id, a.no_matricula, a.nombres, a.apellidos, a.sexo, a.user_id, 
 							a.fecha_nac, a.ciudad_nac, a.celular, a.direccion, a.religion,
 							m.grupo_id, m.estado, 

@@ -238,7 +238,7 @@ class TLoginController extends Controller {
 		$profesores = DB::select($cons_pr);
 
 		// Ausencias
-		$cons_aus = "SELECT  a.id, a.asignatura_id, a.alumno_id, a.periodo_id, a.cantidad_ausencia, a.cantidad_tardanza, a.entrada, a.fecha_hora, a.uploaded, a.created_by FROM ausencias a
+		$cons_aus = "SELECT  a.id, a.asignatura_id, a.alumno_id, a.periodo_id, a.cantidad_ausencia, a.cantidad_tardanza, a.entrada, a.tipo, a.fecha_hora, a.uploaded, a.created_by FROM ausencias a
 					inner join periodos p on p.id=a.periodo_id and p.year_id=:year_id
 					WHERE a.deleted_at is null;";
 		$ausencias = DB::select($cons_aus, [":year_id" => $year_id]);
@@ -327,7 +327,7 @@ class TLoginController extends Controller {
 
 
 		// Ausencias
-		$cons_aus = "SELECT  a.id, a.asignatura_id, a.alumno_id, a.periodo_id, a.cantidad_ausencia, a.cantidad_tardanza, a.entrada, a.fecha_hora, a.uploaded, a.created_by FROM ausencias a
+		$cons_aus = "SELECT  a.id, a.asignatura_id, a.alumno_id, a.periodo_id, a.cantidad_ausencia, a.cantidad_tardanza, a.entrada, a.tipo, a.fecha_hora, a.uploaded, a.created_by FROM ausencias a
 					inner join periodos p on p.id=a.periodo_id and p.year_id=:year_id
 					WHERE a.deleted_at is null;";
 		$ausencias = DB::select($cons_aus, [":year_id" => $year_id]);

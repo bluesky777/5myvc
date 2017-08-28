@@ -27,7 +27,8 @@ class Unidad extends Model {
 		$consulta = 'SELECT u.id as unidad_id, u.definicion as definicion_unidad, u.porcentaje as porcentaje_unidad, 
 						u.asignatura_id, u.orden as orden_unidad, u.periodo_id
 					FROM unidades u
-					where u.asignatura_id=:asignatura_id and u.periodo_id=:periodo_id and u.deleted_at is null';
+					where u.asignatura_id=:asignatura_id and u.periodo_id=:periodo_id and u.deleted_at is null
+					order by u.orden, u.id';
 
 		$unidades = DB::select(DB::raw($consulta), array(
 			':asignatura_id'	=> $asignatura_id,
