@@ -23,8 +23,8 @@ class Alumno extends Model {
 	public static function userData($alumno_id)
 	{
 		$consulta = 'SELECT a.user_id, u.username, a.sexo, u.email, a.fecha_nac,
-					u.imagen_id, IFNULL(i.nombre, IF(a.sexo="F","default_female.jpg", "default_male.jpg")) as imagen_nombre, 
-					a.foto_id, IFNULL(i2.nombre, IF(a.sexo="F","default_female.jpg", "default_male.jpg")) as foto_nombre
+					u.imagen_id, IFNULL(i.nombre, IF(a.sexo="F","default_female.png", "default_male.png")) as imagen_nombre, 
+					a.foto_id, IFNULL(i2.nombre, IF(a.sexo="F","default_female.png", "default_male.png")) as foto_nombre
 				from alumnos a 
 				inner join users u on a.user_id=u.id and u.deleted_at is null
 				left join images i on i.id=u.imagen_id and i.deleted_at is null
@@ -39,8 +39,8 @@ class Alumno extends Model {
 	{
 		$consulta = 'SELECT a.id as alumno_id, a.nombres, a.apellidos, a.facebook, a.religion, 
 						a.user_id, u.username, a.sexo, u.email, a.fecha_nac,
-						u.imagen_id, IFNULL(i.nombre, IF(a.sexo="F","default_female.jpg", "default_male.jpg")) as imagen_nombre, 
-						a.foto_id, IFNULL(i2.nombre, IF(a.sexo="F","default_female.jpg", "default_male.jpg")) as foto_nombre,
+						u.imagen_id, IFNULL(i.nombre, IF(a.sexo="F","default_female.png", "default_male.png")) as imagen_nombre, 
+						a.foto_id, IFNULL(i2.nombre, IF(a.sexo="F","default_female.png", "default_male.png")) as foto_nombre,
 						m.grupo_id, g.nombre as nombre_grupo, g.abrev as abrev_grupo, g.titular_id, g.orden, g.caritas
 					from alumnos a 
 					inner join matriculas m on m.alumno_id=a.id 
@@ -62,8 +62,8 @@ class Alumno extends Model {
 	public static function detailedNotas($alumno_id)
 	{
 		$consulta = 'SELECT a.user_id, u.username, a.sexo, u.email, a.fecha_nac,
-				u.imagen_id, IFNULL(i.nombre, IF(a.sexo="F","default_female.jpg", "default_male.jpg")) as imagen_nombre, 
-				a.foto_id, IFNULL(i2.nombre, IF(a.sexo="F","default_female.jpg", "default_male.jpg")) as foto_nombre
+				u.imagen_id, IFNULL(i.nombre, IF(a.sexo="F","default_female.png", "default_male.png")) as imagen_nombre, 
+				a.foto_id, IFNULL(i2.nombre, IF(a.sexo="F","default_female.png", "default_male.png")) as foto_nombre
 				from alumnos a 
 				inner join users u on a.user_id=u.id
 				left join images i on i.id=u.imagen_id

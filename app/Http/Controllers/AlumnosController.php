@@ -75,7 +75,7 @@ class AlumnosController extends Controller {
 		$consulta = 'SELECT m.id as matricula_id, a.id as alumno_id, a.no_matricula, a.nombres, a.apellidos, a.sexo, a.user_id, 
 				a.fecha_nac, a.ciudad_nac, a.celular, a.direccion, a.religion,
 				g.year_id, m.grupo_id, g.nombre as nombre_grupo, g.abrev as abrevgrupo,
-				a.foto_id, IFNULL(i.nombre, IF(a.sexo="F","default_female.jpg", "default_male.jpg")) as foto_nombre, 
+				a.foto_id, IFNULL(i.nombre, IF(a.sexo="F","default_female.png", "default_male.png")) as foto_nombre, 
 				m.estado 
 			FROM alumnos a 
 			INNER JOIN matriculas m on m.alumno_id=a.id and a.deleted_at is null and m.deleted_at is null 
@@ -301,9 +301,9 @@ class AlumnosController extends Controller {
 			$alumno->foto_nombre = $imagen->nombre;
 		}else{
 			if ($alumno->sexo=='F') {
-				$alumno->foto_nombre = 'default_female.jpg';
+				$alumno->foto_nombre = 'default_female.png';
 			}else{
-				$alumno->foto_nombre = 'default_male.jpg';
+				$alumno->foto_nombre = 'default_male.png';
 			}
 		}
 

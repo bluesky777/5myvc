@@ -15,11 +15,11 @@ class ImagesTableSeeder extends Seeder {
 		// Las imágenes de usuario por defecto.
 		$img = Image::create(array(
 			'id'		=> 1,
-			'nombre'	=> 'default_male.jpg',
+			'nombre'	=> 'default_male.png',
 		));
 		$img = Image::create(array(
 			'id'		=> 2,
-			'nombre'	=> 'default_female.jpg',
+			'nombre'	=> 'default_female.png',
 		));
 
 		/*

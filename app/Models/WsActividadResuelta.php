@@ -22,7 +22,7 @@ class WsActividadResuelta extends Model {
 	{
 		$consulta 	= 'SELECT m.id as matricula_id, m.alumno_id, a.nombres, a.apellidos, a.sexo, a.user_id, 
 							m.grupo_id, m.estado, 
-							a.foto_id, IFNULL(i2.nombre, IF(a.sexo="F","default_female.jpg", "default_male.jpg")) as foto_nombre,
+							a.foto_id, IFNULL(i2.nombre, IF(a.sexo="F","default_female.png", "default_male.png")) as foto_nombre,
 							ar.id as actividad_res_id, ar.respuesta_comentario, ar.autoevaluacion, ar.is_puntaje_manual, ar.puntaje_manual, ar.terminado, ar.timeout
 						FROM alumnos a 
 						inner join matriculas m on a.id=m.alumno_id and m.grupo_id=? and (m.estado="MATR" or m.estado="ASIS") and m.deleted_at is null

@@ -136,9 +136,9 @@ class LoginController extends Controller {
 	function default_image_name($sexo)
 	{
 		if ($sexo == 'F') {
-			return 'default_female.jpg';
+			return 'default_female.png';
 		}else{
-			return 'default_male.jpg';
+			return 'default_male.png';
 		}
 	}
 

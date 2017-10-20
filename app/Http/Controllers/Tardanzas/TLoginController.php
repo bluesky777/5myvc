@@ -65,7 +65,7 @@ class TLoginController extends Controller {
 			case 'Profesor':
 				
 				$consulta = 'SELECT p.id as persona_id, p.nombres, p.apellidos, p.sexo, p.fecha_nac, p.user_id, u.username, u.password,
-								IFNULL(i.nombre, IF(p.sexo="F","default_female.jpg", "default_male.jpg")) as imagen_nombre,  
+								IFNULL(i.nombre, IF(p.sexo="F","default_female.png", "default_male.png")) as imagen_nombre,  
 								per.id as periodo_id, per.numero as numero_periodo, per.year_id
 							from profesores p 
 							inner join users u on u.id=p.user_id 
@@ -87,7 +87,7 @@ class TLoginController extends Controller {
 				
 				$consulta = 'SELECT u.id as persona_id, "" as nombres, "" as apellidos, u.id as user_id, u.username, u.is_superuser, u.tipo, 
 								u.sexo, u.email, "N/A" as fecha_nac, u.password, 
-								u.imagen_id, IFNULL(i.nombre, IF(u.sexo="F","default_female.jpg", "default_male.jpg")) as imagen_nombre, 
+								u.imagen_id, IFNULL(i.nombre, IF(u.sexo="F","default_female.png", "default_male.png")) as imagen_nombre, 
 								per.id as periodo_id, per.numero as numero_periodo, per.year_id
 							from users u
 							left join periodos per on per.id=u.periodo_id
@@ -160,7 +160,7 @@ class TLoginController extends Controller {
 			case 'Profesor':
 				
 				$consulta = 'SELECT p.id as persona_id, p.nombres, p.apellidos, p.sexo, p.fecha_nac, p.user_id, u.username, u.password,
-								IFNULL(i.nombre, IF(p.sexo="F","default_female.jpg", "default_male.jpg")) as imagen_nombre,  
+								IFNULL(i.nombre, IF(p.sexo="F","default_female.png", "default_male.png")) as imagen_nombre,  
 								per.id as periodo_id, per.numero as numero_periodo, per.year_id, y.year
 							from profesores p 
 							inner join users u on u.id=p.user_id 
@@ -183,7 +183,7 @@ class TLoginController extends Controller {
 				
 				$consulta = 'SELECT u.id as persona_id, "" as nombres, "" as apellidos, u.id as user_id, u.username, u.is_superuser, u.tipo, 
 								u.sexo, u.email, "N/A" as fecha_nac, u.password, 
-								u.imagen_id, IFNULL(i.nombre, IF(u.sexo="F","default_female.jpg", "default_male.jpg")) as imagen_nombre, 
+								u.imagen_id, IFNULL(i.nombre, IF(u.sexo="F","default_female.png", "default_male.png")) as imagen_nombre, 
 								per.id as periodo_id, per.numero as numero_periodo, per.year_id, y.year
 							from users u
 							left join periodos per on per.id=u.periodo_id
@@ -346,9 +346,9 @@ class TLoginController extends Controller {
 	function default_image_name($sexo)
 	{
 		if ($sexo == 'F') {
-			return 'default_female.jpg';
+			return 'default_female.png';
 		}else{
-			return 'default_male.jpg';
+			return 'default_male.png';
 		}
 	}
 

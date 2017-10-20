@@ -22,7 +22,7 @@ class ContratosController extends Controller {
 					p.facebook, p.email, p.tipo_profesor, p.user_id, u.username,
 					u.email as email_usu, u.imagen_id, u.is_superuser,
 					c.id as contrato_id, c.year_id,
-					p.foto_id, IFNULL(i.nombre, IF(p.sexo="F","default_female.jpg", "default_male.jpg")) as foto_nombre
+					p.foto_id, IFNULL(i.nombre, IF(p.sexo="F","default_female.png", "default_male.png")) as foto_nombre
 				from profesores p
 				inner join contratos c on c.profesor_id=p.id and c.year_id=:year_id and c.deleted_at is null
 				left join users u on p.user_id=u.id and u.deleted_at is null

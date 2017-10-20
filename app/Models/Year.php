@@ -35,11 +35,11 @@ class Year extends Model {
 							y.logo_id, iL.nombre as logo, y.img_encabezado_id, iE.nombre as img_encabezado, y.nota_minima_aceptada, y.config_certificado_estudio_id, 
 
 							y.secretario_id, pSec.nombres as nombres_secretario, pSec.apellidos as apellidos_secretario, pSec.sexo as sexo_secretario,
-							pSec.foto_id as secre_foto_id, IFNULL(iSec.nombre, IF(pSec.sexo="F","default_female.jpg", "default_male.jpg")) as secre_foto_nombre,
+							pSec.foto_id as secre_foto_id, IFNULL(iSec.nombre, IF(pSec.sexo="F","default_female.png", "default_male.png")) as secre_foto_nombre,
 							pSec.firma_id as secre_firma_id, iFS.nombre as secre_firma, 
 
 							y.rector_id, pRec.nombres as nombres_rector, pRec.apellidos as apellidos_rector, pRec.sexo as sexo_rector,
-							pRec.foto_id as rector_foto_id, IFNULL(iRec.nombre, IF(pRec.sexo="F","default_female.jpg", "default_male.jpg")) as rector_foto_nombre,
+							pRec.foto_id as rector_foto_id, IFNULL(iRec.nombre, IF(pRec.sexo="F","default_female.png", "default_male.png")) as rector_foto_nombre,
 							pRec.firma_id as rector_firma_id, iFS.nombre as rector_firma
 
 						FROM years y
@@ -65,11 +65,11 @@ class Year extends Model {
 							y.logo_id, iL.nombre as logo, y.img_encabezado_id, y.nota_minima_aceptada, iE.nombre as img_encabezado, y.config_certificado_estudio_id, 
 
 							y.secretario_id, pSec.nombres as nombres_secretario, pSec.apellidos as apellidos_secretario, pSec.sexo as sexo_secretario,
-							pSec.foto_id as secre_foto_id, IFNULL(iSec.nombre, IF(pSec.sexo="F","default_female.jpg", "default_male.jpg")) as secre_foto_nombre,
+							pSec.foto_id as secre_foto_id, IFNULL(iSec.nombre, IF(pSec.sexo="F","default_female.png", "default_male.png")) as secre_foto_nombre,
 							pSec.firma_id as secre_firma_id, iFS.nombre as secre_firma, 
 
 							y.rector_id, pRec.nombres as nombres_rector, pRec.apellidos as apellidos_rector, pRec.sexo as sexo_rector,
-							pRec.foto_id as rector_foto_id, IFNULL(iRec.nombre, IF(pRec.sexo="F","default_female.jpg", "default_male.jpg")) as rector_foto_nombre,
+							pRec.foto_id as rector_foto_id, IFNULL(iRec.nombre, IF(pRec.sexo="F","default_female.png", "default_male.png")) as rector_foto_nombre,
 							pRec.firma_id as rector_firma_id, iFS.nombre as rector_firma
 
 						FROM years y

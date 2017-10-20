@@ -101,7 +101,7 @@ class PuestosAnualesController extends Controller {
 			            IF(n.nota < ?, 1, 0) as perdido, 
 						s.definicion, s.porcentaje as porc_subuni, s.unidad_id, u.porcentaje as porc_uni, u.periodo_id, u.asignatura_id,
 						pr.id as profesor_id, pr.nombres as nombres_profesor, pr.apellidos as apellidos_profesor, pr.sexo,
-						pr.foto_id, IFNULL(i.nombre, IF(pr.sexo="F","default_female.jpg", "default_male.jpg")) as foto_nombre,
+						pr.foto_id, IFNULL(i.nombre, IF(pr.sexo="F","default_female.png", "default_male.png")) as foto_nombre,
 						a.grupo_id 
 			        FROM notas n 
 						inner join subunidades s on s.id=n.subunidad_id and s.deleted_at is null

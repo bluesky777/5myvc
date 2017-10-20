@@ -6,9 +6,10 @@ composer.lock
 .DS_Store
 Thumbs.db
 !/public/images/perfil/default_male.jpg
+!/public/images/perfil/default_male.png
 /public/images/perfil
-!/public/images/perfil/default_male.jpg
 !/public/images/perfil/default_female.jpg
+!/public/images/perfil/default_female.png
 /public/images/shared/
 !/public/images/shared/encabezado-prueba-membrete.jpg
 !/public/images/shared/piepagina-prueba-membrete.jpg

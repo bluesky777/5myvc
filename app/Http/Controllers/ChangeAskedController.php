@@ -32,8 +32,8 @@ class ChangeAskedController extends Controller {
 			$consulta = 'SELECT m.id as matricula_id, m.alumno_id, a.no_matricula, a.nombres, a.apellidos, a.sexo, a.user_id, u.username, 
 							a.fecha_nac, a.ciudad_nac, a.celular, a.direccion, a.religion,
 							m.grupo_id, m.estado, g.nombre as grupo_nombre, g.abrev as grupo_abrev,
-							u.imagen_id, IFNULL(i.nombre, IF(a.sexo="F","default_female.jpg", "default_male.jpg")) as imagen_nombre, 
-							a.foto_id, IFNULL(i2.nombre, IF(a.sexo="F","default_female.jpg", "default_male.jpg")) as foto_nombre,
+							u.imagen_id, IFNULL(i.nombre, IF(a.sexo="F","default_female.png", "default_male.png")) as imagen_nombre, 
+							a.foto_id, IFNULL(i2.nombre, IF(a.sexo="F","default_female.png", "default_male.png")) as foto_nombre,
 							c.id as asked_id, c.asked_by_user_id, c.asked_to_user_id
 						FROM alumnos a 
 						inner join matriculas m on a.id=m.alumno_id and m.deleted_at is null
@@ -56,8 +56,8 @@ class ChangeAskedController extends Controller {
 			$consulta = 'SELECT m.id as matricula_id, m.alumno_id, a.no_matricula, a.nombres, a.apellidos, a.sexo, a.user_id, u.username, 
 							a.fecha_nac, a.ciudad_nac, a.celular, a.direccion, a.religion,
 							m.grupo_id, m.estado, g.nombre as grupo_nombre, g.abrev as grupo_abrev,
-							u.imagen_id, IFNULL(i.nombre, IF(a.sexo="F","default_female.jpg", "default_male.jpg")) as imagen_nombre, 
-							a.foto_id, IFNULL(i2.nombre, IF(a.sexo="F","default_female.jpg", "default_male.jpg")) as foto_nombre,
+							u.imagen_id, IFNULL(i.nombre, IF(a.sexo="F","default_female.png", "default_male.png")) as imagen_nombre, 
+							a.foto_id, IFNULL(i2.nombre, IF(a.sexo="F","default_female.png", "default_male.png")) as foto_nombre,
 							c.id as asked_id, c.asked_by_user_id, c.asked_to_user_id
 						FROM alumnos a 
 						inner join matriculas m on a.id=m.alumno_id and m.deleted_at is null

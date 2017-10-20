@@ -25,8 +25,8 @@ class Grupo extends Model {
 			$consulta = 'SELECT m.id as matricula_id, m.alumno_id, a.no_matricula, a.nombres, a.apellidos, a.sexo, a.user_id, 
 							a.fecha_nac, a.ciudad_nac, a.celular, a.direccion, a.religion,
 							m.grupo_id, m.estado, 
-							u.imagen_id, IFNULL(i.nombre, IF(a.sexo="F","default_female.jpg", "default_male.jpg")) as imagen_nombre, 
-							a.foto_id, IFNULL(i2.nombre, IF(a.sexo="F","default_female.jpg", "default_male.jpg")) as foto_nombre
+							u.imagen_id, IFNULL(i.nombre, IF(a.sexo="F","default_female.png", "default_male.png")) as imagen_nombre, 
+							a.foto_id, IFNULL(i2.nombre, IF(a.sexo="F","default_female.png", "default_male.png")) as foto_nombre
 						FROM alumnos a 
 						inner join matriculas m on a.id=m.alumno_id and m.grupo_id=? and (m.estado="MATR" or m.estado="ASIS") and m.deleted_at is null
 						left join users u on a.user_id=u.id and u.deleted_at is null
@@ -39,8 +39,8 @@ class Grupo extends Model {
 			$consulta = 'SELECT m.id as matricula_id, m.alumno_id, a.no_matricula, a.nombres, a.apellidos, a.sexo, a.user_id, 
 							a.fecha_nac, a.ciudad_nac, a.celular, a.direccion, a.religion,
 							m.grupo_id, m.estado, 
-							u.imagen_id, IFNULL(i.nombre, IF(a.sexo="F","default_female.jpg", "default_male.jpg")) as imagen_nombre, 
-							a.foto_id, IFNULL(i2.nombre, IF(a.sexo="F","default_female.jpg", "default_male.jpg")) as foto_nombre,
+							u.imagen_id, IFNULL(i.nombre, IF(a.sexo="F","default_female.png", "default_male.png")) as imagen_nombre, 
+							a.foto_id, IFNULL(i2.nombre, IF(a.sexo="F","default_female.png", "default_male.png")) as foto_nombre,
 							m.fecha_retiro as fecha_retiro 
 						FROM alumnos a 
 						inner join matriculas m on a.id=m.alumno_id and m.grupo_id=?  
@@ -71,7 +71,7 @@ class Grupo extends Model {
 		$consulta = 'SELECT a.id as asignatura_id, a.grupo_id, a.profesor_id, a.creditos, a.orden,
 				m.materia, m.alias as alias_materia, 
 				p.id as profesor_id, p.nombres as nombres_profesor, p.apellidos as apellidos_profesor,
-				p.foto_id, IFNULL(i.nombre, IF(p.sexo="F","default_female.jpg", "default_male.jpg")) as foto_nombre
+				p.foto_id, IFNULL(i.nombre, IF(p.sexo="F","default_female.png", "default_male.png")) as foto_nombre
 			FROM asignaturas a 
 			inner join materias m on m.id=a.materia_id and m.deleted_at is null
 			inner join profesores p on p.id=a.profesor_id and p.deleted_at is null' . $complemento .
@@ -99,7 +99,7 @@ class Grupo extends Model {
 		$consulta = 'SELECT g.id as grupo_id, g.titular_id, g.nombre as nombre_grupo, g.abrev as abrev_grupo,
 						g.caritas,
 						p.nombres as nombres_profesor, p.apellidos as apellidos_profesor,
-						p.foto_id, IFNULL(i.nombre, IF(p.sexo="F","default_female.jpg", "default_male.jpg")) as foto_nombre,
+						p.foto_id, IFNULL(i.nombre, IF(p.sexo="F","default_female.png", "default_male.png")) as foto_nombre,
 						p.firma_id, i2.nombre as firma_titular_nombre
 					FROM grupos g 
 					left join profesores p on p.id=g.titular_id and p.deleted_at is null

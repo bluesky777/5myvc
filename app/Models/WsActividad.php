@@ -15,7 +15,7 @@ class WsActividad extends Model {
 
 	static public $consActividad 	= 'SELECT a.*, ag.grupo_id, g.nombre as nombre_grupo, g.abrev, g.titular_id, ag.materia_id, m.materia, m.alias, 
 											p.id as profesor_id, p.nombres as nombres_profesor, p.apellidos as apellidos_profesor,
-											p.foto_id, IFNULL(i.nombre, IF(p.sexo="F","default_female.jpg", "default_male.jpg")) as foto_nombre
+											p.foto_id, IFNULL(i.nombre, IF(p.sexo="F","default_female.png", "default_male.png")) as foto_nombre
 									FROM ws_actividades a 
 									LEFT JOIN asignaturas ag on ag.id=a.asignatura_id and ag.deleted_at is null
 									LEFT JOIN grupos g on g.id=ag.grupo_id and g.deleted_at is null

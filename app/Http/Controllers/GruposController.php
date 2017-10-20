@@ -38,8 +38,8 @@ class GruposController extends Controller {
 	{
 		$user = User::fromToken();
 		$consulta = 'SELECT m.alumno_id, a.user_id, u.username, a.nombres, a.apellidos, a.sexo, a.fecha_nac,
-						u.imagen_id, IFNULL(i.nombre, IF(a.sexo="F","default_female.jpg", "default_male.jpg")) as imagen_nombre, 
-						a.foto_id, IFNULL(i2.nombre, IF(a.sexo="F","default_female.jpg", "default_male.jpg")) as foto_nombre,
+						u.imagen_id, IFNULL(i.nombre, IF(a.sexo="F","default_female.png", "default_male.png")) as imagen_nombre, 
+						a.foto_id, IFNULL(i2.nombre, IF(a.sexo="F","default_female.png", "default_male.png")) as foto_nombre,
 						(a.direccion + " - " + a.barrio) as direccion, a.facebook, a.pazysalvo, a.deuda
 					FROM alumnos a
 					inner join matriculas m on m.alumno_id=a.id and m.grupo_id=:grupo_id and m.deleted_at is null 
