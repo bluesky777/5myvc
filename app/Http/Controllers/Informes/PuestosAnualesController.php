@@ -114,11 +114,11 @@ class PuestosAnualesController extends Controller {
 			        WHERE alumno_id = ?
 			        group by n.id
 			        )R1
-				GROUP BY R1.asignatura_id, R1.periodo_id
+				GROUP BY R1.asignatura_id, R1.periodo_id, R1.alumno_id
 			    )R2
                 inner join grupos g on g.id=R2.grupo_id
                 inner join matriculas m on m.grupo_id=g.id and R2.alumno_id=m.alumno_id and m.deleted_at is null
-			GROUP BY R2.asignatura_id';
+			GROUP BY R2.asignatura_id, R2.alumno_id';
 
 		$notas = DB::select($consulta, [
 						User::$nota_minima_aceptada, 

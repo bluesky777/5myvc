@@ -21,7 +21,7 @@ class DefinicionComportamiento extends Model {
 					left join frases f on f.id=dc.frase_id and f.deleted_at is null
 					where dc.deleted_at is null and dc.comportamiento_id=?';
 
-		$definiciones = DB::select(DB::raw($consulta), array($comport_id));
+		$definiciones = DB::select($consulta, [$comport_id]);
 
 		return $definiciones;
 	}

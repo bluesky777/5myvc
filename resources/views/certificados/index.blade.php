@@ -1,1 +1,0 @@
-/Applications/XAMPP/xamppfiles/htdocs/myvc/app/views/participantes/index.blade.php

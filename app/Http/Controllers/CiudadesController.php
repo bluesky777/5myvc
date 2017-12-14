@@ -16,16 +16,34 @@ class CiudadesController extends Controller {
 	}
 
 	
+	// Se podrá eliminar cuando modifique AlumnoEditarCtrl
 	public function getDepartamentos($pais_id)
 	{	
 		$consulta = 'SELECT distinct departamento FROM ciudades where pais_id = :pais';
-		return DB::select(DB::raw($consulta), array('pais' => $pais_id));
+		return DB::select($consulta, ['pais' => $pais_id]);
+	}
+
+	public function getByDepartamento()
+	{	
+		$consulta = 'SELECT * FROM ciudades where departamento = :departamento';
+		return DB::select($consulta, ['departamento' => Request::input('departamento') ]);
+	}
+
+	public function putDepartamentosById()
+	{	
+		//DB::enableQueryLog();
+		
+		$consulta = 'SELECT distinct departamento FROM ciudades where pais_id = :pais ';
+		$departamentos = ['departamentos' => DB::select($consulta, ['pais' => Request::input('pais_id') ] ) ];
+		//return $laQuery = DB::getQueryLog();
+
+		return $departamentos;
 	}
 
 	public function getPaisdeciudad($ciudad_id)
 	{	
 		$consulta = 'SELECT paises.id, pais, abrev FROM paises, ciudades where paises.id = ciudades.pais_id and ciudades.id = :ciudad_id';
-		return DB::select(DB::raw($consulta), array('ciudad_id' => $ciudad_id));
+		return DB::select($consulta, ['ciudad_id' => $ciudad_id]);
 	}
 
 	public function getPordepartamento($departamento)
@@ -52,7 +70,7 @@ class CiudadesController extends Controller {
 	}
 
 
-	public function store()
+	public function postGuardarCiudad()
 	{
 		
 		try {
@@ -69,19 +87,29 @@ class CiudadesController extends Controller {
 	}
 
 
-	public function update($id)
+	public function putActualizarCiudad()
 	{
-		$ciudad = Ciudad::findOrFail($id);
-		try {
-			$ciudad->ciudad			=	Request::input('ciudad');
-			$ciudad->departamento	=	Request::input('departamento');
-			$ciudad->pais_id		=	Request::input('pais_id');
-			$ciudad->save();
+		$user = User::fromToken();
 
-		} catch (Exception $e) {
-			return $e;
-		}
+		$city 				= Ciudad::find(Request::input('id'));
+		$city->ciudad 		= Request::input('ciudad');
+		$city->departamento = Request::input('departamento');
+		$city->save();
+		return $city;
 	}
+
+	public function putActualizarDepartamento()
+	{
+		$user = User::fromToken();
+		
+		$newDepart 	= Request::input('departamento');
+		$city 		= Ciudad::find(Request::input('id'));
+		DB::table('ciudades')
+            ->where('departamento', $city->departamento)
+            ->update(['departamento' => $newDepart]);
+		return $city;
+	}
+
 
 
 	public function destroy($id)

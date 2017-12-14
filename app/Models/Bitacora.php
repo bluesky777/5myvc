@@ -36,18 +36,18 @@ class Bitacora extends Model {
 					inner join materias m on m.id=a.materia_id
 					inner join alumnos al on al.id=:alumno_id';
 
-		$datos = DB::select(DB::raw($consulta), array(
+		$datos = DB::select($consulta, array(
 			':subunidad_id' => $nota->subunidad_id, 
 			':alumno_id'	=> $nota->alumno_id))[0];
 
 		$datos = (object)$datos;
 
-		$this->affected_element_type = 'Nota';
-		$this->affected_element_id = 'Nota';
-		$this->affected_user_id = $datos->user_id;
-		$this->affected_person_id = $datos->alumno_id;
-		$this->affected_person_name = $datos->nombres . ' ' . $datos->apellidos;
-		$this->affected_person_type = 'Al';
+		$this->affected_element_type 	= 'Nota';
+		$this->affected_element_id 		= $nota->id;
+		$this->affected_user_id 		= $datos->user_id;
+		$this->affected_person_id 		= $datos->alumno_id;
+		$this->affected_person_name 	= $datos->nombres . ' ' . $datos->apellidos;
+		$this->affected_person_type 	= 'Al';
 
 		/*
 		$this->descripcion = 'Cambió la nota al alumno "' . $this->affected_person_name . '", de "'.$this->affected_element_old_value_int.'" por "'.$this->affected_element_new_value_int.'" 

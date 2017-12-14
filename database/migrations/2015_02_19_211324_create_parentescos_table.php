@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 
@@ -19,7 +20,7 @@ class CreateParentescosTable extends Migration {
 			$table->integer('acudiente_id');
 			$table->integer('alumno_id');
 			$table->string('parentesco');
-			$table->string('observaciones');
+			$table->string('observaciones')->nullable();
 			$table->integer('created_by')->nullable();
 			$table->integer('updated_by')->nullable();
 			$table->integer('deleted_by')->nullable();

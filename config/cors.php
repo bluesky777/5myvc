@@ -1,44 +1,20 @@
 <?php
 
-return array(
-
-    /*
+return [
+     /*
      |--------------------------------------------------------------------------
-     | Laravel CORS Defaults
+     | Laravel CORS
      |--------------------------------------------------------------------------
      |
-     | The defaults are the default values applied to all the paths that match,
-     | unless overridden in a specific URL configuration.
-     | If you want them to apply to everything, you must define a path with *.
-     |
-     | allowedOrigins, allowedHeaders and allowedMethods can be set to array('*') 
-     | to accept any value, the allowed methods however have to be explicitly listed.
+     | allowedOrigins, allowedHeaders and allowedMethods can be set to array('*')
+     | to accept any value.
      |
      */
-    'defaults' => array(
-        'supportsCredentials' => true,
-        'allowedOrigins' => array('*'),
-        'allowedHeaders' => array('*'),
-        'allowedMethods' => array('POST', 'PUT', 'GET', 'DELETE', 'OPTION'),
-        'exposedHeaders' => array(),
-        'maxAge' => 0,
-        'hosts' => array('*'),
-    ),
-
-    'paths' => array(
-        'api/*' => array(
-            'allowedOrigins' => array('*'),
-            'allowedHeaders' => array('*'),
-            'allowedMethods' => array('*'),
-            'maxAge' => 3600,
-        ),
-        '*' => array(
-            'allowedOrigins' => array('*'),
-            'allowedHeaders' => array('*'),
-            'allowedMethods' => array('POST', 'PUT', 'GET', 'DELETE', 'OPTION'),
-            'maxAge' => 3600,
-            'hosts' => array('*'),
-        ),
-    ),
-
-);
+    'supportsCredentials' => false,
+    'allowedOrigins' => ['*'],
+    'allowedHeaders' => ['*'],
+    'allowedMethods' => ['POST', 'PUT', 'GET', 'DELETE', 'OPTION'], // ex: ['GET', 'POST', 'PUT',  'DELETE']
+    'exposedHeaders' => [],
+    'maxAge' => 3600,
+    'hosts'          => ['*'],
+];

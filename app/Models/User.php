@@ -1,11 +1,19 @@
 <?php namespace App\Models;
 
-
+/*
 use Illuminate\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Auth\Passwords\CanResetPassword;
 use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
 use Illuminate\Contracts\Auth\CanResetPassword as CanResetPasswordContract;
+*/
+
+use Tymon\JWTAuth\Contracts\JWTSubject as AuthenticatableUserContract;
+
+
+use Illuminate\Notifications\Notifiable;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+
 
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -20,21 +28,38 @@ use Request;
 use DB;
 
 
-
+/*
 class User extends Model implements AuthenticatableContract, CanResetPasswordContract {
 
 	use Authenticatable, CanResetPassword;
+*/
 
-	use EntrustUserTrait;
+class User extends Authenticatable implements AuthenticatableUserContract
+{
+    use Notifiable;
 
-	use SoftDeletes;
+
+	use SoftDeletes, EntrustUserTrait {
+
+        SoftDeletes::restore insteadof EntrustUserTrait;
+        EntrustUserTrait::restore insteadof SoftDeletes;
+
+    }
+    
 	protected $softDelete = true;
 
 	protected $dates = ['deleted_at', 'created_at'];
 
 	protected $table = 'users';
 
-	protected $hidden = array('password', 'remember_token');
+
+	protected $fillable = [
+        'name', 'email', 'password',
+    ];
+
+	protected $hidden = [
+        'password', 'remember_token',
+    ];
 
 
 	public static $nota_minima_aceptada = 0;
@@ -281,6 +306,29 @@ class User extends Model implements AuthenticatableContract, CanResetPasswordCon
 
 		return $perms;
 	}
+
+
+
+
+	/**
+     * @return mixed
+     */
+    public function getJWTIdentifier()
+    {
+        return $this->getKey();  // Eloquent model method
+    }
+
+    /**
+     * @return array
+     */
+    public function getJWTCustomClaims()
+    {
+        return [
+             'user' => [ 
+                'id' => $this->id,
+             ]
+        ];
+    }
 
 }
 

@@ -17,10 +17,13 @@ class VtVotacion extends Model {
 
 	public static function actual($user)
 	{
-		return VtVotacion::where('actual', true)
-					->where('user_id', $user->id)
-					->where('year_id', $user->year_id)
-					->first();
+		$consulta = 'SELECT * FROM vt_votaciones v WHERE v.user_id=:user_id and v.year_id=:year_id and v.deleted_at is null ';
+		$votaciones = DB::select($consulta, [ 'user_id' => $user->id, 'year_id' => $user->year_id ] );
+
+		if(count($votaciones) > 0){
+			return $votaciones[0];
+		}
+		return [];
 	}
 
 	public function actualInAction($user)

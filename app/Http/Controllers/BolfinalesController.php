@@ -165,14 +165,14 @@ class BolfinalesController extends Controller {
 								select count(au.id) as cantidad_ausencia, au.alumno_id, au.periodo_id, au.asignatura_id
 								from ausencias au 
 								where au.deleted_at is null and au.cantidad_ausencia > 0
-								group by au.alumno_id
+								group by au.alumno_id, au.periodo_id, au.asignatura_id
 								
 								)as aus on aus.alumno_id=n.alumno_id and aus.asignatura_id=a.id and aus.periodo_id=p.id
 							left join (
 								select count(au.id) as cantidad_tardanza, au.alumno_id, au.periodo_id, au.asignatura_id
 								from ausencias au 
 								where au.deleted_at is null and au.cantidad_tardanza > 0
-								group by au.alumno_id
+								group by au.alumno_id, au.periodo_id, au.asignatura_id
 								
 								)as tar on tar.alumno_id=n.alumno_id and tar.asignatura_id=a.id and tar.periodo_id=p.id
 							where a.grupo_id=:grupo_id and a.deleted_at is null and a.id=:asignatura_id

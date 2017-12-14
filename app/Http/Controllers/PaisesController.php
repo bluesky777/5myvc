@@ -10,9 +10,11 @@ use App\Models\Pais;
 class PaisesController extends Controller {
 
 
-	public function index()
+	public function getIndex()
 	{
-		return Pais::all();
+		$consulta = 'SELECT * FROM paises where deleted_at is null';
+		return DB::select($consulta);
+		//return Pais::all();
 	}
 
 

@@ -19,6 +19,7 @@ use App\Models\Nota;
 use App\Models\ConfigCertificado;
 use App\Models\EscalaDeValoracion;
 use App\Models\Debugging;
+use App\Models\NotaComportamiento;
 
 
 class BolfinalesController extends Controller {
@@ -206,28 +207,28 @@ class BolfinalesController extends Controller {
 								select count(au.id) as cantidad_ausencia, au.alumno_id, au.periodo_id, au.asignatura_id
 								from ausencias au 
 								where au.deleted_at is null and au.cantidad_ausencia > 0
-								group by au.alumno_id
+								group by au.alumno_id, au.periodo_id, au.asignatura_id
 								
 								)as aus on aus.alumno_id=n.alumno_id and aus.asignatura_id=a.id and aus.periodo_id=p.id
 							left join (
 								select count(au.id) as cantidad_tardanza, au.alumno_id, au.periodo_id, au.asignatura_id
 								from ausencias au 
 								where au.deleted_at is null and au.cantidad_tardanza > 0
-								group by au.alumno_id
+								group by au.alumno_id, au.periodo_id, au.asignatura_id
 								
 								)as tar on tar.alumno_id=n.alumno_id and tar.asignatura_id=a.id and tar.periodo_id=p.id
 							where a.grupo_id=:grupo_id and a.deleted_at is null and a.id=:asignatura_id
-							group by n.alumno_id, s.unidad_id
+							group by n.alumno_id, s.unidad_id, s.id, aus.cantidad_ausencia, tar.cantidad_tardanza
 						)r
-						group by alumno_id, asignatura_id, periodo_id
+						group by alumno_id, asignatura_id, periodo_id, r.cantidad_ausencia, r.cantidad_tardanza
 						order by numero_periodo, asignatura_id, periodo_id';
-		//User::$nota_minima_aceptada
-			$asignatura->definitivas = DB::select(DB::raw($consulta), array(
+			//User::$nota_minima_aceptada
+			$asignatura->definitivas = DB::select($consulta, [
 										':alumno_id'	=> $alumno->alumno_id, 
 										':year_id'		=> $year_id,
 										':grupo_id'		=> $grupo_id,
 										':asignatura_id'=> $asignatura->asignatura_id
-									));
+									]);
 
 
 
@@ -295,7 +296,7 @@ class BolfinalesController extends Controller {
 
 
 			// Si es un promedio perdido, debo sumarlo como una asignatura perdida
-			if ($asignatura->promedio < User::$nota_minima_aceptada) {
+			if (round($asignatura->promedio) < User::$nota_minima_aceptada) {
 				$alumno->cant_lost_asig += 1;
 			}
 
@@ -307,6 +308,10 @@ class BolfinalesController extends Controller {
 		if ($escala) {
 			$alumno->desempenio = $escala->desempenio;
 		}
+
+
+		// Nota promedio de comportamiento
+		$alumno->nota_comportamiento_year = NotaComportamiento::nota_promedio_year($alumno->alumno_id);
 		
 
 		return $alumno;

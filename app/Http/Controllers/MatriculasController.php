@@ -210,6 +210,142 @@ class MatriculasController extends Controller {
 
 
 
+	public function putAlumnosConGradoAnterior()
+	{
+		//$user = User::fromToken();
+
+		$grupo_actual 	= Request::input('grupo_actual');
+		$grado_ant_id 	= Request::input('grado_ant_id');
+		$year_ant 		= Request::input('year_ant');
+		$year_ant_id	= null;
+		$result 		= [];
+		
+		if (!$grupo_actual) {
+			return;
+		}
+
+		$sqlYearAnt = 'SELECT id from years where year=:year_ant';
+		
+		$year_cons = DB::select($sqlYearAnt, [ ':year_ant'	=> $year_ant ]);
+		if (count($year_cons) > 0) {
+			$year_ant_id = $year_cons[0]->id;
+		}
+
+
+		// Alumnos asistentes o matriculados del grupo
+		$consulta = 'SELECT m.id as matricula_id, m.alumno_id, a.no_matricula, a.nombres, a.apellidos, a.sexo, a.user_id, 
+							a.fecha_nac, a.ciudad_nac, c1.ciudad as ciudad_nac_nombre, a.tipo_doc, a.documento, a.ciudad_doc, c2.ciudad as ciudad_doc_nombre, a.tipo_sangre, a.eps, a.telefono, a.celular, 
+							a.direccion, a.barrio, a.estrato, a.ciudad_resid, c3.ciudad as ciudad_resid_nombre, a.religion, a.email, a.facebook, a.created_by, a.updated_by,
+							a.pazysalvo, a.deuda, m.grupo_id, 
+							u.imagen_id, IFNULL(i.nombre, IF(a.sexo="F","default_female.png", "default_male.png")) as imagen_nombre, 
+							u.username, u.is_superuser, u.is_active,
+							a.foto_id, IFNULL(i2.nombre, IF(a.sexo="F","default_female.png", "default_male.png")) as foto_nombre,
+							m.fecha_retiro as fecha_retiro, m.estado, m.fecha_matricula 
+						FROM alumnos a 
+						inner join matriculas m on a.id=m.alumno_id and m.grupo_id=:grupo_id and (m.estado="ASIS" or m.estado="MATR")
+						left join users u on a.user_id=u.id and u.deleted_at is null
+						left join images i on i.id=u.imagen_id and i.deleted_at is null
+						left join images i2 on i2.id=a.foto_id and i2.deleted_at is null
+						left join ciudades c1 on c1.id=a.ciudad_nac and c1.deleted_at is null
+						left join ciudades c2 on c2.id=a.ciudad_doc and c2.deleted_at is null
+						left join ciudades c3 on c3.id=a.ciudad_resid and c3.deleted_at is null
+						where a.deleted_at is null and m.deleted_at is null
+						order by a.apellidos, a.nombres';
+		
+		$result['AlumnosActuales'] = DB::select($consulta, [ ':grupo_id' => $grupo_actual['id'] ]);
+		
+		// Traigo los acudientes de 
+		$cantA = count($result['AlumnosActuales']);
+
+		for ($i=0; $i < $cantA; $i++) { 
+			$consulta = 'SELECT ac.id, ac.nombres, ac.apellidos, ac.sexo, ac.fecha_nac, ac.ciudad_nac, ac.telefono, pa.parentesco, ac.user_id, 
+							ac.celular, ac.ocupacion, ac.email, ac.barrio, ac.direccion, ac.tipo_doc, ac.documento, ac.created_by, ac.updated_by, ac.created_at, ac.updated_at, 
+							ac.foto_id, IFNULL(i.nombre, IF(ac.sexo="F","default_female.png", "default_male.png")) as foto_nombre, 
+							u.username, u.is_active
+						FROM parentescos pa
+						left join acudientes ac on ac.id=pa.acudiente_id and ac.deleted_at is null
+						left join users u on ac.user_id=u.id and u.deleted_at is null
+						left join images i on i.id=ac.foto_id and i.deleted_at is null
+						WHERE pa.alumno_id=? and pa.deleted_at is null';
+			
+			$acudientes 		= DB::select($consulta, [ $result['AlumnosActuales'][$i]->alumno_id ]);	
+
+			if (count($acudientes) == 0) {
+				array_push($acudientes, ['nombres' => null]);
+			}
+
+			$subGridOptions 	= [
+				'columnDefs' 	=> [
+					['name' => "Nombres", 'field' => "nombres", 'maxWidth' => 120, 'cellTemplate' => '==directives/botonAcudiente.tpl.html' ],
+					['name' => "Apellidos", 'field' => "apellidos", 'maxWidth' => 100],
+					['name' => "Sex", 'field' => "sexo", 'maxWidth' => 40],
+					['name' => "Parentesco", 'field' => "parentesco", 'maxWidth' => 90],
+					['name' => "Usuario", 'field' => "username", 'maxWidth' => 130, 'cellTemplate' => "==directives/botonesResetPassword.tpl.html" ], 
+					['name' => "Fecha nac", 'field' => "fecha_nac", 'maxWidth' => 60],
+					['name' => "Ciudad nac", 'field' => "ciudad_nac", 'maxWidth' => 80],
+					['name' => "Teléfono", 'field' => "telefono", 'maxWidth' => 70],
+					['name' => "Celular", 'field' => "celular", 'maxWidth' => 70],
+					['name' => "Ocupación", 'field' => "ocupacion", 'maxWidth' => 70],
+					['name' => "Email", 'field' => "email", 'maxWidth' => 70],
+					['name' => "Barrio", 'field' => "barrio", 'maxWidth' => 60],
+					['name' => "Dirección", 'field' => "direccion", 'maxWidth' => 50],
+					['name' => "Tipo docum", 'field' => "tipo_doc", 'maxWidth' => 40],
+					['name' => "Documento", 'field' => "documento", 'maxWidth' => 70]
+				],
+				'data' 			=> $acudientes
+			];
+			$result['AlumnosActuales'][$i]->subGridOptions = $subGridOptions;
+
+		}
+		
+
+		// Alumnos desertores o retirados del grupo
+		$consulta = 'SELECT m.id as matricula_id, m.alumno_id, a.no_matricula, a.nombres, a.apellidos, a.sexo, a.user_id, 
+							a.fecha_nac, a.ciudad_nac, a.celular, a.direccion, a.religion,
+							m.grupo_id, 
+							u.imagen_id, IFNULL(i.nombre, IF(a.sexo="F","default_female.png", "default_male.png")) as imagen_nombre, 
+							a.foto_id, IFNULL(i2.nombre, IF(a.sexo="F","default_female.png", "default_male.png")) as foto_nombre,
+							m.fecha_retiro as fecha_retiro, m.estado, m.fecha_matricula 
+						FROM alumnos a 
+						inner join matriculas m on a.id=m.alumno_id and m.grupo_id=:grupo_id and (m.estado="RETI" or m.estado="DESE")
+						left join users u on a.user_id=u.id and u.deleted_at is null
+						left join images i on i.id=u.imagen_id and i.deleted_at is null
+						left join images i2 on i2.id=a.foto_id and i2.deleted_at is null
+						where a.deleted_at is null and m.deleted_at is null
+						order by a.apellidos, a.nombres';
+
+		$result['AlumnosDesertRetir'] = DB::select($consulta, [ ':grupo_id' => $grupo_actual['id'] ]);
+
+
+		// Alumnos del grado anterior que no se han matriculado en este grupo
+		$consulta = 'SELECT m.id as matricula_id, m.alumno_id, a.no_matricula, a.nombres, a.apellidos, a.sexo, a.user_id, 
+							a.fecha_nac, a.ciudad_nac, a.celular, a.direccion, a.religion,
+							m.grupo_id, 
+							u.imagen_id, IFNULL(i.nombre, IF(a.sexo="F","default_female.png", "default_male.png")) as imagen_nombre, 
+							a.foto_id, IFNULL(i2.nombre, IF(a.sexo="F","default_female.png", "default_male.png")) as foto_nombre,
+							m.fecha_retiro as fecha_retiro, m.estado, m.fecha_matricula 
+						FROM alumnos a 
+						inner join matriculas m on a.id=m.alumno_id 
+						inner join grupos gru on gru.id=m.grupo_id and gru.year_id=:year_id
+						inner join grados gra on gra.id=:grado_id and gru.grado_id=gra.id
+						left join users u on a.user_id=u.id and u.deleted_at is null
+						left join images i on i.id=u.imagen_id and i.deleted_at is null
+						left join images i2 on i2.id=a.foto_id and i2.deleted_at is null
+						where a.deleted_at is null and m.deleted_at is null and m.alumno_id
+							not in (SELECT m.alumno_id FROM alumnos a 
+								inner join matriculas m on a.id=m.alumno_id and m.grupo_id=:grupo_id 
+								where a.deleted_at is null and m.deleted_at is null)
+						order by a.apellidos, a.nombres';
+		
+		$result['AlumnosSinMatricula'] = DB::select($consulta, [ ':year_id' => $year_ant_id, ':grado_id' => $grado_ant_id, ':grupo_id'	=> $grupo_actual['id'] ]);
+
+
+		return $result;
+
+	}
+
+
+
 
 	public function putRetirar()
 	{

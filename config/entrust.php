@@ -8,7 +8,7 @@
  * @package Zizaco\Entrust
  */
 
-return array(
+return [
 
     /*
     |--------------------------------------------------------------------------
@@ -30,6 +30,28 @@ return array(
     |
     */
     'roles_table' => 'roles',
+
+    /*
+    |--------------------------------------------------------------------------
+    | Application User Model
+    |--------------------------------------------------------------------------
+    |
+    | This is the User model used by Entrust to create correct relations.
+    | Update the User if it is in a different namespace.
+    |
+    */
+    'user' => 'App\Models\User',
+
+    /*
+    |--------------------------------------------------------------------------
+    | Application Users Table
+    |--------------------------------------------------------------------------
+    |
+    | This is the users table used by the application to save users to the
+    | database.
+    |
+    */
+    'users_table' => 'users',
 
     /*
     |--------------------------------------------------------------------------
@@ -75,4 +97,5 @@ return array(
     */
     'role_user_table' => 'role_user',
 
-);
+
+];

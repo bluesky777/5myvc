@@ -7,6 +7,7 @@ use DB;
 
 use App\Models\User;
 use App\Models\Acudiente;
+use App\Models\Parentesco;
 
 
 class AcudientesController extends Controller {
@@ -45,8 +46,27 @@ class AcudientesController extends Controller {
 		return $res;
 	}
 
+	public function putBuscar()
+	{
+		$termino 	= Request::input('termino');
 
-	public function store()
+		$consulta = 'SELECT ac.id, ac.nombres, ac.apellidos, ac.sexo, ac.fecha_nac, ac.ciudad_nac, ac.telefono, pa.parentesco, ac.user_id, 
+							ac.celular, ac.ocupacion, ac.email, ac.barrio, ac.direccion, ac.tipo_doc, ac.documento, ac.created_by, ac.updated_by, ac.created_at, ac.updated_at, 
+							ac.foto_id, IFNULL(i.nombre, IF(ac.sexo="F","default_female.png", "default_male.png")) as foto_nombre, 
+							u.username, u.is_active
+						FROM parentescos pa
+						left join acudientes ac on ac.id=pa.acudiente_id and ac.deleted_at is null
+						left join users u on ac.user_id=u.id and u.deleted_at is null
+						left join images i on i.id=ac.foto_id and i.deleted_at is null
+						WHERE ac.nombres like "%:termino%" and pa.deleted_at is null';
+
+		$res = DB::select($consulta, [ ':termino' => $termino ]);
+
+		return $res;
+	}
+
+
+	public function postCrear()
 	{
 		try {
 			$acudiente = new Acudiente;
@@ -64,7 +84,27 @@ class AcudientesController extends Controller {
 
 			$acudiente->save();
 
-			return $acudiente;
+			$parentesco = new Parentesco;
+			$parentesco->acudiente_id		=	$acudiente->id;
+			$parentesco->alumno_id			=	Request::input('alumno_id');
+			$parentesco->parentesco			=	Request::input('parentesco')['parentesco'];
+			$parentesco->observaciones		=	Request::input('observaciones');
+			$parentesco->save();
+
+
+			$consulta = 'SELECT ac.id, ac.nombres, ac.apellidos, ac.sexo, ac.fecha_nac, ac.ciudad_nac, ac.telefono, pa.parentesco, ac.user_id, 
+					ac.celular, ac.ocupacion, ac.email, ac.barrio, ac.direccion, ac.tipo_doc, ac.documento, ac.created_by, ac.updated_by, ac.created_at, ac.updated_at, 
+					ac.foto_id, IFNULL(i.nombre, IF(ac.sexo="F","default_female.png", "default_male.png")) as foto_nombre, 
+					u.username, u.is_active
+				FROM parentescos pa
+				left join acudientes ac on ac.id=pa.acudiente_id and ac.deleted_at is null
+				left join users u on ac.user_id=u.id and u.deleted_at is null
+				left join images i on i.id=ac.foto_id and i.deleted_at is null
+				WHERE ac.id=? and pa.deleted_at is null';
+
+			$acudiente = DB::select($consulta, [ $acudiente->id ]);
+
+			return (array) $acudiente[0];
 		} catch (Exception $e) {
 			return $e;
 		}
