@@ -119,8 +119,8 @@ class ImagesController extends Controller {
 		try {
 			
 			$img = Image::make($folder . $newImg->nombre);
-			$img->fit(300);
-			//$img->resize(300, null, function ($constraint) {
+			$img->fit(200);
+			//$img->resize(200, null, function ($constraint) {
 			//	$constraint->aspectRatio();
 			//});
 			$img->save();

@@ -1,5 +1,13 @@
 <?php namespace App\Http\Controllers;
 
+
+use Request;
+use DB;
+use Hash;
+
+use Carbon\Carbon;
+
+
 class UsersController extends Controller {
 
 
@@ -35,15 +43,19 @@ class UsersController extends Controller {
 		}
 	}
 
-	public function show($id)
+	public function putUsernamesCheck()
 	{
-		//
+		$texto = Request::input('texto');
+
+		$consulta = 'SELECT username FROM users WHERE username like :texto;';
+		
+		$res = DB::select($consulta, [
+			':texto'		=> $texto.'%'
+		]);
+		
+		return [ 'usernames' => $res ];
 	}
 
-	public function edit($id)
-	{
-		//
-	}
 
 	public function update($id)
 	{

@@ -21,6 +21,8 @@ class CreatePeriodosTable extends Migration {
 			$table->date('fecha_inicio')->nullable();
 			$table->date('fecha_fin')->nullable();
 			$table->boolean('actual')->default(false);
+			$table->boolean('profes_pueden_editar_notas')->default(true);
+			$table->boolean('profes_pueden_nivelar')->default(true);
 			$table->integer('year_id')->unsigned();
 			$table->date('fecha_plazo')->nullable();
 			$table->integer('created_by')->nullable();

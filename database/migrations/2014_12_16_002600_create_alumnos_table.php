@@ -32,7 +32,7 @@ class CreateAlumnosTable extends Migration {
 			$table->string('celular')->nullable();
 			$table->string('direccion')->nullable();
 			$table->string('barrio')->nullable();
-			$table->string('estrato')->nullable();
+			$table->integer('estrato')->nullable()->default(1);
 			$table->integer('ciudad_resid')->unsigned()->index()->nullable(); // Cuidad de residencia
 			$table->string('religion')->nullable();
 			$table->string('email')->nullable();

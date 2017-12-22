@@ -25,19 +25,21 @@ use App\Models\ImageModel;
 
 use Carbon\Carbon;
 
+use App\Http\Controllers\Alumnos\GuardarAlumno;
+
 
 class AlumnosController extends Controller {
 
+	public $user;
+
 	public function __construct()
 	{
-		
+		$this->user = User::fromToken();
 	}
 
 	public function getIndex()
 	{
-		$user = User::fromToken();
-
-		$previous_year 		= $user->year - 1;
+		$previous_year 		= $this->user->year - 1;
 		$id_previous_year 	= 0;
 		$previous_year 		= Year::where('year', $previous_year)->first();
 
@@ -63,15 +65,13 @@ class AlumnosController extends Controller {
 
 		return DB::select($consulta, [
 						':id_previous_year'	=>$id_previous_year, 
-						':year_id'			=>$user->year_id,
-						':year2_id'			=>$user->year_id
+						':year_id'			=>$this->user->year_id,
+						':year2_id'			=>$this->user->year_id
 				]);
 	}
 
 	public function getSinMatriculas()
 	{
-		$user = User::fromToken();
-
 		$consulta = 'SELECT m.id as matricula_id, a.id as alumno_id, a.no_matricula, a.nombres, a.apellidos, a.sexo, a.user_id, 
 				a.fecha_nac, a.ciudad_nac, a.celular, a.direccion, a.religion,
 				g.year_id, m.grupo_id, g.nombre as nombre_grupo, g.abrev as abrevgrupo,
@@ -83,7 +83,7 @@ class AlumnosController extends Controller {
 			LEFT JOIN images i on i.id=a.foto_id and i.deleted_at is null';
 
 		return DB::select(DB::raw($consulta), array(
-						':year_id'			=>$user->year_id
+						':year_id'			=>$this->user->year_id
 				));
 	}
 
@@ -119,7 +119,6 @@ class AlumnosController extends Controller {
 
 	public function postStore()
 	{
-		$user = User::fromToken();
 
 		$alumno = [];
 
@@ -152,6 +151,7 @@ class AlumnosController extends Controller {
 			$alumno->facebook	=	Request::input('facebook');
 			$alumno->pazysalvo	=	Request::input('pazysalvo');
 			$alumno->deuda		=	Request::input('deuda');
+			$alumno->updated_by	=	$this->user->user_id;
 			$alumno->save();
 
 			$this->sanarInputUser();
@@ -164,7 +164,8 @@ class AlumnosController extends Controller {
 
 			if (!is_object($periodo_actual)) {
 				$periodo_actual = Periodo::where('year_id', $yearactual->id)->first();
-				$periodo_actual->actual = true;
+				$periodo_actual->actual 	= true;
+				$periodo_actual->updated_by = $this->user->user_id;
 				$periodo_actual->save();
 			}
 
@@ -176,6 +177,7 @@ class AlumnosController extends Controller {
 			$usuario->periodo_id	=	$periodo_actual->id;
 			$usuario->is_active		=	Request::input('is_active', true);
 			$usuario->tipo			=	'Alumno';
+			$usuario->updated_by	=	$this->user->user_id;
 			$usuario->save();
 
 			
@@ -194,6 +196,7 @@ class AlumnosController extends Controller {
 				$matricula->alumno_id		=	$alumno->id;
 				$matricula->grupo_id		=	$grupo_id;
 				$matricula->estado			=	"MATR";
+				$matricula->created_by 		= 	$this->user->user_id;
 				$matricula->save();
 
 				$grupo = Grupo::find($matricula->grupo_id);
@@ -356,6 +359,7 @@ class AlumnosController extends Controller {
 				$usuario->email			=	Request::input('email2');
 				$usuario->is_superuser	=	Request::input('is_superuser', false);
 				$usuario->is_active		=	Request::input('is_active', true);
+				$usuario->updated_by 	= $this->user->user_id;
 
 				if (Request::has('password')) {
 					if (Request::input('password') == ""){
@@ -365,7 +369,8 @@ class AlumnosController extends Controller {
 
 				$usuario->save();
 
-				$alumno->user_id = $usuario->id;
+				$alumno->user_id 	= $usuario->id;
+				$alumno->updated_by = $this->user->user_id;
 				
 				$alumno->save();
 
@@ -389,6 +394,7 @@ class AlumnosController extends Controller {
 				$usuario->is_superuser	=	Request::input('is_superuser', false);
 				$usuario->is_active		=	Request::input('is_active', true);
 				$usuario->periodo_id	=	$periodo_actual->id;
+				$usuario->created_by 	= $this->user->user_id;
 				$usuario->save();
 
 				$alumno->user_id = $usuario->id;
@@ -404,7 +410,7 @@ class AlumnosController extends Controller {
 				
 				$grupo_id = Request::input('grupo')['id'];
 
-				$matricula = Matricula::matricularUno($alumno->id, $grupo_id);
+				$matricula = Matricula::matricularUno($alumno->id, $grupo_id, false, $this->user->user_id);
 
 				$grupo = Grupo::find($matricula->grupo_id);
 				$alumno->grupo = $grupo;
@@ -415,6 +421,20 @@ class AlumnosController extends Controller {
 		} catch (Exception $e) {
 			return abort('400', $e);
 		}
+	}
+
+
+
+	/*************************************************************
+	 * Guardar por VALOR
+	 *************************************************************/
+	public function putGuardarValor()
+	{
+		$alumno = Alumno::findOrFail(Request::input('alumno_id'));
+
+		$guardarAlumno = new GuardarAlumno();
+		return $guardarAlumno->valor($this->user, $alumno, Request::input('propiedad'), Request::input('valor'), $this->user->user_id);
+		
 	}
 
 
@@ -466,7 +486,6 @@ class AlumnosController extends Controller {
 
 	public function getTrashed()
 	{
-		$user = User::fromToken();
 		$previous_year = $user->year - 1;
 		$id_previous_year = 0;
 		$previous_year = Year::where('year', '=', $previous_year)->first();

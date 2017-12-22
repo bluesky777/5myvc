@@ -43,6 +43,8 @@ class Matricula extends Model {
 			*/
 			if ($matri) {
 				if ($matricula) { // Si ya he encontrado en un elemento anterior una matrícula identica, es porque ya la he activado, no debo activar más. Por el contrario, debo borrarlas
+					$matri->deleted_by		= $user_id;
+					$matri->save();
 					$matri->delete();
 				}else{
 					$matri->estado 			= 'MATR'; // Matriculado, Asistente o Retirado
@@ -64,6 +66,8 @@ class Matricula extends Model {
 				
 				if ($matri) {
 					if ($matricula) { // Si ya he encontrado en un elemento anterior una matrícula identica, es porque ya la he activado, no debo activar más. Por el contrario, debo borrarlas
+						$matri->deleted_by		= $user_id;
+						$matri->save();
 						$matri->delete();
 					}else{
 						$matri->estado 			= 'MATR'; // Matriculado, Asistente o Retirado
@@ -97,8 +101,8 @@ class Matricula extends Model {
 		} catch (Exception $e) {
 			// se supone que esto nunca va a ocurrir, ya que eliminé todas las matrículas 
 			// excepto la que concordara con el grupo, poniéndola en estado=MATR
-			$matricula 			= Matricula::where('alumno_id', $alumno_id)->where('grupo_id', $grupo_id)->first();
-			$matricula->estado 	= 'MATR';
+			$matricula 				= Matricula::where('alumno_id', $alumno_id)->where('grupo_id', $grupo_id)->first();
+			$matricula->estado 		= 'MATR';
 			$matricula->updated_by	= $user_id;
 			$matricula->save();
 		}

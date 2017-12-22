@@ -21,6 +21,26 @@ class PaisesTableSeeder extends Seeder {
 			'pais' => 'VENEZUELA',
 			'abrev' => 'VE'
 		]);
+		Pais::create([
+			'id' => '3',
+			'pais' => 'ECUADOR',
+			'abrev' => 'EC'
+		]);
+		Pais::create([
+			'id' => '4',
+			'pais' => 'PERÚ',
+			'abrev' => 'PE'
+		]);
+		Pais::create([
+			'id' => '5',
+			'pais' => 'PANAMÁ',
+			'abrev' => 'PA'
+		]);
+		Pais::create([
+			'id' => '6',
+			'pais' => 'COSTA RICA',
+			'abrev' => 'CR'
+		]);
 		$this->command->info("Dos paises ingresados.");
 	}
 

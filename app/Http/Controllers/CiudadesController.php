@@ -10,6 +10,16 @@ use App\Models\Pais;
 
 class CiudadesController extends Controller {
 
+
+	public $user;
+	
+	public function __construct()
+	{
+		$this->user = User::fromToken();
+	}
+
+		
+
 	public function getIndex()
 	{
 		return Ciudad::all();
@@ -19,13 +29,13 @@ class CiudadesController extends Controller {
 	// Se podrá eliminar cuando modifique AlumnoEditarCtrl
 	public function getDepartamentos($pais_id)
 	{	
-		$consulta = 'SELECT distinct departamento FROM ciudades where pais_id = :pais';
+		$consulta = 'SELECT distinct departamento FROM ciudades where pais_id = :pais and deleted_at is null order by departamento';
 		return DB::select($consulta, ['pais' => $pais_id]);
 	}
 
 	public function getByDepartamento()
 	{	
-		$consulta = 'SELECT * FROM ciudades where departamento = :departamento';
+		$consulta = 'SELECT * FROM ciudades where departamento = :departamento and deleted_at is null order by ciudad';
 		return DB::select($consulta, ['departamento' => Request::input('departamento') ]);
 	}
 
@@ -33,7 +43,7 @@ class CiudadesController extends Controller {
 	{	
 		//DB::enableQueryLog();
 		
-		$consulta = 'SELECT distinct departamento FROM ciudades where pais_id = :pais ';
+		$consulta = 'SELECT distinct departamento FROM ciudades where pais_id = :pais and deleted_at is null order by departamento';
 		$departamentos = ['departamentos' => DB::select($consulta, ['pais' => Request::input('pais_id') ] ) ];
 		//return $laQuery = DB::getQueryLog();
 
@@ -42,11 +52,11 @@ class CiudadesController extends Controller {
 
 	public function getPaisdeciudad($ciudad_id)
 	{	
-		$consulta = 'SELECT paises.id, pais, abrev FROM paises, ciudades where paises.id = ciudades.pais_id and ciudades.id = :ciudad_id';
+		$consulta = 'SELECT paises.id, pais, abrev FROM paises, ciudades where paises.id = ciudades.pais_id and ciudades.id = :ciudad_id and ciudades.deleted_at is null and paises.deleted_at is null';
 		return DB::select($consulta, ['ciudad_id' => $ciudad_id]);
 	}
 
-	public function getPordepartamento($departamento)
+	public function getPorDepartamento($departamento)
 	{
 		return Ciudad::where('departamento', $departamento)->get();
 	}
@@ -89,8 +99,6 @@ class CiudadesController extends Controller {
 
 	public function putActualizarCiudad()
 	{
-		$user = User::fromToken();
-
 		$city 				= Ciudad::find(Request::input('id'));
 		$city->ciudad 		= Request::input('ciudad');
 		$city->departamento = Request::input('departamento');
@@ -100,8 +108,6 @@ class CiudadesController extends Controller {
 
 	public function putActualizarDepartamento()
 	{
-		$user = User::fromToken();
-		
 		$newDepart 	= Request::input('departamento');
 		$city 		= Ciudad::find(Request::input('id'));
 		DB::table('ciudades')
@@ -112,7 +118,7 @@ class CiudadesController extends Controller {
 
 
 
-	public function destroy($id)
+	public function deleteDestroy($id)
 	{
 		$ciudad = Ciudad::findOrFail($id);
 		$ciudad->delete();

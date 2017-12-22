@@ -19,7 +19,7 @@ class CreateUsersTable extends Migration
 			$table->increments('id');
 			$table->string('username')->unique();
 			$table->string('password', 64);
-			$table->string('sexo', 1);
+			$table->string('sexo', 1)->default('M');
 			$table->string('email')->nullable();
 			$table->integer('imagen_id')->nullable();
 			$table->boolean('is_superuser')->default(false);

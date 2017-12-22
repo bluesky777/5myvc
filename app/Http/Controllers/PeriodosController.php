@@ -2,6 +2,7 @@
 
 use DB;
 use Request;
+use Carbon\Carbon;
 
 use App\Models\User;
 use App\Models\Periodo;
@@ -13,16 +14,22 @@ use \stdClass;
 
 class PeriodosController extends Controller {
 
+	public $user;
+	
+	public function __construct()
+	{
+		$this->user = User::fromToken();
+	}
+	
+
 	public function getIndex()
 	{
-		$user = User::fromToken();
-		return Periodo::where('year_id', '=', $user->year_id)->get();
+		$consulta = 'SELECT * FROM periodos WHERE deleted_at is null and year_id=?';
+		return DB::select($consulta, [ $this->user->year_id ]);
 	}
 
 	public function postStore($year_id)
 	{
-		$user = User::fromToken();
-
 		$periodo = new Periodo;
 		$periodo->numero			=	Request::input('numero');
 		$periodo->fecha_inicio		=	Request::input('fecha_inicio');
@@ -39,15 +46,11 @@ class PeriodosController extends Controller {
 
 	public function getShow($year_id)
 	{
-		$user = User::fromToken();
-
-		return Periodo::where('year_id', '=', $year_id)->get();
+		return Periodo::where('year_id', $year_id)->get();
 	}
 
 	public function putUpdate($id)
 	{
-		$user = User::fromToken();
-
 		$periodo = Periodo::findOrFail($id);
 
 		$periodo->numero			=	Request::input('numero');
@@ -56,19 +59,58 @@ class PeriodosController extends Controller {
 		$periodo->actual			=	Request::input('actual');
 		$periodo->year				=	Request::input('year');
 		$periodo->fecha_plazo		=	Request::input('fecha_plazo');
+		$periodo->updated_by 		= 	$this->user->user_id;
 
 		$periodo->save();
 
 		return $periodo;
 	}
 
+	public function putCambiarFechaInicio()
+	{
+		$periodo = Periodo::findOrFail(Request::input('periodo_id'));
+		$periodo->fecha_inicio	=	Carbon::parse(Request::input('fecha'));
+		$periodo->updated_by 	= 	$this->user->user_id;
+		$periodo->save();
+
+		return 'Cambiado';
+	}
+
+	public function putCambiarFechaFin()
+	{
+		$periodo = Periodo::findOrFail(Request::input('periodo_id'));
+		$periodo->fecha_fin		=	Carbon::parse(Request::input('fecha'));
+		$periodo->updated_by 	= 	$this->user->user_id;
+		$periodo->save();
+
+		return 'Cambiado';
+	}
+
+	public function putToggleProfesPuedenEditarNotas()
+	{
+		$periodo = Periodo::findOrFail(Request::input('periodo_id'));
+		$periodo->profes_pueden_editar_notas	=	Request::input('pueden');
+		$periodo->updated_by 					=	$this->user->user_id;
+		$periodo->save();
+
+		return 'Cambiado';
+	}
+
+	public function putToggleProfesPuedenNivelar()
+	{
+		$periodo = Periodo::findOrFail(Request::input('periodo_id'));
+		$periodo->profes_pueden_nivelar	=	Request::input('pueden');
+		$periodo->updated_by 			= 	$this->user->user_id;
+		$periodo->save();
+
+		return 'Cambiado';
+	}
+
 	public function putUseractive($periodo_id)
 	{
-		$user = User::fromToken();
-
-		$usuario = User::findOrFail($user->user_id);
-		$usuario->periodo_id = $periodo_id;
-
+		$usuario = User::findOrFail($this->user->user_id);
+		$usuario->periodo_id 	= $periodo_id;
+		$usuario->updated_by 	= 	$this->user->user_id;
 		$usuario->save();
 
 		return $usuario;
@@ -77,11 +119,9 @@ class PeriodosController extends Controller {
 
 	public function putEstablecerActual($periodo_id)
 	{
-		$user = User::fromToken();
-
 		$periodoACambiar = Periodo::findOrFail($periodo_id);
 		
-		$periodos = Periodo::where('year_id', '=', $periodoACambiar->year_id)->get();
+		$periodos = Periodo::where('year_id', $periodoACambiar->year_id)->get();
 
 		foreach ($periodos as $periodo) {
 			
@@ -92,7 +132,8 @@ class PeriodosController extends Controller {
 			
 		}
 
-		$periodoACambiar->actual = true;
+		$periodoACambiar->actual 		= true;
+		$periodoACambiar->updated_by 	= $this->user->user_id;
 		$periodoACambiar->save();
 
 		return $periodoACambiar;
@@ -101,8 +142,6 @@ class PeriodosController extends Controller {
 
 	public function putCopiar()
 	{
-		$user = User::fromToken();
-
 		$grupo_from_id 		= Request::input('grupo_from_id');
 		$grupo_to_id 		= Request::input('grupo_to_id');
 		$asignatura_to_id	= Request::input('asignatura_to_id');
@@ -126,7 +165,7 @@ class PeriodosController extends Controller {
 			$unidad_new->definicion 	= $unidad_curr->definicion;
 			$unidad_new->porcentaje 	= $unidad_curr->porcentaje;
 			$unidad_new->orden 			= $unidad_curr->orden;
-			$unidad_new->created_by 	= $user->user_id;
+			$unidad_new->created_by 	= $this->user->user_id;
 			$unidad_new->periodo_id 	= $periodo_to_id;
 			$unidad_new->asignatura_id 	= $asignatura_to_id;
 
@@ -147,7 +186,7 @@ class PeriodosController extends Controller {
 					$sub_new->orden 		= $subunidad->orden_subunidad;
 					$sub_new->inicia_at 	= $subunidad->inicia_at;
 					$sub_new->finaliza_at 	= $subunidad->finaliza_at;
-					$sub_new->created_by 	= $user->user_id;
+					$sub_new->created_by 	= $this->user->user_id;
 
 					$sub_new->save();
 					$subunidades_copiadas++;
@@ -162,7 +201,7 @@ class PeriodosController extends Controller {
 							$nota_new->nota 		= $nota->nota;
 							$nota_new->subunidad_id = $sub_new->id;
 							$nota_new->alumno_id 	= $nota->alumno_id;
-							$nota_new->created_by 	= $user->user_id;
+							$nota_new->created_by 	= $this->user->user_id;
 							
 							$nota_new->save();
 							$notas_copiadas++;
@@ -187,6 +226,8 @@ class PeriodosController extends Controller {
 	public function deleteDestroy($periodo_id)
 	{
 		$periodo = Periodo::findOrFail($periodo_id);
+		$periodo->deleted_by 	= $this->user->user_id;
+		$periodo->save();
 		$periodo->delete();
 
 		return $periodo;
