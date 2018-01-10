@@ -19,8 +19,10 @@ class CreateSubunidadesTable extends Migration {
 			$table->string('definicion');
 			$table->integer('porcentaje')->default(0)->nullable();
 			$table->integer('unidad_id')->unsigned();
-			$table->integer('nota_default')->nullable()->dafault(90);
+			$table->integer('nota_default')->nullable()->dafault(0);
+			$table->boolean('obligatoria')->nullable()->default(false);
 			$table->integer('orden')->nullable();
+			$table->boolean('por_defecto')->nullable()->default(false);
 			$table->dateTime('inicia_at')->nullable();
 			$table->dateTime('finaliza_at')->nullable();
 			$table->integer('actividad_id')->nullable()->unsigned(); // No lo voy a relacionar para evitar problemas
@@ -30,10 +32,34 @@ class CreateSubunidadesTable extends Migration {
 			$table->softDeletes();
 			$table->timestamps();
 		});
-
 		Schema::table('subunidades', function(Blueprint $table) {
 			$table->foreign('unidad_id')->references('id')->on('unidades')->onDelete('cascade');
 		});
+
+		
+		// Subunidades que aparecerán automáticamente
+		Schema::create('subunidades_por_defecto', function(Blueprint $table) {
+			$table->engine = "InnoDB";
+			$table->increments('id');
+			$table->string('definicion');
+			$table->integer('porcentaje')->default(0)->nullable();
+			$table->integer('unidad_defec_id')->unsigned();
+			$table->integer('nota_default')->nullable()->dafault(90);
+			$table->boolean('obligatoria')->nullable()->default(false);
+			$table->integer('orden')->nullable();
+			$table->dateTime('inicia_at')->nullable();
+			$table->dateTime('finaliza_at')->nullable();
+			$table->integer('created_by')->nullable();
+			$table->integer('updated_by')->nullable();
+			$table->integer('deleted_by')->nullable();
+			$table->softDeletes();
+			$table->timestamps();
+		});
+		Schema::table('subunidades_por_defecto', function(Blueprint $table) {
+			$table->foreign('unidad_defec_id')->references('id')->on('unidades_por_defecto')->onDelete('cascade');
+		});
+
+		
 	}
 
 	/**
@@ -43,6 +69,7 @@ class CreateSubunidadesTable extends Migration {
 	 */
 	public function down()
 	{
+		Schema::drop('subunidades_por_defecto');
 		Schema::drop('subunidades');
 	}
 

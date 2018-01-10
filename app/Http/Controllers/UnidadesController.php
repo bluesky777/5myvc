@@ -13,43 +13,61 @@ use Carbon\Carbon;
 
 class UnidadesController extends Controller {
 
-	public function getIndex()
+
+	private $cons_unidades 		= 'SELECT * FROM unidades WHERE asignatura_id=? and periodo_id=? and deleted_at is null';
+	private $cons_subunidades 	= 'SELECT * FROM subunidades WHERE unidad_id=? and deleted_at is null';
+
+
+	public function getDeAsignaturaPeriodo($asignatura_id, $periodo_id)
 	{
 		$user = User::fromToken();
 
-		$unidades = Unidad::all();
-		
-		foreach ($unidades as $unidad) {
 
-			$consulta = 'SELECT * FROM subunidades WHERE unidad_id=? and deleted_at is null';
+		$unidades = DB::select($this->cons_unidades, [$asignatura_id, $periodo_id]);
 
-			$subunidades = DB::select(DB::raw($consulta), array($unidad->id));
+		//$unidades = Unidad::where('asignatura_id', $asignatura_id)->where('periodo_id', $periodo_id)->get();
 
-			$unidad->subunidades = $subunidades;
+		if (count($unidades) == 0) {
+			$consulta = 'SELECT * FROM unidades_por_defecto WHERE year_id=? and deleted_at is null';
+			$unidades_default = DB::select($consulta, [$user->year_id]);
 
+			if (count($unidades_default) > 0) {
+				$now 		= Carbon::now('America/Bogota');
+
+				foreach ($unidades_default as $unidad_d) {
+
+					// Creo las nuevas unidades basado en las unidades por defecto del año
+					$consulta 		= 'INSERT INTO unidades(definicion, porcentaje, periodo_id, asignatura_id, obligatoria, orden, por_defecto, created_by, created_at) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?) ';
+					$insertadas 	= DB::insert($consulta, [$unidad_d->definicion, $unidad_d->porcentaje, $periodo_id, $asignatura_id, $unidad_d->obligatoria, $unidad_d->orden, true, $user->user_id, $now ]);
+
+					$unidades = DB::select($this->cons_unidades, [$asignatura_id, $periodo_id]);
+
+					for ($i=0; $i < count($unidades); $i++) { 
+
+						$consulta 				= 'SELECT * FROM subunidades_por_defecto WHERE unidad_defec_id=? and deleted_at is null';
+						$subunidades_default 	= DB::select($consulta, [$unidad_d->id]);
+						
+						for ($j=0; $j < count($subunidades_default); $j++) { 
+							// Creo las subunidades por defecto de cada Unidad por defecto
+							$consulta 		= 'INSERT INTO subunidades(definicion, porcentaje, unidad_id, nota_default, obligatoria, orden, por_defecto, created_by, created_at) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?) ';
+							$insertadas 	= DB::insert($consulta, [$subunidades_default[$j]->definicion, $subunidades_default[$j]->porcentaje, $unidades[$i]->id, $subunidades_default[$j]->nota_default, $subunidades_default[$j]->obligatoria, $subunidades_default[$j]->orden, true, $user->user_id, $now ]);
+			
+						}
+					}
+				}
+			}else{
+				return '';
+			}
+			
 		}
 
-		return $unidades;
-	}
-
-	public function getDeasignaturaperiodo($asignatura_id, $periodo_id)
-	{
-		$user = User::fromToken();
-
-		$unidades = Unidad::where('asignatura_id', $asignatura_id)->where('periodo_id', $periodo_id)->get();
-		
-
-		if (count($unidades)==0) {
-			return '';
-		}
+		// Vuelvo a traer las unidades, por si las moscas
+		$unidades = DB::select($this->cons_unidades, [$asignatura_id, $periodo_id]);
 
 		foreach ($unidades as $unidad) {
 
-			$consulta = 'SELECT * FROM subunidades WHERE unidad_id=? and deleted_at is null';
-
-			$subunidades = DB::select(DB::raw($consulta), array($unidad->id));
-
-			$unidad->subunidades = $subunidades;
+			$subunidades 			= DB::select($this->cons_subunidades, [$unidad->id]);
+			$unidad->subunidades 	= $subunidades;
 
 		}
 

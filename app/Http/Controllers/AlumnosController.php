@@ -173,6 +173,7 @@ class AlumnosController extends Controller {
 			$usuario->username		=	Request::input('username');
 			$usuario->password		=	Hash::make(Request::input('password', '123456'));
 			$usuario->email			=	Request::input('email2');
+			$usuario->sexo			=	Request::input('sexo');
 			$usuario->is_superuser	=	Request::input('is_superuser', false);
 			$usuario->periodo_id	=	$periodo_actual->id;
 			$usuario->is_active		=	Request::input('is_active', true);

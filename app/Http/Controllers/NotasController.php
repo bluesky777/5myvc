@@ -2,6 +2,7 @@
 
 use Request;
 use DB;
+use Carbon\Carbon;
 
 use App\Models\User;
 use App\Models\Nota;
@@ -130,7 +131,8 @@ class NotasController extends Controller {
 
 	public function getShow($nota_id)
 	{
-		$nota = Nota::find($nota_id);
+		$user 	= User::fromToken();
+		$nota 	= Nota::find($nota_id);
 		return $nota;
 	}
 
@@ -144,30 +146,41 @@ class NotasController extends Controller {
 
 	public function putUpdate($id)
 	{
-		$user = User::fromToken();
-
-		$bit = Bitacora::crear($user->user_id);
+		$user 	= User::fromToken();
+		$now 	= Carbon::now('America/Bogota');
 
 		try {
-			$bit->periodo_id = $user->periodo_id;
 
-			$nota = Nota::findOrFail($id);
-			$bit->affected_element_old_value_int = $nota->nota; // Guardo la nota antigua
+			$consulta 	= 'SELECT n.*, h.id as history_id FROM notas n, 
+								(select * from historiales where user_id=? and deleted_at is null order by id desc limit 1 ) h 
+							WHERE n.id=? and n.deleted_at is null ';
 
-			$nota->nota = Request::input('nota');
-			$bit->affected_element_new_value_int = $nota->nota; // Guardo la nota nueva
-		
-			$nota->updated_by = $user->user_id;
+			$nota 		= DB::select($consulta, [$user->user_id, $id])[0];
 
-			$nota->save();
+			$bit_by 	= $user->user_id;
+			$bit_hist 	= $nota->history_id;
+			$bit_old 	= $nota->nota; 				// Guardo la nota antigua
+			$bit_new 	= Request::input('nota'); 	// Guardo la nota nueva
+			$bit_per 	= $user->periodo_id;
+
+			$nota->nota 		= $bit_new;
+			$nota->updated_at 	= $now;
+			$nota->updated_by 	= $user->user_id;
+
+			$consulta 	= 'UPDATE notas SET nota=?, updated_by=?, updated_at=? WHERE id=?';
+			DB::update($consulta, [$bit_new, $user->user_id, $now, $id]);
+
+			$consulta 	= 'INSERT INTO bitacoras (created_by, historial_id, affected_user_id, affected_person_type, affected_element_type, affected_element_id, affected_element_new_value_int, affected_element_old_value_int, created_at) 
+						VALUES (?, ?, ?, "Al", "Nota", ?, ?, ?, ?)';
+
+			DB::insert($consulta, [$bit_by, $bit_hist, $nota->alumno_id, $id, $bit_new, $bit_old, $now]);
+
 		} catch (Exception $e) {
 			return abort(400, 'No se pudo guardar la nota');
 		}
 		
 
-		$bit->saveUpdateNota($nota);
-
-		return $nota;
+		return (array)$nota;
 	}
 
 

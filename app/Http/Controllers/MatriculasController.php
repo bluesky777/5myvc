@@ -94,7 +94,7 @@ class MatriculasController extends Controller {
 		$matricula->save();
 
 
-		return $alumno;
+		return $matricula;
 	}
 
 

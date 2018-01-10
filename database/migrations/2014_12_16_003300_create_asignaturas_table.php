@@ -20,6 +20,7 @@ class CreateAsignaturasTable extends Migration {
 			$table->integer('materia_id')->unsigned();
 			$table->integer('grupo_id')->unsigned();
 			$table->integer('profesor_id')->unsigned()->nullable();
+			$table->integer('nuevo_responsable_id')->unsigned()->nullable(); // Profesor del nuevo año que va a recuperar las notas de esta asignatura
 			$table->integer('creditos')->nullable();
 			$table->integer('orden')->nullable();
 			$table->integer('created_by')->nullable();

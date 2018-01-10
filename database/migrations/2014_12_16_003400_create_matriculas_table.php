@@ -23,6 +23,8 @@ class CreateMatriculasTable extends Migration {
 			$table->string('estado', 4)->default('MATR'); // MATR, ASIS, RETI     == Matriculado, Asistente y Retirado
 			$table->date('fecha_retiro')->nullable(); // Cuando fue retirado o desertado
 			$table->date('fecha_matricula')->nullable(); // Cuando por fin lo matricularon
+			$table->string('se_recomienda')->default('MATR CONDICIONAL'); // 'MATR CONDICIONAL', 'COMPR ACADEM', 'CAMBIO INSTITUCI'     == Lo que se recomienda 
+			$table->string('entra_con')->default('')->nullable(); // 'MATR CONDICIONAL', 'COMPR ACADEM'     
 			$table->integer('created_by')->nullable();
 			$table->integer('updated_by')->nullable();
 			$table->integer('deleted_by')->nullable();

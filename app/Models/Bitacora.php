@@ -26,14 +26,9 @@ class Bitacora extends Model {
 	{
 
 		$consulta = 'SELECT s.id as subunidad_id, s.definicion as definicion_subunidad, s.porcentaje, s.unidad_id,
-						u.definicion as definicion_unidad, p.numero as numero_periodo,
-						m.materia, m.alias, 
 						al.nombres, al.id as alumno_id, al.user_id, al.nombres, al.apellidos
 					from subunidades s
 					inner join unidades u on u.id=s.unidad_id and s.id=:subunidad_id
-					inner join asignaturas a on a.id=u.asignatura_id
-					inner join periodos p on p.id=u.periodo_id
-					inner join materias m on m.id=a.materia_id
 					inner join alumnos al on al.id=:alumno_id';
 
 		$datos = DB::select($consulta, array(
@@ -46,7 +41,6 @@ class Bitacora extends Model {
 		$this->affected_element_id 		= $nota->id;
 		$this->affected_user_id 		= $datos->user_id;
 		$this->affected_person_id 		= $datos->alumno_id;
-		$this->affected_person_name 	= $datos->nombres . ' ' . $datos->apellidos;
 		$this->affected_person_type 	= 'Al';
 
 		/*

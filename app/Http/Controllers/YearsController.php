@@ -12,6 +12,7 @@ use App\Models\Grupo;
 use App\Models\Asignatura;
 use App\Models\EscalaDeValoracion;
 use App\Models\Frase;
+use Carbon\Carbon;
 
 
 class YearsController extends Controller {
@@ -21,12 +22,13 @@ class YearsController extends Controller {
 	{
 		$user = User::fromToken();
 
-		$years = Year::all();
+		$consulta 	= 'SELECT * FROM years WHERE deleted_at is null';
+		$years 		= DB::select($consulta);
 
 		foreach ($years as $year) {
-			$year->periodos = Periodo::where('year_id', '=', $year->id)->get();
+			$consulta 			= 'SELECT * FROM periodos WHERE year_id=? and deleted_at is null';
+			$year->periodos 	= DB::select($consulta, [$year->id]);
 		}
-
 
 		return $years;
 	}
@@ -36,17 +38,25 @@ class YearsController extends Controller {
 	{
 		$user = User::fromToken();
 
-		$years 		= Year::all();
+		$consulta 	= 'SELECT * FROM years WHERE deleted_at is null';
+		$years 		= DB::select($consulta);
+
 
 		foreach ($years as $year) {
-			$year->periodos = Periodo::where('year_id', $year->id)->get();
+			$consulta 			= 'SELECT * FROM periodos WHERE year_id=? and deleted_at is null';
+			$year->periodos 	= DB::select($consulta, [$year->id]);
+
+			$consulta 		= 'SELECT * FROM escalas_de_valoracion WHERE year_id=? and deleted_at is null order by orden asc';
+			$year->escalas 	= DB::select($consulta, [$year->id]);
 		}
 
-		$certif 	= ConfigCertificado::all();
+		$consulta 	= 'SELECT * FROM config_certificados';
+		$certif 	= DB::select($consulta);
 
-		$imagenes 	= ImageModel::where('user_id', $user->user_id)
-							->where('publica', true)
-							->get();
+		$consulta 	= 'SELECT * FROM images WHERE user_id=? and publica=true';
+		$imagenes 	= DB::select($consulta, [$user->user_id]);
+
+
 
 		$result = ['years' => $years, 'certificados' => $certif, 'imagenes' => $imagenes];
 
@@ -96,6 +106,10 @@ class YearsController extends Controller {
 		$year 			= Year::find($year_id_nuevo);
 		$year->actual 	= true;
 		$year->save();
+
+		
+		// Creamos un periodo
+		DB::insert('INSERT INTO periodos(numero, actual, year_id) VALUES(1, 1, ?)', [$year->id]);
 
 
 

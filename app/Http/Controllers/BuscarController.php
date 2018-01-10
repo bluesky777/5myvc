@@ -16,7 +16,7 @@ class BuscarController extends Controller {
 	{
 		$texto_a_buscar = Request::input('texto_a_buscar');
 
-		$consulta = "SELECT a.no_matricula, a.nombres, a.apellidos, a.sexo, a.user_id, a.created_by, a.updated_by, a.deleted_by, a.deleted_at, a.created_at, a.updated_at,
+		$consulta = "SELECT a.no_matricula, a.id as alumno_id, a.nombres, a.apellidos, a.sexo, a.user_id, a.created_by, a.updated_by, a.deleted_by, a.deleted_at, a.created_at, a.updated_at,
 						a.foto_id, IFNULL(i.nombre, IF(a.sexo='F','default_female.png', 'default_male.png')) as foto_nombre
 					FROM alumnos a
 					left join images i on i.id=a.foto_id and i.deleted_at is null

@@ -13,11 +13,40 @@ class CreateBitacorasTable extends Migration {
 	 */
 	public function up()
 	{
+		Schema::create('historiales', function(Blueprint $table)
+		{
+			$table->engine = "InnoDB";
+			$table->increments('id');
+			$table->integer('user_id')->unsigned()->nullable();			// Id del usuario que se Loguea
+			$table->string('tipo')->nullable();							// Alumno, Profesor, Acudiente, Usuario.
+			$table->string('ip')->nullable();
+			$table->dateTime('logout_at')->nullable();
+			$table->string('browser_name')->nullable();
+			$table->string('browser_version')->nullable();
+			$table->string('browser_family')->nullable();
+			$table->string('browser_engine')->nullable();
+			$table->string('entorno')->nullable(); // Movil, Tablet, Desktop, Bot
+
+			$table->string('platform_name')->nullable(); // Windows XP, MacOS 10...
+			$table->string('platform_family')->nullable(); // Linux, Windows, MacOS
+			$table->string('device_family')->nullable(); // Samsung, Apple, Huawei
+			$table->string('device_model')->nullable(); // iPad, iPhone, Nexus
+			$table->string('device_grade')->nullable(); // Device's mobile grade in scale of A,B,C for performance
+
+			$table->softDeletes();
+			$table->timestamps();
+		});
+		Schema::table('historiales', function(Blueprint $table) {
+			$table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+		});
+
+
 		Schema::create('bitacoras', function(Blueprint $table)
 		{
 			$table->engine = "InnoDB";
 			$table->increments('id');
 			$table->integer('created_by');								// Id del usuario que realizó la acción
+			$table->integer('historial_id')->unsigned()->nullable();								// Id del usuario que realizó la acción
 			$table->string('descripcion')->nullable();					// Detalles humanamente claros de la acción realizada
 			
 			$table->integer('affected_user_id')->nullable();			// Usuario sobre el cual se realizó la ación
@@ -36,6 +65,9 @@ class CreateBitacorasTable extends Migration {
 			$table->softDeletes();
 			$table->timestamps();
 		});
+		Schema::table('bitacoras', function(Blueprint $table) {
+			$table->foreign('historial_id')->references('id')->on('historiales')->onDelete('cascade');
+		});
 	}
 
 
@@ -47,6 +79,7 @@ class CreateBitacorasTable extends Migration {
 	public function down()
 	{
 		Schema::drop('bitacoras');
+		Schema::drop('historiales');
 	}
 
 }

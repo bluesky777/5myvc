@@ -122,8 +122,10 @@ class User extends Authenticatable implements AuthenticatableUserContract
 			}
 
 			$consulta = '';
+			$tipo_tmp = $userTemp->tipo;
+			$is_super = $userTemp->is_superuser;
 
-			switch ($userTemp->tipo) {  // Alumno, Profesor, Acudiente, Usuario.
+			switch ($tipo_tmp) {  // Alumno, Profesor, Acudiente, Usuario.
 				case 'Profesor':
 					
 					$consulta = 'SELECT p.id as persona_id, p.nombres, p.apellidos, p.sexo, p.fecha_nac, p.ciudad_nac, p.user_id, 
@@ -240,7 +242,12 @@ class User extends Authenticatable implements AuthenticatableUserContract
 			$usuario = array_merge($usuario, $userTemp);
 			$usuario = (object)$usuario;			
 
-
+			if (! isset( $usuario->tipo) ) {
+				$usuario->tipo = $tipo_tmp;
+			}
+			if (! isset( $usuario->is_superuser) ) {
+				$usuario->is_superuser = $is_super;
+			}
 
 
 			User::$nota_minima_aceptada = $usuario->nota_minima_aceptada;

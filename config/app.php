@@ -181,6 +181,7 @@ return [
 
         Barryvdh\Cors\ServiceProvider::class,
         Tymon\JWTAuth\Providers\LaravelServiceProvider::class,
+        \hisorange\BrowserDetect\ServiceProvider::class,
         
 
 
@@ -236,6 +237,7 @@ return [
         'Entrust'   => Zizaco\Entrust\EntrustFacade::class,
         'JWTAuth' => Tymon\JWTAuth\Facades\JWTAuth::class,
         'JWTFactory' => Tymon\JWTAuthFacades\JWTFactory::class,
+        'Browser' => \hisorange\BrowserDetect\Facade::class,
 
     ],
 
