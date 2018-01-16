@@ -5,6 +5,7 @@
 use Request;
 use DB;
 use Hash;
+use Carbon\Carbon;
 
 use App\Models\User;
 use App\Models\Acudiente;
@@ -87,6 +88,17 @@ class AcudientesController extends Controller {
 	}
 
 
+	public function putOcupacionesCheck()
+	{
+		$texto = Request::input('texto');
+		$consulta = 'SELECT distinct ocupacion FROM acudientes WHERE ocupacion like :texto;';
+		
+		$res = DB::select($consulta, [':texto' => '%'.$texto.'%']);
+		return [ 'ocupaciones' => $res ];
+	}
+
+
+
 
 	public function putBuscar()
 	{
@@ -110,6 +122,7 @@ class AcudientesController extends Controller {
 
 	public function postCrear()
 	{
+		$fecha_nac = Carbon::parse(Request::input('fecha_matricula'));
 		try {
 			$acudiente = new Acudiente;
 			$acudiente->nombres		=	Request::input('nombres');
@@ -119,6 +132,7 @@ class AcudientesController extends Controller {
 			$acudiente->documento	=	Request::input('documento');
 			$acudiente->ciudad_doc	=	Request::input('ciudad_doc')['id'];
 			$acudiente->ciudad_nac	=	Request::input('ciudad_nac')['id'];
+			$acudiente->fecha_nac	=	$fecha_nac;
 			$acudiente->telefono	=	Request::input('telefono');
 			$acudiente->celular		=	Request::input('celular');
 			$acudiente->ocupacion	=	Request::input('ocupacion');

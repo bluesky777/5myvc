@@ -177,7 +177,7 @@ class GruposController extends Controller {
 			$grupo->valormatricula=	Request::input('valormatricula');
 			$grupo->valorpension=	Request::input('valorpension');
 			$grupo->orden		=	Request::input('orden');
-			$grupo->caritas		=	Request::input('caritas');
+			$grupo->caritas		=	Request::input('caritas', false);
 
 			$grupo->save();
 

@@ -20,6 +20,7 @@ class CreateChangeAskedTable extends Migration {
 			$table->integer('asked_by_user_id'); // Usuario que hace la petición
 			$table->integer('asked_to_user_id')->nullable(); // Cuando es una petición a un usuario específico
 			$table->integer('asked_for_user_id')->nullable(); // Cuando la petición es sobre cambiarle algo a alguien más
+			$table->string('tipo_user')->nullable(); // Profesor, Alumno...
 			
 			$table->integer('data_id')->nullable(); // Datos personales a cambiar
 			$table->integer('assignment_id')->nullable(); // Datos a cambiar
@@ -142,13 +143,14 @@ class CreateChangeAskedTable extends Migration {
 			$table->integer('defini_comport_id')->nullable(); // Cuando alguien pide cambio en una frase o definición de comportamiento
 			$table->boolean('defini_comport_accepted')->nullable(); // Cuando el administrador aprueba este cambio
 
-			$table->integer('materia_to_remove_id')->nullable(); // Cuando un profesor pide que le QUITEN una materia
-			$table->boolean('materia_to_remove_accepted')->nullable(); // Cuando el administrador aprueba este cambio
+			$table->integer('asignatura_to_remove_id')->nullable(); // Cuando un profesor pide que le QUITEN una materia
+			$table->boolean('asignatura_to_remove_accepted')->nullable(); // Cuando el administrador aprueba este cambio
 
 			$table->integer('materia_to_add_id')->nullable(); // Cuando un profesor pide que le AGREGUEN una materia
+			$table->integer('grupo_to_add_id')->nullable(); // Grupo para la materia
 			$table->boolean('materia_to_add_accepted')->nullable(); // Cuando el administrador aprueba este cambio
 
-			$table->integer('materia_id')->nullable(); // Cuando un profesor pide que cambien los créditos que da en una materia
+			$table->integer('asignatura_id')->nullable(); // Cuando un profesor pide que cambien los créditos que da en una materia
 			$table->integer('creditos_new')->nullable();
 			$table->boolean('creditos_accepted')->nullable(); // Cuando el administrador aprueba este cambio
 			

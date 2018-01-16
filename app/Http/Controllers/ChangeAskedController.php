@@ -14,6 +14,8 @@ use App\Models\Year;
 use App\Models\Debugging;
 use App\Models\ImageModel;
 
+use App\Http\Controllers\Alumnos\Solicitudes;
+
 use Carbon\Carbon;
 use \DateTime;
 
@@ -47,9 +49,11 @@ class ChangeAskedController extends Controller {
 
 			$cambios_alum = DB::select($consulta, [$user->year_id]);
 
-			# Luego haré los profesores ....
+			# Solicitudes de asignaturas de Profesores
+			$solicitudes 	= new Solicitudes();
+			$pedidos 		= $solicitudes->todas_solicitudes_de_profesores($user->year_id);
 
-			return [ 'alumnos'=>$cambios_alum, 'profesores'=>[] ];
+			return [ 'alumnos'=>$cambios_alum, 'profesores'=> $pedidos ];
 
 		}elseif ($user->tipo == 'Profesor') {
 
@@ -126,34 +130,96 @@ class ChangeAskedController extends Controller {
 	}
 
 
+	public function putAceptarAsignatura()
+	{
+		$user 			= User::fromToken();
+		$pedido 		= Request::input('pedido');
+		$now 			= Carbon::now('America/Bogota');
+
+		if ($pedido['materia_to_add_id'] > 0) {
+			
+			$consulta = 'INSERT INTO asignaturas(materia_id, grupo_id, profesor_id, creditos, orden, created_by, created_at) 
+									VALUES(:materia_id, :grupo_id, :profesor_id, :creditos, 1, :created_by, :created_at)';
+			DB::insert($consulta, [
+					':materia_id' 	=> $pedido['materia_to_add_id'], 
+					':grupo_id' 	=> $pedido['grupo_to_add_id'], 
+					':profesor_id' 	=> $pedido['profesor_id'], 
+					':creditos' 	=> $pedido['creditos_new'], 
+					':created_by'	=> $user->user_id, 
+					':created_at' 	=> $now
+			]);
+			$consulta = 'UPDATE change_asked_assignment SET asignatura_to_remove_accepted=true, materia_to_add_accepted=true, creditos_accepted=true, updated_at=:updated_at 
+						WHERE id=:assignment_id';
+
+			DB::update($consulta, [ ':updated_at' => $now, ':assignment_id' => $pedido['assignment_id'] ]);
+
+		} else if($pedido['asignatura_to_remove_id'] > 0) {
+			
+			$consulta = 'UPDATE asignaturas SET deleted_at=:deleted_at, deleted_by=:deleted_by WHERE id=:asignatura_id';
+			DB::update($consulta, [
+					':deleted_at' 		=> $now, 
+					':deleted_by' 		=> $pedido['asked_by_user_id'], 
+					':asignatura_id' 	=> $pedido['asignatura_to_remove_id'], 
+			]);
+			$consulta = 'UPDATE change_asked_assignment SET asignatura_to_remove_accepted=true, materia_to_add_accepted=true, creditos_accepted=true, updated_at=:updated_at 
+						WHERE id=:assignment_id';
+
+			DB::update($consulta, [ ':updated_at' => $now, ':assignment_id' => $pedido['assignment_id'] ]);
+
+
+		}
+
+		$consulta = 'UPDATE change_asked SET accepted_at=:accepted_at, answered_by=:answered_by	WHERE id=:asked_id';
+		DB::update($consulta, [ ':accepted_at' => $now, ':answered_by' => $user->user_id, ':asked_id' => $pedido['asked_id'] ]);
+
+
+		$pedido['asignatura_to_remove_accepted'] 	= true;
+		$pedido['materia_to_add_accepted'] 			= true;
+		$pedido['creditos_accepted'] 				= true;
+		
+		return [ 'finalizado'=> true, 'msg'=>'Cambio aceptado con éxito'];
+	}
+
+
 
 	public function putRechazar()
 	{
 		$user 		= User::fromToken();
+		$now 		= Carbon::now('America/Bogota');
 
 		$asked_id 	= Request::input('asked_id');
 		$tipo 		= Request::input('tipo');
 		$data_id 	= Request::input('data_id');
 
-		//$dt = Carbon::now()->format('Y-m-d G:H:i');
+
 		$pedido 	= ChangeAsked::pedido($asked_id);
 
 		if ($tipo == "img_perfil") {
-			$consulta = 'UPDATE change_asked_data SET image_id_accepted=false WHERE id=:data_id';
-			DB::select($consulta, [ ':data_id' => $data_id ]);
+			$consulta = 'UPDATE change_asked_data SET image_id_accepted=false, updated_at=:updated_at WHERE id=:data_id';
+			DB::update($consulta, [ ':updated_at' => $now, ':data_id' => $data_id ]);
 			$pedido->image_id_accepted 	= false;
 		}
 
 		if ($tipo == "foto_oficial") {
-			$consulta = 'UPDATE change_asked_data SET foto_id_accepted=false WHERE id=:data_id';
-			DB::select($consulta, [ ':data_id' => $data_id ]);
+			$consulta = 'UPDATE change_asked_data SET foto_id_accepted=false, updated_at=:updated_at WHERE id=:data_id';
+			DB::update($consulta, [ ':updated_at' => $now, ':data_id' => $data_id ]);
 			$pedido->foto_id_accepted 	= false;
 		}
 
 		if ($tipo == "img_delete") {
-			$consulta = 'UPDATE change_asked_data SET image_to_delete_accepted=false WHERE id=:data_id';
-			DB::select($consulta, [ ':data_id' => $data_id ]);
+			$consulta = 'UPDATE change_asked_data SET image_to_delete_accepted=false, updated_at=:updated_at WHERE id=:data_id';
+			DB::update($consulta, [ ':updated_at' => $now, ':data_id' => $data_id ]);
 			$pedido->image_to_delete_accepted 	= false;
+		}
+
+		if ($tipo == "asignatura") {
+			$consulta = 'UPDATE change_asked_assignment SET asignatura_to_remove_accepted=false, materia_to_add_accepted=false, creditos_accepted=false, updated_at=:updated_at 
+						WHERE id=:assignment_id';
+			DB::update($consulta, [ ':updated_at' => $now, ':assignment_id' => $data_id ]);
+			$pedido->asignatura_to_remove_accepted 		= false;
+			$pedido->materia_to_add_accepted 			= false;
+			$pedido->creditos_accepted 					= false;
+			return [ 'finalizado'=> true, 'msg'=>'Cambio rechazado con éxito'];
 		}
 
 		$finalizado = $this->finalizar_si_no_hay_cambios($pedido, $user->user_id);
@@ -295,5 +361,24 @@ class ChangeAskedController extends Controller {
 
 		return [ 'borrar' => $borrar ];
 	}
+
+	public function putDestruirPedidoAsignatura()
+	{
+		$user 			= User::fromToken();
+		$asked_id 		= Request::input('asked_id');
+		$assignment_id 	= Request::input('assignment_id');
+
+		$consulta = 'DELETE FROM change_asked WHERE id=:asked_id';
+		$borrar = DB::delete($consulta, [ ':asked_id' => $asked_id ]);
+		
+		$consulta = 'DELETE FROM change_asked_assignment WHERE id=:assignment_id';
+		$borrar = DB::delete($consulta, [ ':assignment_id' => $assignment_id ]);
+		
+
+
+		return [ 'borrar' => $borrar ];
+	}
+
+
 
 }

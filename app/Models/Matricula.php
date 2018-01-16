@@ -4,6 +4,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 use DB;
+use Carbon\Carbon;
 
 use App\Models\Year;
 
@@ -90,8 +91,9 @@ class Matricula extends Model {
 				$matricula->estado 		= 'MATR';
 				$matricula->created_by	= $user_id;
 				
-				$now = new \DateTime();
-				$now->format('Y-m-d');
+				$now = Carbon::now('America/Bogota');
+				//$now = new \DateTime();
+				//$now->format('Y-m-d');
 
 				$matricula->fecha_matricula = $now;
 

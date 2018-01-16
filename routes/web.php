@@ -45,6 +45,7 @@ AdvancedRoute::controller('nota_comportamiento', 'NotaComportamientoController')
 AdvancedRoute::controller('definiciones_comportamiento', 'DefinicionesComportamientoController');
 AdvancedRoute::controller('frases', 'FrasesController');
 AdvancedRoute::controller('ChangesAsked', 'ChangeAskedController');
+AdvancedRoute::controller('ChangesAskedAssignment', 'ChangeAskedAssignmentController');
 AdvancedRoute::controller('ausencias', 'AusenciasController');
 AdvancedRoute::controller('parentescos', 'ParentescosController');
 AdvancedRoute::controller('bitacoras', 'BitacorasController');

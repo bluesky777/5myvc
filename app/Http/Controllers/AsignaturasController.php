@@ -10,6 +10,8 @@ use App\Models\Profesor;
 use App\Models\Asignatura;
 use App\Models\Unidad;
 
+use App\Http\Controllers\Alumnos\Solicitudes;
+
 
 class AsignaturasController extends Controller {
 
@@ -94,8 +96,9 @@ class AsignaturasController extends Controller {
 			$info_profesor = Profesor::detallado($persona_id);
 		}
 
-		$consulta = '';
-		$asignaturas = '';
+		$consulta 		= '';
+		$asignaturas 	= '';
+		$pedidos 		= [];
 
 		switch ($user->tipo) {
 			case 'Profesor' or 'Usuario':
@@ -107,7 +110,29 @@ class AsignaturasController extends Controller {
 					
 				}
 
+				if ($user->tipo == 'Profesor') {
+					$solicitudes 	= new Solicitudes();
+					$pedidos 		= $solicitudes->asignaturas_a_cambiar_de_profesor($user->user_id, $user->year_id);
+					$res['pedidos']	= $pedidos;
 
+					$consulta = 'SELECT g.id, g.nombre, g.abrev, g.orden, gra.orden as orden_grado, g.grado_id, g.year_id, g.titular_id,
+						p.nombres as nombres_titular, p.apellidos as apellidos_titular, p.titulo,
+						g.created_at, g.updated_at, gra.nombre as nombre_grado 
+						from grupos g
+						inner join grados gra on gra.id=g.grado_id and g.year_id=:year_id 
+						left join profesores p on p.id=g.titular_id
+						where g.deleted_at is null
+						order by g.orden';
+
+					$res['grupos'] = DB::select($consulta, [':year_id'=>$user->year_id] );
+
+
+					$consulta = 'SELECT * from materias	where deleted_at is null order by materia';
+					$res['materias'] = DB::select($consulta);
+
+
+				}
+				
 				break;
 
 			case 'Alumno':
@@ -128,7 +153,7 @@ class AsignaturasController extends Controller {
 				break;
 		}
 
-		$res = ['asignaturas' => $asignaturas];
+		$res['asignaturas'] = $asignaturas;
 
 		if ($info_profesor) {
 			$res['info_profesor'] = $info_profesor;

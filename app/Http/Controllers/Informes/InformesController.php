@@ -52,7 +52,7 @@ class InformesController extends Controller {
 		$profesores = DB::select($consulta, [':year_id'=>$user->year_id] );
 
 		$consulta = 'SELECT * 
-				from images i where i.deleted_at is null and i.user_id=:user_id and i.publica=true';
+				from images i where i.deleted_at is null and i.publica=true';
 
 		$imagenes = DB::select($consulta, [':user_id'=>$user->user_id] );
 

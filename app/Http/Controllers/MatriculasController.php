@@ -257,7 +257,7 @@ class MatriculasController extends Controller {
 		$cantA = count($result['AlumnosActuales']);
 
 		for ($i=0; $i < $cantA; $i++) { 
-			$consulta = 'SELECT ac.id, ac.nombres, ac.apellidos, ac.sexo, ac.fecha_nac, ac.ciudad_nac, c1.ciudad as ciudad_nac_nombre, ac.telefono, pa.parentesco, pa.id as parentesco_id, ac.user_id, 
+			$consulta = 'SELECT ac.id, ac.nombres, ac.apellidos, ac.sexo, ac.fecha_nac, ac.ciudad_nac, c1.ciudad as ciudad_nac_nombre, ac.ciudad_doc, c2.ciudad as ciudad_doc_nombre, ac.telefono, pa.parentesco, pa.id as parentesco_id, ac.user_id, 
 							ac.celular, ac.ocupacion, ac.email, ac.barrio, ac.direccion, ac.tipo_doc, ac.documento, ac.created_by, ac.updated_by, ac.created_at, ac.updated_at, 
 							ac.foto_id, IFNULL(i.nombre, IF(ac.sexo="F","default_female.png", "default_male.png")) as foto_nombre, 
 							u.username, u.is_active
@@ -266,6 +266,7 @@ class MatriculasController extends Controller {
 						left join users u on ac.user_id=u.id and u.deleted_at is null
 						left join images i on i.id=ac.foto_id and i.deleted_at is null
 						left join ciudades c1 on c1.id=ac.ciudad_nac and c1.deleted_at is null
+						left join ciudades c2 on c2.id=ac.ciudad_doc and c2.deleted_at is null
 						WHERE pa.alumno_id=? and pa.deleted_at is null';
 			
 			$acudientes 		= DB::select($consulta, [ $result['AlumnosActuales'][$i]->alumno_id ]);	
@@ -287,6 +288,8 @@ class MatriculasController extends Controller {
 					['name' => "Sex", 'field' => "sexo", 'maxWidth' => 40],
 					['name' => "Parentesco", 'field' => "parentesco", 'maxWidth' => 90],
 					['name' => "Usuario", 'field' => "username", 'maxWidth' => 135, 'cellTemplate' => "==directives/botonesResetPassword.tpl.html", 'editableCellTemplate' => "==alumnos/botonEditUsername.tpl.html" ], 
+					['name' => "Documento", 'field' => "documento", 'maxWidth' => 70],
+					['name' => "Ciudad doc", 'field' => "ciudad_doc", 'cellTemplate' => "==directives/botonCiudadDoc.tpl.html", 'enableCellEdit' => false, 'maxWidth' => 100],
 					['name' => "Fecha nac", 'field' => "fecha_nac", 'cellFilter' => "date:mediumDate", 'type' => 'date', 'maxWidth' => 120],
 					['name' => "Ciudad nac", 'field' => "ciudad_nac", 'cellTemplate' => "==directives/botonCiudadNac.tpl.html", 'enableCellEdit' => false, 'maxWidth' => 100],
 					['name' => "Teléfono", 'field' => "telefono", 'maxWidth' => 80],
@@ -295,7 +298,6 @@ class MatriculasController extends Controller {
 					['name' => "Email", 'field' => "email", 'maxWidth' => 80],
 					['name' => "Barrio", 'field' => "barrio", 'maxWidth' => 80],
 					['name' => "Dirección", 'field' => "direccion", 'maxWidth' => 80],
-					['name' => "Documento", 'field' => "documento", 'maxWidth' => 70]
 				],
 				'data' 			=> $acudientes
 			];

@@ -117,6 +117,17 @@ class AlumnosController extends Controller {
 		
 	}
 
+
+	public function putEpsCheck()
+	{
+		$texto = Request::input('texto');
+		$consulta = 'SELECT distinct eps FROM alumnos WHERE eps like :texto;';
+		
+		$res = DB::select($consulta, [':texto' => '%'.$texto.'%']);
+		return [ 'eps' => $res ];
+	}
+
+
 	public function postStore()
 	{
 

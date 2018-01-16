@@ -23,8 +23,12 @@ class CreateMatriculasTable extends Migration {
 			$table->string('estado', 4)->default('MATR'); // MATR, ASIS, RETI     == Matriculado, Asistente y Retirado
 			$table->date('fecha_retiro')->nullable(); // Cuando fue retirado o desertado
 			$table->date('fecha_matricula')->nullable(); // Cuando por fin lo matricularon
-			$table->string('se_recomienda')->default('MATR CONDICIONAL'); // 'MATR CONDICIONAL', 'COMPR ACADEM', 'CAMBIO INSTITUCI'     == Lo que se recomienda 
-			$table->string('entra_con')->default('')->nullable(); // 'MATR CONDICIONAL', 'COMPR ACADEM'     
+			$table->string('programar')->nullable(); // 'MATRIC CONDICIONAL', 'COMPROM ACADÉMICO', 'COMPROM DISCIPLINARIO', 'PERDIDA DE CUPO', 'CAMBIO INSTITUCI'     == Lo que se recomienda 
+			$table->string('descripcion_recomiendacion')->nullable(); // Descripción del compromiso o por qué perdió cupo...
+			$table->string('efectuar_una')->default('')->nullable(); // 'MATR CONDICIONAL', 'COMPR ACADEM' 
+			$table->string('descripcion_efectuada')->nullable(); 
+			$table->boolean('profes_editar_notas')->nullable(); // Si true, los profes pueden editar sus notas
+			$table->boolean('nuevo')->nullable(); // Si true, fue creado este año   
 			$table->integer('created_by')->nullable();
 			$table->integer('updated_by')->nullable();
 			$table->integer('deleted_by')->nullable();
