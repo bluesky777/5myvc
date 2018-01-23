@@ -29,7 +29,7 @@ class EscalasDeValoracionController extends Controller {
 		$now 	= Carbon::now('America/Bogota');
 
 		$consulta 	= 'INSERT INTO escalas_de_valoracion(desempenio, orden, valoracion, porc_inicial, porc_final, year_id, perdido, created_at) 
-														VALUES("EXCELENTE", 5, "E", 91, 100, ?, 0, ?)';
+														VALUES("SUPERIOR", 5, "S", 91, 100, ?, 0, ?)';
 		DB::insert($consulta, [ $user->year_id, $now ]);
 
 		$consulta 	= 'SELECT * FROM escalas_de_valoracion WHERE year_id=? and deleted_at is null order by id desc';

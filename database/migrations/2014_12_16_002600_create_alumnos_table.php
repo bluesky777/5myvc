@@ -34,12 +34,20 @@ class CreateAlumnosTable extends Migration {
 			$table->string('barrio')->nullable();
 			$table->integer('estrato')->nullable()->default(1);
 			$table->integer('ciudad_resid')->unsigned()->index()->nullable(); // Cuidad de residencia
+			$table->boolean('is_urbana')->nullable()->default(true); // Zona. si False, es Rural
 			$table->string('religion')->nullable();
 			$table->string('email')->nullable();
 			$table->string('facebook')->nullable(); // Si no asigna facebook, se tomará el email
 			$table->integer('foto_id')->nullable();
 			$table->boolean('pazysalvo')->nullable()->default(true);
 			$table->integer('deuda')->nullable()->default(0);
+
+			$table->string('discapacidad')->nullable(); // SV – Baja Visión. SV – Ceguera. Trastorno del Espectro Autista. DI – Cognitivo. Múltiple. Otra. SA – Usuario de LSC. SA – Usuario del Castellano. Sordoceguera. Limitación Física (Movilidad). Sistémica. Psicosocial. Voz y Habla. N/A
+			$table->boolean('has_sisben')->nullable()->default(false);
+			$table->integer('nro_sisben')->nullable();
+			$table->boolean('has_sisben_3')->nullable()->default(false);
+			$table->integer('nro_sisben_3')->nullable();
+			
 			$table->integer('created_by')->nullable();
 			$table->integer('updated_by')->nullable();
 			$table->integer('deleted_by')->nullable();

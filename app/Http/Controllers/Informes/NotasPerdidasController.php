@@ -192,4 +192,124 @@ class NotasPerdidasController extends Controller {
 
 
 
+
+	public function putTodos()
+	{
+		$user 					= User::fromToken();
+		$periodo_a_calcular 	= (int)Request::input('periodo_a_calcular');
+		$profesores 			= Profesor::contratos($user->year_id);
+
+
+		$cantProf = count($profesores);
+
+		for ($m=0; $m < $cantProf; $m++) { 
+
+
+			$consulta = 'SELECT g.id as grupo_id, g.nombre, g.abrev, g.orden, gra.orden as orden_grado, g.grado_id, g.year_id, g.titular_id,
+				p.nombres as nombres_titular, p.apellidos as apellidos_titular, p.titulo,
+				g.created_at, g.updated_at, gra.nombre as nombre_grado 
+				from grupos g
+				inner join grados gra on gra.id=g.grado_id and g.year_id=:year_id 
+				left join profesores p on p.id=g.titular_id
+				where g.deleted_at is null
+				order by g.orden';
+
+			$grupos_all 	= DB::select($consulta, [':year_id' => $user->year_id]);
+			
+				
+			$cant_gr_all 		= count($grupos_all);
+
+			for ($i=0; $i < $cant_gr_all; $i++) { 
+
+				$consulta = 'SELECT a.id as asignatura_id, a.grupo_id, a.profesor_id, a.creditos, a.orden, m.materia, m.alias, p.nombres as profesor_nombres, p.apellidos as profesor_apellidos
+					from asignaturas a
+					inner join profesores p on p.id=a.profesor_id and p.id=:profesor_id
+					inner join materias m on m.id=a.materia_id 
+					where a.grupo_id=:grupo_id and a.deleted_at is null';
+
+				$asign_all 		= DB::select($consulta, [':profesor_id' => $profesores[$m]->profesor_id, ':grupo_id' => $grupos_all[$i]->grupo_id ]);
+				$cant_asig_all 	= count($asign_all);
+
+				for ($j=0; $j < $cant_asig_all; $j++) { 
+
+
+					$consulta = "SELECT a.id as alumno_id, a.nombres, a.apellidos, a.sexo, a.user_id, a.celular, a.email, a.foto_id, a.pazysalvo
+						from alumnos a
+						inner join matriculas m on m.alumno_id=a.id and (m.estado='MATR' or m.estado='ASIS') and m.grupo_id=:grupo_id and m.deleted_at is null
+						inner join notas n on n.alumno_id=a.id and n.nota < :nota_minima_aceptada
+						inner join subunidades s on s.id=n.subunidad_id and s.deleted_at is null 
+						inner join unidades u on u.id=s.unidad_id and u.asignatura_id=:asignatura_id and u.deleted_at is null 
+						inner join periodos p on p.id=u.periodo_id and p.numero<=:periodo and p.deleted_at is null 
+						where a.deleted_at is null
+						group by a.id order by a.apellidos";
+
+					$alumn_all 		= DB::select($consulta, [ ':grupo_id' => $grupos_all[$i]->grupo_id, ':nota_minima_aceptada' => $user->nota_minima_aceptada, ':asignatura_id' => $asign_all[$j]->asignatura_id, 'periodo' => $periodo_a_calcular ]);
+					$cant_alum		= count($alumn_all);
+					
+					for ($k=0; $k < $cant_alum; $k++) { 
+
+						$consulta = 'SELECT a.id as alumno_id, a.nombres, a.apellidos, a.sexo, a.user_id, a.celular, a.email, a.foto_id, a.pazysalvo,
+							n.nota, n.id as nota_id, n.subunidad_id, s.definicion as defin_subunidad, s.porcentaje as porc_subunidad, s.orden as orden_subunidad, s.created_at, 
+							s.unidad_id, u.definicion as defin_unidad, u.porcentaje as porc_unidad, u.periodo_id, u.asignatura_id, u.orden as orden_unidad,
+							p.numero as numero_periodo
+							from alumnos a
+							inner join notas n on n.alumno_id=a.id and n.nota < :nota_minima_aceptada 
+							inner join subunidades s on s.id=n.subunidad_id and s.deleted_at is null 
+							inner join unidades u on u.id=s.unidad_id and u.asignatura_id=:asignatura_id and u.deleted_at is null 
+							inner join periodos p on p.id=u.periodo_id and p.numero<=:periodo and p.deleted_at is null 
+							where a.id=:alumno_id and a.deleted_at is null';
+
+						$notas 		= DB::select($consulta, [':nota_minima_aceptada' => $user->nota_minima_aceptada, ':asignatura_id' => $asign_all[$j]->asignatura_id, 
+																'periodo' => $periodo_a_calcular, ':alumno_id' => $alumn_all[$k]->alumno_id ]);
+						$alumn_all[$k]->notas = $notas;
+						$alumn_all[$k]->userData = Alumno::userData($alumn_all[$k]->alumno_id);
+					}
+
+					$asign_all[$j]->alumnos = $alumn_all;
+
+				}
+				$res_asi = [];
+				foreach ($asign_all as $keyAsig => $asignatura) {
+					if (! count($asignatura->alumnos ) > 0) {
+						unset($asign_all[$keyAsig]);
+					}else{
+						array_push($res_asi, $asign_all[$keyAsig]);
+					}
+				}
+
+				$grupos_all[$i]->asignaturas = $res_asi;
+
+			}
+
+			$res = [];
+			foreach ($grupos_all as $keyGr => $grupo) {
+				if (! count($grupo->asignaturas ) > 0) {
+					unset($grupos_all[$keyGr]);
+				}else{
+					array_push($res, $grupos_all[$keyGr]);
+				}
+			}
+
+			$profesores[$m]->grupos = $res;
+
+		}
+
+
+		$res = [];
+		foreach ($profesores as $keyPr => $profe) {
+			if (! count($profe->grupos ) > 0) {
+				unset($profesores[$keyPr]);
+			}else{
+				array_push($res, $profesores[$keyPr]);
+			}
+		}
+
+
+
+		return $res;
+	}
+
+
+
+
 }

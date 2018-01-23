@@ -1,6 +1,6 @@
 <?php namespace App\Http\Controllers\Alumnos;
 
-use App\Http\Controllers\Controller;
+
 
 use Request;
 use DB;
@@ -13,7 +13,7 @@ use App\Models\Periodo;
 
 
 
-class GuardarAlumno extends Controller {
+class GuardarAlumno {
 
 
 	public function valor($user, $alumno, $propiedad, $valor, $user_id)

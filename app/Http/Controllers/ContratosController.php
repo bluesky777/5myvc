@@ -7,6 +7,7 @@ use DB;
 
 use App\Models\User;
 use App\Models\Contrato;
+use App\Models\Profesor;
 
 
 
@@ -15,22 +16,7 @@ class ContratosController extends Controller {
 	public function getIndex()
 	{
 		$user = User::fromToken();
-
-		$consulta = 'SELECT p.id as profesor_id, p.nombres, p.apellidos, p.sexo, p.foto_id, p.tipo_doc,
-					p.num_doc, p.ciudad_doc, p.fecha_nac, p.ciudad_nac, p.titulo,
-					p.estado_civil, p.barrio, p.direccion, p.telefono, p.celular,
-					p.facebook, p.email, p.tipo_profesor, p.user_id, u.username,
-					u.email as email_usu, u.imagen_id, u.is_superuser,
-					c.id as contrato_id, c.year_id,
-					p.foto_id, IFNULL(i.nombre, IF(p.sexo="F","default_female.png", "default_male.png")) as foto_nombre
-				from profesores p
-				inner join contratos c on c.profesor_id=p.id and c.year_id=:year_id and c.deleted_at is null
-				left join users u on p.user_id=u.id and u.deleted_at is null
-				LEFT JOIN images i on i.id=p.foto_id and i.deleted_at is null
-				where p.deleted_at is null
-				order by p.nombres, p.apellidos';
-
-		$profesores = DB::select($consulta, array(':year_id'=>$user->year_id));
+		$profesores = Profesor::contratos($user->year_id);
 		return $profesores;
 	}
 

@@ -42,6 +42,7 @@ AdvancedRoute::controller('detalles', 'DetallesController');
 AdvancedRoute::controller('profesores', 'ProfesoresController');
 AdvancedRoute::controller('contratos', 'ContratosController');
 AdvancedRoute::controller('nota_comportamiento', 'NotaComportamientoController');
+AdvancedRoute::controller('definitivas_periodos', 'DefinitivasPeriodosController');
 AdvancedRoute::controller('definiciones_comportamiento', 'DefinicionesComportamientoController');
 AdvancedRoute::controller('frases', 'FrasesController');
 AdvancedRoute::controller('ChangesAsked', 'ChangeAskedController');
@@ -65,6 +66,7 @@ AdvancedRoute::controller('puestos', 'Informes\PuestosAnualesController');
 AdvancedRoute::controller('planillas-ausencias', 'Informes\PlanillasAusenciasController');
 AdvancedRoute::controller('notas-perdidas', 'Informes\NotasPerdidasController');
 AdvancedRoute::controller('boletines', 'Informes\BoletinesController');
+AdvancedRoute::controller('simat', 'Informes\SimatController');
 
 # Pefiles
 AdvancedRoute::controller('perfiles', 'Perfiles\PerfilesController');

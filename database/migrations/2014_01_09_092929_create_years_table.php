@@ -51,6 +51,7 @@ class CreateYearsTable extends Migration {
 			$table->string('website')->nullable();
 			$table->string('website_myvc')->nullable();
 			$table->boolean('alumnos_can_see_notas')->default(false);
+			$table->boolean('profes_can_edit_alumnos')->default(false);
 			$table->boolean('mostrar_puesto_boletin')->default(true);
 
 			$table->integer('config_certificado_estudio_id')->unsigned()->nullable();

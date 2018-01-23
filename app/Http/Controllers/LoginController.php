@@ -4,6 +4,7 @@
 use JWTAuth;
 use Browser;
 use Tymon\JWTAuth\Exceptions\JWTException;
+use Illuminate\Support\Facades\Mail;
 
 use Illuminate\Http\Request;
 //use Request;
@@ -159,6 +160,165 @@ class LoginController extends Controller {
 		
 		return 'Deslogueado';
 	}
+
+
+
+
+
+	public function postVerPass(Request $request){
+		$now 			= Carbon::now('America/Bogota');
+		$hora 			= Carbon::now('America/Bogota')->subHour(); 
+		$destinatario 	= $request->input('email');
+		$numero 		= rand(100000, 9999999999999999);
+		
+		$username 		= '';
+
+		$consulta 	= 'INSERT INTO password_reminders(email, token, created_at) VALUES(?,?,?)';
+		DB::insert($consulta, [ $destinatario, $numero, $now ])[0];
+
+
+		$consulta 	= 'SELECT * FROM users WHERE email = ? and deleted_at is null and is_active=1';
+		$persona 	= DB::select($consulta, [ $destinatario ]);
+
+		if (count($persona) > 0) {
+			$persona 	= $persona[0];
+			$username 	= $persona->username;
+		}else{
+
+			$consulta 	= 'SELECT u.username FROM alumnos a INNER JOIN users u ON u.id=a.user_id and u.deleted_at is null and u.is_active=1 WHERE u.email = ? and a.deleted_at is null';
+			$persona 	= DB::select($consulta, [ $destinatario ]);
+
+			if (count($persona) > 0) {
+				$persona 	= $persona[0];
+				$username 	= $persona->username;
+			}else{
+
+				$consulta 	= 'SELECT u.username FROM profesores p INNER JOIN users u ON u.id=p.user_id and u.deleted_at is null and u.is_active=1 WHERE u.email = ? and p.deleted_at is null';
+				$persona 	= DB::select($consulta, [ $destinatario ]);
+
+				if (count($persona) > 0) {
+					$persona 	= $persona[0];
+					$username 	= $persona->username;
+				}else{
+					
+					$consulta 	= 'SELECT u.username FROM acudientes a INNER JOIN users u ON u.id=a.user_id and u.deleted_at is null and u.is_active=1 WHERE u.email = ? and a.deleted_at is null';
+					$persona 	= DB::select($consulta, [ $destinatario ]);
+
+					if (count($persona) > 0) {
+						$persona 	= $persona[0];
+						$username 	= $persona->username;
+					}else{
+						return 'No existe';
+					}
+
+				}
+
+			}
+
+		}
+
+		$ruta 		= $request->input('ruta') . '#!/reset-password/'.$numero.'/'.$username;
+
+        $asunto = "Ver contraseña Mi Colegio Virtual";
+        $cuerpo = '
+        <style>
+			/* Shrink Wrap Layout Pattern CSS */
+			@media only screen and (max-width: 599px) {
+				td[class="hero"] img {
+					width: 100%;
+					height: auto !important;
+				}
+				td[class="pattern"] td{
+					width: 100%;
+				}
+			}
+		</style>
+
+		<table cellpadding="0" cellspacing="0">
+			<tr>
+				<td class="pattern" width="600">
+					<table cellpadding="0" cellspacing="0">
+						<tr>
+							<td class="hero">
+								<img src="http://lalvirtual.com/up/images/Logo_MyVc_Header.gif" alt="Mi Colegio Virtual" style="display: block; border: 0;" />
+							</td>
+						</tr>
+						<tr>
+							<td align="left" style="font-family: arial,sans-serif; color: #333;">
+								<h1>My Virtual College</h1>
+							</td>
+						</tr>
+						<tr>
+							<td align="left" style="font-family: arial,sans-serif; font-size: 14px; line-height: 20px !important; color: #666; padding-bottom: 20px;">
+								Has solicitado resetear tu contraseña. Si es así, presiona botón de abajo. De lo contrario, puedes ignorar este mensaje. Este link sólo será válido durante una hora. Tu usuario es <b>'.$username.'</b>
+							</td>
+						</tr>
+						<tr>
+							<td align="left">
+								<a href="'.$ruta.'"><img src="http://placehold.it/200x50/333&text=Resetear" alt="Resetear" style="display: block; border: 0;" /></a>
+							</td>
+						</tr>
+					</table>
+				</td>
+			</tr>
+		</table>
+        ';
+        
+        //para el envío en formato HTML
+        $headers = "MIME-Version: 1.0\r\n";
+        $headers .= "Content-type: text/html; charset=utf-8\r\n";
+
+        //dirección del remitente
+        
+        $headers .= "From: MiColegioVirtual <josethmaster@lalvirtual.com>\r\n";
+
+        //ruta del mensaje desde origen a destino
+        $headers .= "Return-path: josethmaster@lalvirtual.com\r\n";
+
+		mail($destinatario,$asunto,$cuerpo,$headers);
+		
+		
+		
+		return 'Enviado';
+	}
+
+
+
+
+	public function putResetPassword(Request $request){
+		$now 			= Carbon::now('America/Bogota');
+		$hora 			= Carbon::now('America/Bogota')->subHour(); 
+
+		$numero 		= $request->input('numero');
+		$pass1 			= Hash::make($request->input('password1'));
+		$username 		= $request->input('username');
+	
+
+
+		$consulta 	= 'SELECT * FROM password_reminders WHERE token=? and created_at > ?';
+		$reminder 	= DB::select($consulta, [ $numero, $hora ]);
+
+		if (count($reminder) > 0) {
+			$reminder = $reminder[0];
+
+			$consulta 	= 'UPDATE users SET password=? WHERE username = ?';
+			DB::update($consulta, [ $pass1, $username ]);
+
+
+			$consulta 	= 'DELETE FROM password_reminders WHERE token=?';
+			DB::delete($consulta, [ $numero ]);
+
+
+		} else {
+			return 'Token inválido';
+		}
+		
+
+
+		return 'Reseteado';
+	}
+
+
 
 
 

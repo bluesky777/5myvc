@@ -19,29 +19,44 @@ class TiposDocumentosTableSeeder extends Seeder {
 			'abrev' => 'CC',
 		]);
 		TipoDocumento::create([
-			'tipo' => 'TARJETA DE IDENTIDAD',
 			'id' => '2',
+			'tipo' => 'PERMISO ESPECIAL DE PERMANENCIA',
+			'abrev' => 'PEP',
+		]);
+		TipoDocumento::create([
+			'tipo' => 'TARJETA DE IDENTIDAD',
+			'id' => '3',
 			'abrev' => 'TI',
 		]);
 		TipoDocumento::create([
-			'id' => '3',
-			'tipo' => 'NÚMERO ÚNICO DE IDENTIFICACIÓN PERSONAL',
-			'abrev' => 'NUIP',
-		]);
-		TipoDocumento::create([
 			'id' => '4',
-			'tipo' => 'REGISTRO CIVIL',
-			'abrev' => 'RC',
-		]);
-		TipoDocumento::create([
-			'id' => '5',
 			'tipo' => 'CÉDULA EXTRANJERA',
 			'abrev' => 'CE',
 		]);
 		TipoDocumento::create([
+			'id' => '5',
+			'tipo' => 'REGISTRO CIVIL',
+			'abrev' => 'RC',
+		]);
+		TipoDocumento::create([
 			'id' => '6',
-			'tipo' => 'PASAPORTE',
-			'abrev' => 'PASP',
+			'tipo' => 'NÚMERO DE IDENTIFICACIÓN PERSONAL',
+			'abrev' => 'NIP',
+		]);
+		TipoDocumento::create([
+			'id' => '7',
+			'tipo' => 'NÚMERO ÚNICO DE IDENTIFICACIÓN PERSONAL',
+			'abrev' => 'NUIP',
+		]);
+		TipoDocumento::create([
+			'id' => '8',
+			'tipo' => 'NÚMERO DE SECRETARÍA',
+			'abrev' => 'NES',
+		]);
+		TipoDocumento::create([
+			'id' => '9',
+			'tipo' => 'CERTIFICADO...',
+			'abrev' => 'CCB',
 		]);
 	}
 

@@ -182,6 +182,7 @@ return [
         Barryvdh\Cors\ServiceProvider::class,
         Tymon\JWTAuth\Providers\LaravelServiceProvider::class,
         \hisorange\BrowserDetect\ServiceProvider::class,
+        Maatwebsite\Excel\ExcelServiceProvider::class,
         
 
 
@@ -238,6 +239,7 @@ return [
         'JWTAuth' => Tymon\JWTAuth\Facades\JWTAuth::class,
         'JWTFactory' => Tymon\JWTAuthFacades\JWTFactory::class,
         'Browser' => \hisorange\BrowserDetect\Facade::class,
+        'Excel' => Maatwebsite\Excel\Facades\Excel::class,
 
     ],
 
