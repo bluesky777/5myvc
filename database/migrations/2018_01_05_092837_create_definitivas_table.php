@@ -174,6 +174,7 @@ class CreateDefinitivasTable extends Migration {
             $table->decimal('per1_definitiva', 7, 4)->nullable();
             $table->string('per1_desempenio')->nullable();
             $table->integer('per1_notas_perdidas')->unsigned()->nullable();
+            $table->boolean('per1_manual')->nullable()->default(false); // Define si No fue calculada sino escrita manualmente por el docente
             $table->boolean('per1_recuperada')->default(false);
             $table->integer('per1_tardanzas_clases')->nullable();
             $table->integer('per1_ausencias_clases')->nullable();
@@ -181,6 +182,7 @@ class CreateDefinitivasTable extends Migration {
             $table->decimal('per2_definitiva', 7, 4)->nullable();
             $table->string('per2_desempenio')->nullable();
             $table->integer('per2_notas_perdidas')->unsigned()->nullable();
+            $table->boolean('per2_manual')->nullable()->default(false); // Define si No fue calculada sino escrita manualmente por el docente
             $table->boolean('per2_recuperada')->default(false);
             $table->integer('per2_tardanzas_clases')->nullable();
             $table->integer('per2_ausencias_clases')->nullable();
@@ -188,6 +190,7 @@ class CreateDefinitivasTable extends Migration {
             $table->decimal('per3_definitiva', 7, 4)->nullable();
             $table->string('per3_desempenio')->nullable();
             $table->integer('per3_notas_perdidas')->unsigned()->nullable();
+            $table->boolean('per3_manual')->nullable()->default(false); // Define si No fue calculada sino escrita manualmente por el docente
             $table->boolean('per3_recuperada')->default(false);
             $table->integer('per3_tardanzas_clases')->nullable();
             $table->integer('per3_ausencias_clases')->nullable();
@@ -195,6 +198,7 @@ class CreateDefinitivasTable extends Migration {
             $table->decimal('per4_definitiva', 7, 4)->nullable();
             $table->string('per4_desempenio')->nullable();
             $table->integer('per4_notas_perdidas')->unsigned()->nullable();
+            $table->boolean('per4_manual')->nullable()->default(false); // Define si No fue calculada sino escrita manualmente por el docente
             $table->boolean('per4_recuperada')->default(false);
             $table->integer('per4_tardanzas_clases')->nullable();
             $table->integer('per4_ausencias_clases')->nullable();

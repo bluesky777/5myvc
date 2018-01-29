@@ -10,7 +10,7 @@ class CreateNotasfinalesTable extends Migration {
 	public function up()
 	{
 
-		Schema::create('df_notas_finales', function(Blueprint $table) {
+		Schema::create('notas_finales', function(Blueprint $table) {
             $table->engine = "InnoDB";
             $table->increments('id');
             $table->integer('alumno_id')->unsigned()->nullable();
@@ -22,7 +22,7 @@ class CreateNotasfinalesTable extends Migration {
 			$table->integer('updated_by')->nullable();
             $table->timestamps();
         });
-		Schema::table('df_notas_finales', function(Blueprint $table) {
+		Schema::table('notas_finales', function(Blueprint $table) {
 			$table->foreign('alumno_id')->references('id')->on('alumnos')->onDelete('cascade');
 			$table->foreign('asignatura_id')->references('id')->on('asignaturas')->onDelete('cascade');
 			$table->foreign('periodo_id')->references('id')->on('periodos')->onDelete('cascade');
@@ -37,7 +37,7 @@ class CreateNotasfinalesTable extends Migration {
 
 	public function down()
 	{
-		Schema::drop('df_notas_finales');
+		Schema::drop('notas_finales');
 	}
 
 }

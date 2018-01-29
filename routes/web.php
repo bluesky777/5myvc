@@ -20,6 +20,7 @@ Route::get('/', function () {
 AdvancedRoute::controller('login', 'LoginController');
 
 AdvancedRoute::controller('alumnos', 'AlumnosController');
+AdvancedRoute::controller('importar', 'Alumnos\ImportarController');
 AdvancedRoute::controller('acudientes', 'AcudientesController');
 AdvancedRoute::controller('buscar', 'BuscarController');
 AdvancedRoute::controller('paises', 'PaisesController');

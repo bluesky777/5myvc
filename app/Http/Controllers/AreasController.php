@@ -29,6 +29,29 @@ class AreasController extends Controller {
 			return $e;
 		}
 	}
+	
+	
+	public function putUpdateOrden()
+	{
+		$user = User::fromToken();
+
+		$sortHash = Request::input('sortHash');
+
+		for($row = 0; $row < count($sortHash); $row++){
+			foreach($sortHash[$row] as $key => $value){
+
+				$area 			= Area::find((int)$key);
+				$area->orden 	= (int)$value;
+				$area->save();
+			}
+		}
+
+		return 'Ordenado correctamente';
+	}
+
+
+
+	
 
 	public function putUpdate($id)
 	{

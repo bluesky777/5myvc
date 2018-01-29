@@ -41,7 +41,19 @@ class OperacionesAlumnos {
 		}
 		return $alumnos;
 	}
-
-
+	
+	
+	
+	public function username_no_repetido($username_a_verificar)
+	{
+		$username_a_verificar = str_replace(' ', '', $username_a_verificar);
+		
+		$i = 0;
+		while(sizeof(User::where('username', $username_a_verificar)->first()) > 0 ){
+			$i++;
+			$username_a_verificar = $username_a_verificar.$i;
+		}
+		return $username_a_verificar;
+	}
 
 }

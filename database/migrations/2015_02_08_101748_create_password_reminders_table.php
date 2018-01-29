@@ -16,8 +16,8 @@ class CreatePasswordRemindersTable extends Migration {
 		Schema::create('password_reminders', function(Blueprint $table)
 		{
 			$table->engine = "InnoDB";
-			$table->string('email')->index();
-			$table->string('token')->index();
+			$table->string('email', 191)->index();
+			$table->string('token');
 			$table->timestamp('created_at');
 		});
 	}

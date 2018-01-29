@@ -26,7 +26,7 @@ class ProfesoresController extends Controller {
 					c.id as contrato_id, c.year_id,
 					p.foto_id, IFNULL(i.nombre, IF(p.sexo="F","default_female.png", "default_male.png")) as foto_nombre
 				from profesores p
-				left join users u on p.user_id=u.id and u.is_Active=false
+				left join users u on p.user_id=u.id and u.is_active=true
 				left join contratos c on c.profesor_id=p.id and c.year_id=:year_id and c.deleted_at is null
 				LEFT JOIN images i on i.id=p.foto_id and i.deleted_at is null
 				where p.deleted_at is null
@@ -80,7 +80,7 @@ class ProfesoresController extends Controller {
 
 		$profesor->user_id = $usuario->id;
 		
-		$role = Role::where('name', '=', 'Profesor')->get();
+		$role = Role::where('name', 'Profesor')->get();
 		$usuario->attachRole($role[0]);
 
 		$profesor->save();
@@ -159,6 +159,12 @@ class ProfesoresController extends Controller {
 			Request::merge(array('ciudad_nac' => Request::input('ciudad_nac')['id'] ) );
 		}else{
 			Request::merge(array('ciudad_nac' => null) );
+		}
+
+		if (Request::input('ciudad_doc')['id']) {
+			Request::merge(array('ciudad_doc' => Request::input('ciudad_doc')['id'] ) );
+		}else{
+			Request::merge(array('ciudad_doc' => null) );
 		}
 
 		if (Request::input('tipo_doc')['id']) {

@@ -77,6 +77,16 @@ class PerfilesController extends Controller {
 	}
 
 
+	public function putGuardarMiEmailRestore()
+	{
+
+		$user 		= User::fromToken();
+		$consulta 	= 'UPDATE users SET email=? WHERE id=?';
+		DB::update($consulta, [ Request::input('email_restore'), $user->user_id ]);
+		return 'Guarddo con éxito';
+	}
+
+
 	public function getShow($id)
 	{
 		$grupo = Grupo::findOrFail($id);

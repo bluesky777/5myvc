@@ -128,19 +128,21 @@ class User extends Authenticatable implements AuthenticatableUserContract
 			switch ($tipo_tmp) {  // Alumno, Profesor, Acudiente, Usuario.
 				case 'Profesor':
 					
-					$consulta = 'SELECT p.id as persona_id, p.nombres, p.apellidos, p.sexo, p.fecha_nac, p.ciudad_nac, p.user_id, 
+					$consulta = 'SELECT p.id as persona_id, p.nombres, p.apellidos, p.sexo, p.fecha_nac, p.ciudad_nac, p.user_id, u.username, 
 									IFNULL(i.nombre, IF(p.sexo="F","default_female.png", "default_male.png")) as imagen_nombre, 
 									p.foto_id, IFNULL(i2.nombre, IF(p.sexo="F","default_female.png", "default_male.png")) as foto_nombre, 
 									"N/A" as grupo_id, ("N/A") as nombre_grupo, ("N/A") as abrev_grupo, 
 									"N/A" as year_matricula_id, per.id as periodo_id, per.numero as numero_periodo, 
 									y.id as year_id, y.year, y.nota_minima_aceptada, y.actual as year_actual, per.actual as periodo_actual, 
 									y.unidad_displayname, y.subunidad_displayname, y.unidades_displayname, y.subunidades_displayname, 
-									y.genero_unidad, y.genero_subunidad, per.fecha_plazo, y.alumnos_can_see_notas, y.logo_id
+									y.genero_unidad, y.genero_subunidad, per.fecha_plazo, y.alumnos_can_see_notas, y.logo_id,
+									y.si_recupera_materia_recup_indicador, y.mostrar_puesto_boletin, y.profes_can_edit_alumnos
 								from profesores p 
 								left join images i on i.id=:imagen_id
 								left join images i2 on i2.id=p.foto_id
 								left join periodos per on per.id=:periodo_id
 								left join years y on y.id=per.year_id
+								left join users u on u.id=p.user_id
 								where p.deleted_at is null and p.user_id=:user_id';
 
 					$usuario = DB::select($consulta, array(
@@ -155,7 +157,7 @@ class User extends Authenticatable implements AuthenticatableUserContract
 				case 'Alumno':
 					
 					$consulta = 'SELECT a.id as persona_id, a.nombres, a.apellidos, a.user_id, 
-									a.sexo, a.fecha_nac, a.ciudad_nac, a.pazysalvo, a.deuda,
+									a.sexo, a.fecha_nac, a.ciudad_nac, a.pazysalvo, a.deuda, u.username,
 									IFNULL(i.nombre, IF(a.sexo="F","default_female.png", "default_male.png")) as imagen_nombre, 
 									a.foto_id, IFNULL(i2.nombre, IF(a.sexo="F","default_female.png", "default_male.png")) as foto_nombre, 
 									g.id as grupo_id, g.nombre as nombre_grupo, g.abrev as abrev_grupo, 
@@ -170,6 +172,7 @@ class User extends Authenticatable implements AuthenticatableUserContract
 								left join images i2 on i2.id=a.foto_id
 								left join periodos per on per.id=:periodo_id
 								left join years y on y.id=per.year_id
+								left join users u on u.id=a.user_id
 								where a.deleted_at is null and a.user_id=:user_id';
 					
 					$usuario = DB::select($consulta, array(
@@ -197,6 +200,7 @@ class User extends Authenticatable implements AuthenticatableUserContract
 								left join images i2 on i2.id=ac.foto_id
 								left join periodos per on per.id=:periodo_id
 								left join years y on y.id=per.year_id
+								left join users u on u.id=ac.user_id
 								where ac.deleted_at is null and ac.user_id=:user_id';
 
 					$usuario = DB::select($consulta, array(

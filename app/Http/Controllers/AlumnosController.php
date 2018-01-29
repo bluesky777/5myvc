@@ -130,100 +130,105 @@ class AlumnosController extends Controller {
 
 	public function postStore()
 	{
-
-		$alumno = [];
-
-		try {
-			
-			$this->sanarInputAlumno();
-
-			$date = Carbon::createFromFormat('Y-m-d', Request::input('fecha_nac'));
-
-			$alumno = new Alumno;
-			$alumno->no_matricula	=	Request::input('no_matricula');
-			$alumno->nombres	=	Request::input('nombres');
-			$alumno->apellidos	=	Request::input('apellidos');
-			$alumno->sexo		=	Request::input('sexo');
-			#$alumno->user_id	=	Request::input('user_id');
-			$alumno->fecha_nac	=	$date->format('Y-m-d');
-			$alumno->ciudad_nac	=	Request::input('ciudad_nac');
-			$alumno->tipo_doc	=	Request::input('tipo_doc');
-			$alumno->documento	=	Request::input('documento');
-			$alumno->ciudad_doc	=	Request::input('ciudad_doc');
-			$alumno->tipo_sangre	=	Request::input('tipo_sangre')['sangre'];
-			$alumno->eps		=	Request::input('eps');
-			$alumno->telefono	=	Request::input('telefono');
-			$alumno->celular	=	Request::input('celular');
-			$alumno->barrio		=	Request::input('barrio');
-			$alumno->estrato	=	Request::input('estrato');
-			$alumno->ciudad_resid	=	Request::input('ciudad_resid');
-			$alumno->religion	=	Request::input('religion');
-			$alumno->email		=	Request::input('email');
-			$alumno->facebook	=	Request::input('facebook');
-			$alumno->pazysalvo	=	Request::input('pazysalvo');
-			$alumno->deuda		=	Request::input('deuda');
-			$alumno->updated_by	=	$this->user->user_id;
-			$alumno->save();
-
-			$this->sanarInputUser();
-
-			$this->checkOrChangeUsername($alumno->user_id);
-
-			$yearactual = Year::actual();
-			$periodo_actual = Periodo::where('actual', true)
-									->where('year_id', $yearactual->id)->first();
-
-			if (!is_object($periodo_actual)) {
-				$periodo_actual = Periodo::where('year_id', $yearactual->id)->first();
-				$periodo_actual->actual 	= true;
-				$periodo_actual->updated_by = $this->user->user_id;
-				$periodo_actual->save();
-			}
-
-			$usuario = new User;
-			$usuario->username		=	Request::input('username');
-			$usuario->password		=	Hash::make(Request::input('password', '123456'));
-			$usuario->email			=	Request::input('email2');
-			$usuario->sexo			=	Request::input('sexo');
-			$usuario->is_superuser	=	Request::input('is_superuser', false);
-			$usuario->periodo_id	=	$periodo_actual->id;
-			$usuario->is_active		=	Request::input('is_active', true);
-			$usuario->tipo			=	'Alumno';
-			$usuario->updated_by	=	$this->user->user_id;
-			$usuario->save();
+		if (($this->user->roles[0]->name == 'Profesor' && $this->user->profes_can_edit_alumnos) || $this->user->roles[0]->name == 'Admin') {
 
 			
-			$role = Role::where('name', 'Alumno')->get();
-			$usuario->attachRole($role[0]);
+			$alumno = [];
 
-			$alumno->user_id = $usuario->id;
-			$alumno->save();
+			try {
+				
+				$this->sanarInputAlumno();
 
-			$alumno->user = $usuario;
+				$date = Carbon::createFromFormat('Y-m-d', Request::input('fecha_nac'));
 
-			if (Request::input('grupo')['id']) {
-				$grupo_id = Request::input('grupo')['id'];
+				$alumno = new Alumno;
+				$alumno->no_matricula	=	Request::input('no_matricula');
+				$alumno->nombres	=	Request::input('nombres');
+				$alumno->apellidos	=	Request::input('apellidos');
+				$alumno->sexo		=	Request::input('sexo');
+				#$alumno->user_id	=	Request::input('user_id');
+				$alumno->fecha_nac	=	$date->format('Y-m-d');
+				$alumno->ciudad_nac	=	Request::input('ciudad_nac');
+				$alumno->tipo_doc	=	Request::input('tipo_doc');
+				$alumno->documento	=	Request::input('documento');
+				$alumno->ciudad_doc	=	Request::input('ciudad_doc');
+				$alumno->tipo_sangre	=	Request::input('tipo_sangre')['sangre'];
+				$alumno->eps		=	Request::input('eps');
+				$alumno->telefono	=	Request::input('telefono');
+				$alumno->celular	=	Request::input('celular');
+				$alumno->barrio		=	Request::input('barrio');
+				$alumno->estrato	=	Request::input('estrato');
+				$alumno->ciudad_resid	=	Request::input('ciudad_resid');
+				$alumno->religion	=	Request::input('religion');
+				$alumno->email		=	Request::input('email');
+				$alumno->facebook	=	Request::input('facebook');
+				$alumno->pazysalvo	=	Request::input('pazysalvo');
+				$alumno->deuda		=	Request::input('deuda');
+				$alumno->updated_by	=	$this->user->user_id;
+				$alumno->save();
 
-				$matricula = new Matricula;
-				$matricula->alumno_id		=	$alumno->id;
-				$matricula->grupo_id		=	$grupo_id;
-				$matricula->estado			=	"MATR";
-				$matricula->created_by 		= 	$this->user->user_id;
-				$matricula->save();
+				$this->sanarInputUser();
 
-				$grupo = Grupo::find($matricula->grupo_id);
-				$alumno->grupo = $grupo;
+				$this->checkOrChangeUsername($alumno->user_id);
+
+				$yearactual = Year::actual();
+				$periodo_actual = Periodo::where('actual', true)
+										->where('year_id', $yearactual->id)->first();
+
+				if (!is_object($periodo_actual)) {
+					$periodo_actual = Periodo::where('year_id', $yearactual->id)->first();
+					$periodo_actual->actual 	= true;
+					$periodo_actual->updated_by = $this->user->user_id;
+					$periodo_actual->save();
+				}
+
+				$usuario = new User;
+				$usuario->username		=	Request::input('username');
+				$usuario->password		=	Hash::make(Request::input('password', '123456'));
+				$usuario->email			=	Request::input('email2');
+				$usuario->sexo			=	Request::input('sexo');
+				$usuario->is_superuser	=	Request::input('is_superuser', false);
+				$usuario->periodo_id	=	$periodo_actual->id;
+				$usuario->is_active		=	Request::input('is_active', true);
+				$usuario->tipo			=	'Alumno';
+				$usuario->updated_by	=	$this->user->user_id;
+				$usuario->save();
+
+				
+				$role = Role::where('name', 'Alumno')->get();
+				$usuario->attachRole($role[0]);
+
+				$alumno->user_id = $usuario->id;
+				$alumno->save();
+
+				$alumno->user = $usuario;
+
+				if (Request::input('grupo')['id']) {
+					$grupo_id = Request::input('grupo')['id'];
+
+					$matricula = new Matricula;
+					$matricula->alumno_id		=	$alumno->id;
+					$matricula->grupo_id		=	$grupo_id;
+					$matricula->estado			=	"MATR";
+					$matricula->created_by 		= 	$this->user->user_id;
+					$matricula->save();
+
+					$grupo = Grupo::find($matricula->grupo_id);
+					$alumno->grupo = $grupo;
+				}
+
+
+				return $alumno;
+
+			} catch (Exception $e) {
+				return abort('400', $alumno);
+				//return $e;
 			}
-
-
-			return $alumno;
-
-		} catch (Exception $e) {
-			return abort('400', $alumno);
-			//return $e;
-		}
 		
 		 
+		} else {
+			return abort('400', 'No tiene permisos para editar');
+		}
 	}
 
 	public function sanarInputAlumno(){
@@ -329,109 +334,113 @@ class AlumnosController extends Controller {
 
 	public function putUpdate($id)
 	{
+		if (($this->user->roles[0]->name == 'Profesor' && $this->user->profes_can_edit_alumnos) || $this->user->roles[0]->name == 'Admin') {
+			
+			$alumno = Alumno::findOrFail($id);
 
-		$alumno = Alumno::findOrFail($id);
+			$this->sanarInputAlumno();
 
-		$this->sanarInputAlumno();
-
-		try {
-			$alumno->no_matricula = Request::input('no_matricula');
-			$alumno->nombres 	=	Request::input('nombres');
-			$alumno->apellidos	=	Request::input('apellidos');
-			$alumno->sexo		=	Request::input('sexo', 'M');
-			$alumno->fecha_nac	=	Request::input('fecha_nac');
-			$alumno->ciudad_nac =	Request::input('ciudad_nac')['id'];
-			$alumno->tipo_doc	=	Request::input('tipo_doc')['id'];
-			$alumno->documento	=	Request::input('documento');
-			$alumno->ciudad_doc	=	Request::input('ciudad_doc')['id'];
-			$alumno->tipo_sangre=	Request::input('tipo_sangre')['sangre'];
-			$alumno->eps 		=	Request::input('eps');
-			$alumno->telefono 	=	Request::input('telefono');
-			$alumno->celular 	=	Request::input('celular');
-			$alumno->barrio 	=	Request::input('barrio');
-			$alumno->estrato 	=	Request::input('estrato');
-			$alumno->ciudad_resid =	Request::input('ciudad_resid');
-			$alumno->religion	=	Request::input('religion');
-			$alumno->email		=	Request::input('email');
-			$alumno->facebook	=	Request::input('facebook');
-			$alumno->foto_id	=	Request::input('foto_id');
-			$alumno->pazysalvo	=	Request::input('pazysalvo', true);
-			$alumno->deuda		=	Request::input('deuda');
+			try {
+				$alumno->no_matricula = Request::input('no_matricula');
+				$alumno->nombres 	=	Request::input('nombres');
+				$alumno->apellidos	=	Request::input('apellidos');
+				$alumno->sexo		=	Request::input('sexo', 'M');
+				$alumno->fecha_nac	=	Request::input('fecha_nac');
+				$alumno->ciudad_nac =	Request::input('ciudad_nac')['id'];
+				$alumno->tipo_doc	=	Request::input('tipo_doc')['id'];
+				$alumno->documento	=	Request::input('documento');
+				$alumno->ciudad_doc	=	Request::input('ciudad_doc')['id'];
+				$alumno->tipo_sangre=	Request::input('tipo_sangre')['sangre'];
+				$alumno->eps 		=	Request::input('eps');
+				$alumno->telefono 	=	Request::input('telefono');
+				$alumno->celular 	=	Request::input('celular');
+				$alumno->barrio 	=	Request::input('barrio');
+				$alumno->estrato 	=	Request::input('estrato');
+				$alumno->ciudad_resid =	Request::input('ciudad_resid');
+				$alumno->religion	=	Request::input('religion');
+				$alumno->email		=	Request::input('email');
+				$alumno->facebook	=	Request::input('facebook');
+				$alumno->foto_id	=	Request::input('foto_id');
+				$alumno->pazysalvo	=	Request::input('pazysalvo', true);
+				$alumno->deuda		=	Request::input('deuda');
 
 
 
 
-			if ($alumno->user_id and Request::has('username')) {
-				
-				$this->sanarInputUser();
-				$this->checkOrChangeUsername($alumno->user_id);
-				
-				$usuario = User::find($alumno->user_id);
-				$usuario->username		=	Request::input('username');
-				$usuario->email			=	Request::input('email2');
-				$usuario->is_superuser	=	Request::input('is_superuser', false);
-				$usuario->is_active		=	Request::input('is_active', true);
-				$usuario->updated_by 	= $this->user->user_id;
+				if ($alumno->user_id and Request::has('username')) {
+					
+					$this->sanarInputUser();
+					$this->checkOrChangeUsername($alumno->user_id);
+					
+					$usuario = User::find($alumno->user_id);
+					$usuario->username		=	Request::input('username');
+					$usuario->email			=	Request::input('email2');
+					$usuario->is_superuser	=	Request::input('is_superuser', false);
+					$usuario->is_active		=	Request::input('is_active', true);
+					$usuario->updated_by 	= $this->user->user_id;
 
-				if (Request::has('password')) {
-					if (Request::input('password') == ""){
-						$usuario->password	=	Hash::make(Request::input('password'));
+					if (Request::has('password')) {
+						if (Request::input('password') == ""){
+							$usuario->password	=	Hash::make(Request::input('password'));
+						}
 					}
+
+					$usuario->save();
+
+					$alumno->user_id 	= $usuario->id;
+					$alumno->updated_by = $this->user->user_id;
+					
+					$alumno->save();
+
+					$alumno->user = $usuario;
 				}
 
-				$usuario->save();
+				if (!$alumno->user_id and Request::has('username')) {
+					
+					$this->sanarInputUser();
+					$this->checkOrChangeUsername($alumno->user_id);
 
-				$alumno->user_id 	= $usuario->id;
-				$alumno->updated_by = $this->user->user_id;
-				
-				$alumno->save();
+					$yearactual = Year::actual();
+					$periodo_actual = Periodo::where('actual', true)
+										->where('year_id', $yearactual->id)->first();
 
-				$alumno->user = $usuario;
+
+					$usuario = new User;
+					$usuario->username		=	Request::input('username');
+					$usuario->password		=	Hash::make(Request::input('password', '123456'));
+					$usuario->email			=	Request::input('email2');
+					$usuario->is_superuser	=	Request::input('is_superuser', false);
+					$usuario->is_active		=	Request::input('is_active', true);
+					$usuario->periodo_id	=	$periodo_actual->id;
+					$usuario->created_by 	= $this->user->user_id;
+					$usuario->save();
+
+					$alumno->user_id = $usuario->id;
+					
+					$alumno->save();
+
+					$alumno->user = $usuario;
+				}
+
+
+
+				if (Request::input('grupo')['id']) {
+					
+					$grupo_id = Request::input('grupo')['id'];
+
+					$matricula = Matricula::matricularUno($alumno->id, $grupo_id, false, $this->user->user_id);
+
+					$grupo = Grupo::find($matricula->grupo_id);
+					$alumno->grupo = $grupo;
+				}
+
+
+				return $alumno;
+			} catch (Exception $e) {
+				return abort('400', $e);
 			}
-
-			if (!$alumno->user_id and Request::has('username')) {
-				
-				$this->sanarInputUser();
-				$this->checkOrChangeUsername($alumno->user_id);
-
-				$yearactual = Year::actual();
-				$periodo_actual = Periodo::where('actual', true)
-									->where('year_id', $yearactual->id)->first();
-
-
-				$usuario = new User;
-				$usuario->username		=	Request::input('username');
-				$usuario->password		=	Hash::make(Request::input('password', '123456'));
-				$usuario->email			=	Request::input('email2');
-				$usuario->is_superuser	=	Request::input('is_superuser', false);
-				$usuario->is_active		=	Request::input('is_active', true);
-				$usuario->periodo_id	=	$periodo_actual->id;
-				$usuario->created_by 	= $this->user->user_id;
-				$usuario->save();
-
-				$alumno->user_id = $usuario->id;
-				
-				$alumno->save();
-
-				$alumno->user = $usuario;
-			}
-
-
-
-			if (Request::input('grupo')['id']) {
-				
-				$grupo_id = Request::input('grupo')['id'];
-
-				$matricula = Matricula::matricularUno($alumno->id, $grupo_id, false, $this->user->user_id);
-
-				$grupo = Grupo::find($matricula->grupo_id);
-				$alumno->grupo = $grupo;
-			}
-
-
-			return $alumno;
-		} catch (Exception $e) {
-			return abort('400', $e);
+		} else {
+			return abort('400', 'No tiene permisos');
 		}
 	}
 
@@ -442,10 +451,14 @@ class AlumnosController extends Controller {
 	 *************************************************************/
 	public function putGuardarValor()
 	{
-		$alumno = Alumno::findOrFail(Request::input('alumno_id'));
+		if (($this->user->roles[0]->name == 'Profesor' && $this->user->profes_can_edit_alumnos) || $this->user->roles[0]->name == 'Admin') {
+			$alumno = Alumno::findOrFail(Request::input('alumno_id'));
 
-		$guardarAlumno = new GuardarAlumno();
-		return $guardarAlumno->valor($this->user, $alumno, Request::input('propiedad'), Request::input('valor'), $this->user->user_id);
+			$guardarAlumno = new GuardarAlumno();
+			return $guardarAlumno->valor($this->user, $alumno, Request::input('propiedad'), Request::input('valor'), $this->user->user_id);
+		} else {
+			return abort('400', 'No tiene permisos');
+		}
 		
 	}
 
@@ -454,45 +467,55 @@ class AlumnosController extends Controller {
 
 	public function deleteDestroy($id)
 	{
-		$alumno = Alumno::find($id);
-		//Alumno::destroy($id);
-		//$alumno->restore();
-		//$queries = DB::getQueryLog();
-		//$last_query = end($queries);
-		//return $last_query;
+		if (($this->user->roles[0]->name == 'Profesor' && $this->user->profes_can_edit_alumnos) || $this->user->roles[0]->name == 'Admin') {
+			$alumno = Alumno::find($id);
+			//Alumno::destroy($id);
+			//$alumno->restore();
+			//$queries = DB::getQueryLog();
+			//$last_query = end($queries);
+			//return $last_query;
 
-		if ($alumno) {
-			$alumno->delete();
-		}else{
-			return abort(400, 'Alumno no existe o está en Papelera.');
+			if ($alumno) {
+				$alumno->delete();
+			}else{
+				return abort(400, 'Alumno no existe o está en Papelera.');
+			}
+			return $alumno;
+		} else {
+			return abort('400', 'No tiene permisos');
 		}
-		return $alumno;
-	
 	}	
 
 	public function deleteForcedelete($id)
 	{
-		$alumno = Alumno::onlyTrashed()->findOrFail($id);
-		
-		if ($alumno) {
-			$alumno->forceDelete();
-		}else{
-			return abort(400, 'Alumno no encontrado en la Papelera.');
+		if (($this->user->roles[0]->name == 'Profesor' && $this->user->profes_can_edit_alumnos) || $this->user->roles[0]->name == 'Admin') {
+			$alumno = Alumno::onlyTrashed()->findOrFail($id);
+			
+			if ($alumno) {
+				$alumno->forceDelete();
+			}else{
+				return abort(400, 'Alumno no encontrado en la Papelera.');
+			}
+			return $alumno;
+		} else {
+			return abort('400', 'No tiene permisos');
 		}
-		return $alumno;
-	
 	}
 
 	public function putRestore($id)
 	{
-		$alumno = Alumno::onlyTrashed()->findOrFail($id);
+		if (($this->user->roles[0]->name == 'Profesor' && $this->user->profes_can_edit_alumnos) || $this->user->roles[0]->name == 'Admin') {
+			$alumno = Alumno::onlyTrashed()->findOrFail($id);
 
-		if ($alumno) {
-			$alumno->restore();
-		}else{
-			return abort(400, 'Alumno no encontrado en la Papelera.');
+			if ($alumno) {
+				$alumno->restore();
+			}else{
+				return abort(400, 'Alumno no encontrado en la Papelera.');
+			}
+			return $alumno;
+		} else {
+			return abort('400', 'No tiene permisos');
 		}
-		return $alumno;
 	}
 
 

@@ -13,3 +13,5 @@ Thumbs.db
 /public/images/shared/
 !/public/images/shared/encabezado-prueba-membrete.jpg
 !/public/images/shared/piepagina-prueba-membrete.jpg
+/App/Http/Controllers/Alumnos/archivos/*
+!/App/Http/Controllers/Alumnos/archivos/micolevirtual_iniciar_bachillerato.sql

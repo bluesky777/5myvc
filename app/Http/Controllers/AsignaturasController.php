@@ -30,6 +30,51 @@ class AsignaturasController extends Controller {
 		return $asignaturas;
 	}
 
+	
+	public function putDatosAsignaturas()
+	{
+		$user = User::fromToken();
+
+		$consulta 	= 'SELECT * FROM materias WHERE deleted_at is null';
+		$materias 	= DB::select($consulta);
+		
+		$consulta = 'SELECT g.id, g.nombre, g.abrev, g.orden, gra.orden as orden_grado, g.grado_id, g.year_id, g.titular_id,
+			p.nombres as nombres_titular, p.apellidos as apellidos_titular, p.titulo, g.caritas, 
+			g.created_at, g.updated_at, gra.nombre as nombre_grado 
+			from grupos g
+			inner join grados gra on gra.id=g.grado_id and g.year_id=:year_id 
+			left join profesores p on p.id=g.titular_id
+			where g.deleted_at is null
+			order by g.orden';
+
+		$grupos 	= DB::select($consulta, [':year_id'=>$user->year_id]);
+		
+		$profesores = Profesor::contratos($user->year_id);
+		
+		return [ 'materias' => $materias, 'grupos' => $grupos, 'profesores' => $profesores ];
+	}
+
+	
+	
+	public function postCopiar()
+	{
+		$user = User::fromToken();
+
+		$consulta 		= 'SELECT * FROM asignaturas WHERE deleted_at is null and grupo_id=?';
+		$asignaturas 	= DB::select($consulta, [Request::input('grupo_id_origen')]);
+		
+		for ($i=0; $i < count($asignaturas); $i++) { 
+
+			$consulta 		= 'INSERT INTO asignaturas(materia_id, grupo_id, profesor_id, nuevo_responsable_id, creditos, orden) VALUES(?,?,?, ?,?,?)';
+			DB::insert($consulta, [ $asignaturas[$i]->materia_id, Request::input('grupo_id_destino'), $asignaturas[$i]->profesor_id, $asignaturas[$i]->nuevo_responsable_id, $asignaturas[$i]->creditos, $asignaturas[$i]->orden ]);
+			
+		}
+		
+		
+		return 'Asignaturas copiadas';
+	}
+
+	
 	public function postIndex()
 	{
 		
