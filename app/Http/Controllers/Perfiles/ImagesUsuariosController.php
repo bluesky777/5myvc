@@ -15,9 +15,28 @@ use App\Models\Alumno;
 use App\Models\Profesor;
 use App\Models\Acudiente;
 use App\Models\ChangeAsked;
+use Carbon\Carbon;
 
 
 class ImagesUsuariosController extends Controller {
+
+	
+	public function putImagenesDeUsuario()
+	{
+		$user = User::fromToken();
+		$consulta = 'SELECT * FROM images WHERE user_id=:user_id and (publica is null or publica=false) and deleted_at is null';
+		return DB::select($consulta, [ ':user_id'	=> Request::input('usuario_id') ]);
+	}
+
+
+	
+	public function putMoveImgToMe()
+	{
+		$user = User::fromToken();
+		$consulta = 'UPDATE images SET user_id=:user_id, updated_at=:ahora, updated_by=:user2_id WHERE id=:img_id and deleted_at is null';
+		return DB::update($consulta, [ ':img_id' => Request::input('img_id'), ':user_id' => $user->user_id, ':ahora' => Carbon::now('America/Bogota'), ':user2_id' => $user->user_id ]);
+	}
+
 
 	public function putRotarimagen($imagen_id)
 	{
@@ -44,13 +63,17 @@ class ImagesUsuariosController extends Controller {
 		$usu->imagen_id 	= Request::input('imagen_id');
 		$usu->save();
 
-		$img 				= ImageModel::findOrFail($usu->imagen_id);
-		$img->user_id 		= $user_id;
-		$img->updated_by 	= $user->user_id;
-		$img->publica 		= false;
-		$img->save();
-
-		return $img;
+		$img 				= ImageModel::find($usu->imagen_id);
+		if ($img) {
+			$img->user_id 		= $user_id;
+			$img->updated_by 	= $user->user_id;
+			$img->publica 		= false;
+			$img->save();
+			return $img;
+		} else {
+			return 'Cambiada';
+		}
+		
 	}
 
 
@@ -62,11 +85,6 @@ class ImagesUsuariosController extends Controller {
 		// Solo puede cambiarle a alguien si es profesor o superuser
 		if ($user->tipo == 'Profesor' or $user->is_superuser) {
 			
-			$img_id 			= Request::input('imagen_id');
-			$img 				= ImageModel::findOrFail($img_id);
-
-
-
 			$persona = new stdClass();
 
 			switch ($usu->tipo) {
@@ -88,15 +106,20 @@ class ImagesUsuariosController extends Controller {
 			}
 			
 			
+			$img_id 			= Request::input('imagen_id');
+			$img 				= ImageModel::find($img_id);
 
-			$persona->foto_id = $img_id;
+
+			$persona->foto_id = $img_id ? $img_id : null;
 			$persona->save();
-
-			$img->user_id 		= $user_id;
-			$img->updated_by 	= $user->user_id;
-			$img->publica 		= false;
-			$img->save();
-
+			
+			if ($img){
+				$img->user_id 		= $user_id;
+				$img->updated_by 	= $user->user_id;
+				$img->publica 		= false;
+				$img->save();
+			}
+			
 			return $persona;
 		}
 

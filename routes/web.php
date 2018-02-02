@@ -68,6 +68,7 @@ AdvancedRoute::controller('planillas-ausencias', 'Informes\PlanillasAusenciasCon
 AdvancedRoute::controller('notas-perdidas', 'Informes\NotasPerdidasController');
 AdvancedRoute::controller('boletines', 'Informes\BoletinesController');
 AdvancedRoute::controller('simat', 'Informes\SimatController');
+AdvancedRoute::controller('observador', 'Informes\ObservadorController');
 
 # Pefiles
 AdvancedRoute::controller('perfiles', 'Perfiles\PerfilesController');

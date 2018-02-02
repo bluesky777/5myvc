@@ -83,7 +83,7 @@ class AlumnosController extends Controller {
 			LEFT JOIN images i on i.id=a.foto_id and i.deleted_at is null';
 
 		return DB::select(DB::raw($consulta), array(
-						':year_id'			=>$this->user->year_id
+						':year_id'			=> $this->user->year_id
 				));
 	}
 

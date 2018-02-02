@@ -37,7 +37,7 @@ class SimatController extends Controller {
                 where g.deleted_at is null
                 order by g.orden';
 
-            $grupos = DB::select($consulta, [':year_id'=>3] );
+            $grupos = DB::select($consulta, [':year_id'=> Year::actual()->id] );
             
             for ($i=0; $i < count($grupos); $i++) { 
                 $grupo = $grupos[$i];

@@ -218,11 +218,13 @@ class BoletinesController extends Controller {
 			}
 
 		}
-		try {
-			$alumno->promedio = $sumatoria_asignaturas / count($alumno->asignaturas);
-		} catch (Exception $e) {
+
+		if (count($alumno->asignaturas) == 0) {
 			$alumno->promedio = 0;
+		} else {
+			$alumno->promedio = $sumatoria_asignaturas / count($alumno->asignaturas);
 		}
+			
 
 
 

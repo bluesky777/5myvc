@@ -340,10 +340,11 @@ class MatriculasController extends Controller {
 	public function putRetirar()
 	{
 		$id 	= Request::input('matricula_id');
+		$fecha 	= Carbon::parse(Request::input('fecha_retiro'));
 
 		$matri 	= Matricula::findOrFail($id);
 		$matri->estado 			= 'RETI';
-		$matri->fecha_retiro 	= Request::input('fecha_retiro');
+		$matri->fecha_retiro 	= $fecha;
 		$matri->updated_by 		= $this->user->user_id;
 		$matri->save();
 
@@ -353,10 +354,11 @@ class MatriculasController extends Controller {
 	public function putDesertar()
 	{
 		$id 	= Request::input('matricula_id');
+		$fecha 	= Carbon::parse(Request::input('fecha_retiro'));
 
 		$matri 	= Matricula::findOrFail($id);
 		$matri->estado 			= 'DESE';
-		$matri->fecha_retiro 	= Request::input('fecha_retiro');
+		$matri->fecha_retiro 	= $fecha;
 		$matri->updated_by 		= $this->user->user_id;
 		$matri->save();
 

@@ -183,6 +183,7 @@ return [
         Tymon\JWTAuth\Providers\LaravelServiceProvider::class,
         \hisorange\BrowserDetect\ServiceProvider::class,
         Maatwebsite\Excel\ExcelServiceProvider::class,
+        Intervention\Image\ImageServiceProvider::class,
         
 
 
@@ -240,6 +241,7 @@ return [
         'JWTFactory' => Tymon\JWTAuthFacades\JWTFactory::class,
         'Browser' => \hisorange\BrowserDetect\Facade::class,
         'Excel' => Maatwebsite\Excel\Facades\Excel::class,
+        'Image' => Intervention\Image\Facades\Image::class,
 
     ],
 
