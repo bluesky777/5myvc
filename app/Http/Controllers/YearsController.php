@@ -280,15 +280,58 @@ class YearsController extends Controller {
 
 		$year = Year::findOrFail($year_id);
 		$year->alumnos_can_see_notas = $can;
-
 		$year->save();
 
+		if ($can) { return 'Ahora pueden ver sus notas.';
+		}else{ return 'Ahora NO pueden ver sus notas';}
+		
+	}
 
-		if ($can) {
-			return 'Ahora pueden ver sus notas.';
-		}else{
-			return 'Ahora NO pueden ver sus notas';
-		}
+
+	public function putProfesCanEditAlumnos(){
+		$user = User::fromToken();
+
+		$year_id 	= 	Request::input('year_id');
+		$can 		= 	(boolean) Request::input('can');
+
+		$year = Year::findOrFail($year_id);
+		$year->profes_can_edit_alumnos = $can;
+		$year->save();
+
+		if ($can) { return 'Ahora docentes pueden editar alumnos.';
+		}else{ return 'Ahora docentes NO pueden editar alumnos';}
+		
+	}
+
+
+	public function putToggleMostrarPuestosEnBoletin(){
+		$user = User::fromToken();
+
+		$year_id 	= 	Request::input('year_id');
+		$can 		= 	(boolean) Request::input('can');
+
+		$year = Year::findOrFail($year_id);
+		$year->mostrar_puesto_boletin = $can;
+		$year->save();
+
+		if ($can) { return 'Ahora se mostrarán los puestos en el boletín.';
+		}else{ return 'Ahora NO se mostrarán los puestos en el boletín';}
+		
+	}
+
+
+	public function putToggleIgnorarNotasPerdidas(){
+		$user = User::fromToken();
+
+		$year_id 	= 	Request::input('year_id');
+		$can 		= 	(boolean) Request::input('can');
+
+		$year = Year::findOrFail($year_id);
+		$year->si_recupera_materia_recup_indicador = $can;
+		$year->save();
+
+		if ($can) { return 'Ahora se ignorarán las notas perdidas si gana la materia.';
+		}else{ return 'Ahora NO se ignorarán las notas perdidas si gana la materia';}
 		
 	}
 

@@ -35,7 +35,7 @@ class ObservadorController extends Controller {
                     from grupos g
                     inner join grados gra on gra.id=g.grado_id and g.year_id=:year_id 
                     left join profesores p on p.id=g.titular_id
-                    where g.deleted_at is null and g.id < 3
+                    where g.deleted_at is null
                     order by g.orden';
 
         $grupos = DB::select($consulta, [':year_id'=> $year->year_id] );
