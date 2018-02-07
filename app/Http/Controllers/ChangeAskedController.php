@@ -129,6 +129,35 @@ class ChangeAskedController extends Controller {
 			$pedido->image_to_delete_accepted 	= true;
 		}
 		
+		if ($tipo == "nombres") {
+			$consulta = 'UPDATE alumnos SET nombres=:nombres WHERE id=:id';
+			DB::select($consulta, [ ':nombres' => $valor_nuevo, ':id' => Request::input('alumno_id') ]);
+			$consulta = 'UPDATE change_asked_data SET nombres_accepted=true WHERE id=:data_id';
+			DB::select($consulta, [ ':data_id' => $data_id ]);
+			$pedido->nombres_accepted 	= true;
+		}
+		if ($tipo == "apellidos") {
+			$consulta = 'UPDATE alumnos SET apellidos=:apellidos WHERE id=:id';
+			DB::select($consulta, [ ':apellidos' => $valor_nuevo, ':id' => Request::input('alumno_id') ]);
+			$consulta = 'UPDATE change_asked_data SET apellidos_accepted=true WHERE id=:data_id';
+			DB::select($consulta, [ ':data_id' => $data_id ]);
+			$pedido->apellidos_accepted 	= true;
+		}
+		if ($tipo == "sexo") {
+			$consulta = 'UPDATE alumnos SET sexo=:sexo WHERE id=:id';
+			DB::select($consulta, [ ':sexo' => $valor_nuevo, ':id' => Request::input('alumno_id') ]);
+			$consulta = 'UPDATE change_asked_data SET sexo_accepted=true WHERE id=:data_id';
+			DB::select($consulta, [ ':data_id' => $data_id ]);
+			$pedido->sexo_accepted 	= true;
+		}
+		if ($tipo == "fecha_nac") {
+			$consulta = 'UPDATE alumnos SET fecha_nac=:fecha_nac WHERE id=:id';
+			DB::select($consulta, [ ':fecha_nac' => $valor_nuevo, ':id' => Request::input('alumno_id') ]);
+			$consulta = 'UPDATE change_asked_data SET fecha_nac_accepted=true WHERE id=:data_id';
+			DB::select($consulta, [ ':data_id' => $data_id ]);
+			$pedido->fecha_nac_accepted 	= true;
+		}
+		
 		$finalizado 	= $this->finalizar_si_no_hay_cambios($pedido, $user->user_id);
 
 		return [ 'finalizado'=> $finalizado, 'msg'=>'Cambio aceptado con éxito'];
@@ -266,7 +295,11 @@ class ChangeAskedController extends Controller {
 			($pedido->foto_id_new===null 		or $pedido->foto_id_accepted!==null) and
 			($pedido->image_id_new===null 		or $pedido->image_id_accepted!==null) and
 			($pedido->firma_id_new===null 		or $pedido->firma_id_accepted!==null) and
-			($pedido->image_to_delete_id===null or $pedido->image_to_delete_accepted!==null)
+			($pedido->image_to_delete_id===null or $pedido->image_to_delete_accepted!==null) and
+			($pedido->nombres_new===null 		or $pedido->nombres_accepted!==null) and
+			($pedido->apellidos_new===null 		or $pedido->apellidos_accepted!==null) and
+			($pedido->sexo_new===null 			or $pedido->sexo_accepted!==null) and
+			($pedido->fecha_nac_new===null 		or $pedido->fecha_nac_accepted!==null)
 			) 
 		{
 			Debugging::pin('Pedido', 'ENTROOOOO');
@@ -293,17 +326,6 @@ class ChangeAskedController extends Controller {
 		if ($tipo == 'Al') {
 			$alumno = Alumno::where('id', $id)->first();
 
-			/*
-			$consulta = 'SELECT c.id, c.asked_by_user_id, c.asked_to_user_id, c.asked_to_user_id, c.comentario_pedido, 
-						a.id as alumno_id, a.nombres as nombres_alum, a.apellidos as apellidos_alum,
-						c.rechazado_at, c.accepted_at, c.periodo_asked_id, c.year_asked_id, c.created_at,
-						c.deleted_at, c.deleted_by, u.tipo
-					FROM change_asked c
-					inner join users u on u.id=c.asked_by_user_id
-					left join alumnos a on a.user_id=u.id
-					WHERE c.deleted_at is null';
-			$cambios = DB::select($consulta);
-			*/
 
 			$cambios = [];
 
@@ -320,12 +342,18 @@ class ChangeAskedController extends Controller {
 			}
 
 			if (($alumno->fecha_nac != Request::input('fecha_nac')) && Request::input('fecha_nac')) {
-				$fecha_nac_new = Request::input('fecha_nac');
-				$fecha_nac_old = $alumno->fecha_nac->format('Y-m-d');
+				//$fecha_nac_new = $date = Carbon::createFromFormat('Y-m-d', Request::input('fecha_nac'));
+				$fecha_nac_new = Carbon::parse(Request::input('fecha_nac'));
+				$fecha_nac_old = $alumno->fecha_nac;
+				
+				if ($alumno->fecha_nac) {
+					$fecha_nac_old = $alumno->fecha_nac->format('Y-m-d');
+				}
+				
 
 				if ($fecha_nac_new != $fecha_nac_old) {
-					$cambios['fecha_nac'] = $fecha_nac_new;
-					$cambios['fecha_nac_old'] = $fecha_nac_old;
+					$cambios['fecha_nac'] 		= $fecha_nac_new;
+					$cambios['fecha_nac_old'] 	= $fecha_nac_old;
 				}
 
 			}
@@ -343,15 +371,82 @@ class ChangeAskedController extends Controller {
 				}
 			}
 			
+			if (count($cambios) > 0) {
+				$this->crear_o_modificar_datos_de_pedido($user, $cambios);
+			}
+			
 
-			return $cambios;
+			return count($cambios) . '';
 
 		}
 
 
 	}
-
-
+	
+	
+	private $creado = false;
+	public function crear_o_modificar_datos_de_pedido($user, $cambios){
+		$pedido = ChangeAsked::verificar_pedido_actual($user->user_id, $user->year_id, $user->tipo);
+		Debugging::pin('$pedido->data_id', $pedido->data_id);
+		if ($pedido->data_id) {
+			Debugging::pin('Tiene data_id');
+			if (array_key_exists('nombres', $cambios)) {
+				$consulta = 'UPDATE change_asked_data SET nombres_new=:nombres WHERE id=:data_id';
+				DB::update($consulta, [ ':nombres'	=> $cambios['nombres'], ':data_id'	=> $pedido->data_id ]);
+				Debugging::pin('UPDATE nombres');
+			}
+			if (array_key_exists('apellidos', $cambios)) {
+				$consulta = 'UPDATE change_asked_data SET apellidos_new=:apellidos WHERE id=:data_id';
+				DB::update($consulta, [ ':apellidos'	=> $cambios['apellidos'], ':data_id'	=> $pedido->data_id ]);
+			}
+			if (array_key_exists('sexo', $cambios)) {
+				$consulta = 'UPDATE change_asked_data SET sexo_new=:sexo WHERE id=:data_id';
+				DB::update($consulta, [ ':sexo'	=> $cambios['sexo'], ':data_id'	=> $pedido->data_id ]);
+			}
+			if (array_key_exists('fecha_nac', $cambios)) {
+				$consulta = 'UPDATE change_asked_data SET fecha_nac_new=:fecha_nac WHERE id=:data_id';
+				DB::update($consulta, [ ':fecha_nac'	=> $cambios['fecha_nac'], ':data_id'	=> $pedido->data_id ]);
+			}
+			Debugging::pin(' Final Tiene');
+		}else{
+			Debugging::pin(' NO  Tiene data_id');
+			
+			if (!$this->creado) {
+				if (array_key_exists('nombres', $cambios)) {
+					$consulta 	= 'INSERT INTO change_asked_data(nombres_new) VALUES(:nombres)';
+					DB::insert($consulta, [ ':nombres'	=> $cambios['nombres'] ]);
+					$this->cambiar_data_id($pedido);
+					$this->creado = true;
+					$this->crear_o_modificar_datos_de_pedido($user, $cambios);
+				}
+				if (array_key_exists('apellidos', $cambios)) {
+					$consulta 	= 'INSERT INTO change_asked_data(apellidos_new) VALUES(:apellidos)';
+					DB::insert($consulta, [ ':apellidos'	=> $cambios['apellidos'] ]);
+					$this->cambiar_data_id($pedido);
+					$this->creado = true;
+					$this->crear_o_modificar_datos_de_pedido($user, $cambios);
+				}
+				if (array_key_exists('sexo', $cambios)) {
+					$consulta 	= 'INSERT INTO change_asked_data(sexo_new) VALUES(:sexo)';
+					DB::insert($consulta, [ ':sexo'	=> $cambios['sexo'] ]);
+					$this->cambiar_data_id($pedido);
+					$this->creado = true;
+					$this->crear_o_modificar_datos_de_pedido($user, $cambios);
+				}
+				
+				$pedido 	= ChangeAsked::verificar_pedido_actual($user->user_id, $user->year_id, $user->tipo);
+			}
+			
+		
+		}
+	}
+	
+	public function cambiar_data_id($pedido){
+		$last_id 	= DB::getPdo()->lastInsertId();
+		Debugging::pin('$last_id', $last_id);
+		$consulta 	= 'UPDATE change_asked SET data_id=:data_id WHERE id=:asked_id';
+		DB::update($consulta, [ ':data_id'	=> $last_id, ':asked_id' => $pedido->asked_id ]);
+	}
 
 
 
