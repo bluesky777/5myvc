@@ -55,6 +55,7 @@ class ChangeAskedController extends Controller {
 
 			return [ 'alumnos'=>$cambios_alum, 'profesores'=> $pedidos ];
 
+			
 		}elseif ($user->tipo == 'Profesor') {
 
 			$consulta = 'SELECT m.id as matricula_id, m.alumno_id, a.no_matricula, a.nombres, a.apellidos, a.sexo, a.user_id, u.username, 
@@ -111,10 +112,14 @@ class ChangeAskedController extends Controller {
 		}
 
 		if ($tipo == "foto_oficial") {
-			$this->cambiarOficialAlumno($pedido);
+			if ($pedido->tipo_user == 'Profesor') {
+				$this->cambiarOficialProfesor($pedido);
+			} else if ($pedido->tipo_user == 'Alumno') {
+				$this->cambiarOficialAlumno($pedido);
+			}
 			$consulta = 'UPDATE change_asked_data SET foto_id_accepted=true WHERE id=:data_id';
 			DB::select($consulta, [ ':data_id' => $data_id ]);
-			$pedido->foto_id_accepted 	= true;
+			$pedido->foto_id_accepted 	= true;			
 		}
 		
 		if ($tipo == "img_delete") {
@@ -123,8 +128,8 @@ class ChangeAskedController extends Controller {
 			DB::select($consulta, [ ':data_id' => $data_id ]);
 			$pedido->image_to_delete_accepted 	= true;
 		}
-
-		$finalizado = $this->finalizar_si_no_hay_cambios($pedido, $user->user_id);
+		
+		$finalizado 	= $this->finalizar_si_no_hay_cambios($pedido, $user->user_id);
 
 		return [ 'finalizado'=> $finalizado, 'msg'=>'Cambio aceptado con éxito'];
 	}
@@ -234,7 +239,14 @@ class ChangeAskedController extends Controller {
 		$alumno->foto_id = $pedido->foto_id_new;
 		$alumno->save();
 		return $alumno;
-		
+	}
+
+	public function cambiarOficialProfesor($pedido)
+	{
+		$prof = Profesor::where('user_id', $pedido->asked_by_user_id)->first();
+		$prof->foto_id = $pedido->foto_id_new;
+		$prof->save();
+		return $prof;
 	}
 
 
@@ -249,6 +261,7 @@ class ChangeAskedController extends Controller {
 
 	public function finalizar_si_no_hay_cambios($pedido, $user_id)
 	{
+		Debugging::pin('Pedido');
 		if ( ($pedido->pazysalvo_new===null 	or $pedido->pazysalvo_accepted!==null) and
 			($pedido->foto_id_new===null 		or $pedido->foto_id_accepted!==null) and
 			($pedido->image_id_new===null 		or $pedido->image_id_accepted!==null) and
@@ -256,8 +269,9 @@ class ChangeAskedController extends Controller {
 			($pedido->image_to_delete_id===null or $pedido->image_to_delete_accepted!==null)
 			) 
 		{
+			Debugging::pin('Pedido', 'ENTROOOOO');
 			$dt = Carbon::now()->format('Y-m-d G:H:i');
-			$consulta = 'UPDATE change_asked SET answered_by=:user_id, updated_by=:user_id2, updated_at=:dt WHERE id=:asked_id';
+			$consulta = 'UPDATE change_asked SET answered_by=:user_id, deleted_by=:user_id2, deleted_at=:dt WHERE id=:asked_id';
 			DB::update($consulta, [ ':user_id' => $user_id, ':user_id2' => $user_id, ':dt' => $dt, ':asked_id' => $pedido->asked_id ]);
 			return true;
 		}

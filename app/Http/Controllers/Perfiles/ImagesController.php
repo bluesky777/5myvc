@@ -230,16 +230,16 @@ class ImagesController extends Controller {
 
 	public function deleteDestroy($id)
 	{
-		$user = User::fromToken();
-		$img = ImageModel::findOrFail($id);
+		$user 	= User::fromToken();
+		$img 	= ImageModel::findOrFail($id);
 
 		if ($img->created_by != $user->user_id and !$user->is_superuser ) {
-			$pedido = ChangeAsked::verificar_pedido_actual($user->user_id, $user->year_id);
+			$pedido = ChangeAsked::verificar_pedido_actual($user->user_id, $user->year_id, $user->tipo);
 
 			if ($pedido->data_id) {
 				$consulta = 'UPDATE change_asked_data SET image_to_delete_id=:foto_id WHERE id=:data_id';
 				DB::update($consulta, [ ':foto_id'	=> $id, ':data_id'	=> $pedido->data_id ]);
-				$pedido = ChangeAsked::verificar_pedido_actual($user->user_id, $user->year_id);
+				$pedido = ChangeAsked::verificar_pedido_actual($user->user_id, $user->year_id, $user->tipo);
 			}else{
 				$dt = Carbon::now()->format('Y-m-d G:H:i');
 				$consulta 	= 'INSERT INTO change_asked_data(image_to_delete_id, created_at, updated_at) VALUES(:foto_id, :created_at, :updated_at)';
@@ -249,7 +249,7 @@ class ImagesController extends Controller {
 				$consulta 	= 'UPDATE change_asked SET data_id=:data_id WHERE id=:asked_id';
 				DB::update($consulta, [ ':data_id'	=> $last_id, ':asked_id' => $pedido->asked_id ]);
 
-				$pedido 	= ChangeAsked::verificar_pedido_actual($user->user_id, $user->year_id);
+				$pedido 	= ChangeAsked::verificar_pedido_actual($user->user_id, $user->year_id, $user->tipo);
 			}
 			return ['pedido' => $pedido];
 		}

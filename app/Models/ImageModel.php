@@ -71,11 +71,18 @@ class ImageModel extends Model {
 			$alum->foto_id = null;
 			$alum->save();
 		}
+		
 		$profesores = Profesor::where('foto_id', $imagen_id)->get();
 		foreach ($profesores as $prof) {
 			$prof->foto_id = null;
 			$prof->save();
 		}
+		$profesores = Profesor::where('firma_id', $imagen_id)->get();
+		foreach ($profesores as $prof) {
+			$prof->firma_id = null;
+			$prof->save();
+		}
+		
 		$acudientes = Acudiente::where('foto_id', $imagen_id)->get();
 		foreach ($acudientes as $acud) {
 			$acud->foto_id = null;

@@ -22,7 +22,7 @@ class ChangeAsked extends Model {
 
 
 
-	public static function verificar_pedido_actual($user_id, $year_id, $crear_if_non=true)
+	public static function verificar_pedido_actual($user_id, $year_id, $tipo_usu, $crear_if_non=true)
 	{
 
 
@@ -38,6 +38,7 @@ class ChangeAsked extends Model {
 				$pedido 					= new ChangeAsked;
 				$pedido->asked_by_user_id 	= $user_id;
 				$pedido->year_asked_id 		= $year_id;
+				$pedido->tipo_user 			= $tipo_usu;
 				$pedido->save();
 				
 				$pedido = DB::select( ChangeAsked::$consulta_all, [ ':user_id'	=> $user_id, ':year_id'	=> $year_id ]);

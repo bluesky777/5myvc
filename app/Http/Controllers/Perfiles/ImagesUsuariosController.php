@@ -152,7 +152,7 @@ class ImagesUsuariosController extends Controller {
 			return 'No tienes permiso';
 		}
 
-			return $profesor;
+		return $profesor;
 	}
 
 
@@ -172,12 +172,12 @@ class ImagesUsuariosController extends Controller {
 			$usu->save();
 			return $usu;
 		}else{
-			$pedido = ChangeAsked::verificar_pedido_actual($user_id, $user->year_id);
+			$pedido = ChangeAsked::verificar_pedido_actual($user_id, $user->year_id, $user->tipo);
 
 			if ($pedido->data_id) {
 				$consulta = 'UPDATE change_asked_data SET image_id_new=:image_id WHERE id=:data_id';
 				DB::update($consulta, [ ':image_id'	=> $image_id, ':data_id'	=> $pedido->data_id ]);
-				$pedido = ChangeAsked::verificar_pedido_actual($user_id, $user->year_id);
+				$pedido = ChangeAsked::verificar_pedido_actual($user_id, $user->year_id, $user->tipo);
 			}else{
 
 				$consulta 	= 'INSERT INTO change_asked_data(image_id_new) VALUES(:image_id)';
@@ -187,7 +187,7 @@ class ImagesUsuariosController extends Controller {
 				$consulta 	= 'UPDATE change_asked SET data_id=:data_id WHERE id=:asked_id';
 				DB::update($consulta, [ ':data_id'	=> $last_id, ':asked_id' => $pedido->asked_id ]);
 
-				$pedido 	= ChangeAsked::verificar_pedido_actual($user_id, $user->year_id);
+				$pedido 	= ChangeAsked::verificar_pedido_actual($user_id, $user->year_id, $user->tipo);
 			
 			}
 			
@@ -202,8 +202,7 @@ class ImagesUsuariosController extends Controller {
 	public function putCambiarImagenOficial($user_id)
 	{
 		$user 		= User::fromToken();
-
-		$foto_id = Request::input('foto_id');
+		$foto_id 	= Request::input('foto_id');
 
 		if (!$foto_id) {
 			return abort(400, 'Debe seleccionar una foto.');
@@ -211,12 +210,12 @@ class ImagesUsuariosController extends Controller {
 
 		$usu = User::findOrFail($user_id);
 
-		$pedido = ChangeAsked::verificar_pedido_actual($user_id, $user->year_id);
+		$pedido = ChangeAsked::verificar_pedido_actual($user_id, $user->year_id, $user->tipo);
 
 		if ($pedido->data_id) {
 			$consulta = 'UPDATE change_asked_data SET foto_id_new=:foto_id WHERE id=:data_id';
 			DB::update($consulta, [ ':foto_id'	=> $foto_id, ':data_id'	=> $pedido->data_id ]);
-			$pedido = ChangeAsked::verificar_pedido_actual($user_id, $user->year_id);
+			$pedido = ChangeAsked::verificar_pedido_actual($user_id, $user->year_id, $user->tipo);
 		}else{
 
 			$consulta 	= 'INSERT INTO change_asked_data(foto_id_new) VALUES(:foto_id)';
@@ -226,7 +225,7 @@ class ImagesUsuariosController extends Controller {
 			$consulta 	= 'UPDATE change_asked SET data_id=:data_id WHERE id=:asked_id';
 			DB::update($consulta, [ ':data_id'	=> $last_id, ':asked_id' => $pedido->asked_id ]);
 
-			$pedido 	= ChangeAsked::verificar_pedido_actual($user_id, $user->year_id);
+			$pedido 	= ChangeAsked::verificar_pedido_actual($user_id, $user->year_id, $user->tipo);
 		
 		}
 

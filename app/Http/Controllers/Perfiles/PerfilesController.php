@@ -12,6 +12,7 @@ use App\Models\Profesor;
 use App\Models\Grupo;
 use App\Models\Grado;
 use App\Models\Acudiente;
+use App\Models\ImageModel;
 
 
 class PerfilesController extends Controller {
@@ -592,7 +593,8 @@ class PerfilesController extends Controller {
 		$profesor = Profesor::findOrFail($profeElegido);
 		$profesor->firma_id = Request::input('imgFirmaProfe');
 		$profesor->save();
-		return $profesor;
+		$img = ImageModel::find($profesor->firma_id);
+		return $img;
 	}
 
 

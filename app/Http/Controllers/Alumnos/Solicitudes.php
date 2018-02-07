@@ -7,6 +7,7 @@ use DB;
 use Carbon\Carbon;
 
 use App\Models\User;
+use App\Models\ChangeAskedDetails;
 
 
 
@@ -61,8 +62,8 @@ class Solicitudes extends Controller {
                             p.nombres as profesor_nombres, p.apellidos as profesor_apellidos, cs.grupo_to_add_id, c.asked_by_user_id, p.id as profesor_id, 
                             p.foto_id, IFNULL(i.nombre, IF(p.sexo="F","default_female.png", "default_male.png")) as foto_nombre
                         FROM change_asked c
-                        INNER JOIN change_asked_assignment cs ON cs.id=c.assignment_id and cs.materia_to_add_accepted is null and cs.asignatura_to_remove_accepted is null and cs.creditos_accepted is null
-                        INNER JOIN profesores p ON p.user_id=c.asked_by_user_id
+                        LEFT JOIN change_asked_assignment cs ON cs.id=c.assignment_id and cs.materia_to_add_accepted is null and cs.asignatura_to_remove_accepted is null and cs.creditos_accepted is null
+                        LEFT JOIN profesores p ON p.user_id=c.asked_by_user_id
                         LEFT JOIN materias m1 ON m1.id=cs.materia_to_add_id
                         LEFT JOIN grupos g1 ON g1.id=cs.grupo_to_add_id
                         LEFT JOIN asignaturas a2 ON a2.id=cs.asignatura_to_remove_id 
@@ -74,6 +75,12 @@ class Solicitudes extends Controller {
         $pedidos    = DB::select($consulta, [
             ':year_id'  => $year_id
         ]);
+        
+        
+        for ($i=0; $i < count($pedidos); $i++) { 
+            $detalles = ChangeAskedDetails::detalles($pedidos[$i]->asked_id);
+            $pedidos[$i]->detalles = $detalles;      
+        }
         
         return $pedidos;
 

@@ -131,6 +131,7 @@ class User extends Authenticatable implements AuthenticatableUserContract
 					$consulta = 'SELECT p.id as persona_id, p.nombres, p.apellidos, p.sexo, p.fecha_nac, p.ciudad_nac, p.user_id, u.username, 
 									IFNULL(i.nombre, IF(p.sexo="F","default_female.png", "default_male.png")) as imagen_nombre, 
 									p.foto_id, IFNULL(i2.nombre, IF(p.sexo="F","default_female.png", "default_male.png")) as foto_nombre, 
+									p.firma_id, i3.nombre as firma_nombre, 
 									"N/A" as grupo_id, ("N/A") as nombre_grupo, ("N/A") as abrev_grupo, 
 									"N/A" as year_matricula_id, per.id as periodo_id, per.numero as numero_periodo, 
 									y.id as year_id, y.year, y.nota_minima_aceptada, y.actual as year_actual, per.actual as periodo_actual, 
@@ -140,6 +141,7 @@ class User extends Authenticatable implements AuthenticatableUserContract
 								from profesores p 
 								left join images i on i.id=:imagen_id
 								left join images i2 on i2.id=p.foto_id
+								left join images i3 on i3.id=p.firma_id
 								left join periodos per on per.id=:periodo_id
 								left join years y on y.id=per.year_id
 								left join users u on u.id=p.user_id
