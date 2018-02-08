@@ -12,7 +12,9 @@
                             <div class="resolucion-colegio">Aprobado bajo {{ $year->resolucion }} {{ $year->ciudad }} - {{ $year->departamento }}</div>
                                 <div class="title-descripcion">OBSERVADOR DEL ALUMNO {{ $year->year}}</div>
                             </div>
-                            <div class="col-lg-2 col-xs-2 texto-right"><img src="{{ $dns }}{{ $alumno->foto_nombre }}" class="img-responsive img-thumbnail foto-alumno"></div>
+                            <div class="col-lg-2 col-xs-2 texto-right">
+                                <img src="{{ $dns }}{{ $alumno->foto_nombre }}" class="img-responsive img-thumbnail foto-alumno">
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -81,7 +83,11 @@
                             <div class="resolucion-colegio">Aprobado bajo {{ $year->resolucion }} {{ $year->ciudad }} - {{ $year->departamento }}</div>
                                 <div class="title-descripcion">OBSERVACIONES POR PERIODOS {{ $year->year}}</div>
                             </div>
-                            <div class="col-lg-2 col-xs-2 texto-right"><img src="{{ $dns }}{{ $alumno->foto_nombre }}" class="img-responsive img-thumbnail foto-alumno"></div>
+                            <div class="col-lg-2 col-xs-2 texto-right">
+								@if ($alumno->foto_id)
+									<img src="{{ $dns }}{{ $alumno->foto_nombre }}" class="img-responsive img-thumbnail foto-alumno">
+								@endif
+							</div>
                         </div>
                     </div>
                 </div>
