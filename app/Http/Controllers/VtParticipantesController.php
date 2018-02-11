@@ -30,74 +30,69 @@ class VtParticipantesController extends Controller {
 	}
 
 
-	public function postInscribirgrupo($grupo_id)
+	public function putDatos()
+	{
+		$user 	= User::fromToken();
+		$actual = VtVotacion::actual($user);
+		
+		if($actual) {
+			//$participantes = VtParticipante::participantesDeEvento($actual->id, $user->year_id);
+			$participantes = [];
+		} else{
+			abort(400, 'Debe haber un evento establecido como actual.');
+		}
+		
+		
+		
+		$consulta = 'SELECT g.id, g.nombre, g.abrev, g.orden, g.grado_id, g.year_id,
+						if(p.id is null, false, true) as inscrito, p.id as particip_id
+					from grupos g
+					left join vt_participantes p on p.grupo_profes_acudientes=g.id and p.votacion_id=:votacion_id
+					where g.deleted_at is null and g.year_id=:year_id
+					order by g.orden';
+
+		$grupos = DB::select($consulta, [':year_id'=>$user->year_id, ':votacion_id'=>$actual->id] );
+		
+		return [ 'participantes' => $participantes, 'grupos' => $grupos, 'votacion' => $actual ];
+
+	}
+
+
+
+	
+	public function putGuardarInscripciones()
 	{
 		$user = User::fromToken();
 
-		$votacion = VtVotacion::actual($user);
+		$votacion 	= VtVotacion::actual($user);
+		$grupos 	= Request::input('grupos');
 
-		$consulta = 'SELECT a.id as alumno_id, a.nombres, m.grupo_id, a.user_id FROM alumnos a INNER JOIN matriculas m 
-			ON m.alumno_id=a.id AND (m.estado="MATR" or m.estado="ASIS") AND m.grupo_id = :grupo_id';
-		
-		$alumnos = DB::select($consulta, ['grupo_id' => $grupo_id]);
-
-		$participantes = array();
-
-		for ($i=0; $i < count($alumnos); $i++) { 
-
-			$partic = VtParticipante::where('user_id', $alumnos[$i]->user_id)
-							->where('votacion_id', $votacion->id)
-							->first();
+		for ($i=0; $i < count($grupos); $i++) { 
 			
-			if ( !$partic ) {
-
-				if (!$alumnos[$i]->user_id){
-					$dirtyName = $alumnos[$i]->nombres;
-					$name = preg_replace('/\s+/', '', $dirtyName);
-
-					$usuario = new User;
-					$usuario->username		=	$name;
-					$usuario->password		=	'123456';
-					$usuario->is_superuser	=	false;
-					$usuario->is_active		=	true;
-					$usuario->save();
-
-					$alumno = Alumno::find($alumnos[$i]->alumno_id);
-					$alumno->user_id = $usuario->id;
-					$alumno->save();
-					$alumnos[$i]->user_id = $alumno->user_id ;
-				}
-
-				$partic_trash = VtParticipante::onlyTrashed()
-								->where('user_id', $alumnos[$i]->user_id)
-								->where('votacion_id', $votacion->id)
-								->first();
-			
+			$vt_partic = DB::select('SELECT * FROM vt_participantes WHERE votacion_id=? and grupo_profes_acudientes=?', [ $votacion->id, $grupos[$i]['id'] ]);
 				
-				if ($partic_trash) {
-					$participante = $partic_trash;
-					$participante->restore();
-				}else{
-
-					$participante = new VtParticipante;
-					$participante->user_id		=	$alumnos[$i]->user_id;
-					$participante->votacion_id	=	$votacion->id;
-					$participante->locked		=	false;
-					$participante->intentos		=	0;
-					$participante->save();
+			if($grupos[$i]['inscrito']){
+				
+				if ( ! count($vt_partic) > 0) {
+					DB::insert('INSERT INTO vt_participantes(grupo_profes_acudientes, votacion_id, locked, intentos) VALUES(?, ?, 0, 1)', [ $grupos[$i]['id'], $votacion->id ]);
 				}
-
-
-				array_push($participantes, $participante);
-
+				
+			}else{	
+				
+				if (count($vt_partic) > 0) {
+					DB::delete('DELETE FROM vt_participantes WHERE votacion_id=? and grupo_profes_acudientes=?', [ $votacion->id, $grupos[$i]['id'] ]);
+				}
+				
 			}
+			
 		}
 
-		return $participantes;
+		return 'Inscripciones guardadas';
 		
 	}
 
 
+	
 	public function postInscribirProfesores()
 	{
 		$user = User::fromToken();
@@ -181,16 +176,16 @@ class VtParticipantesController extends Controller {
 			return [['sin_votacion_actual' => true]];
 		}
 
-		$consulta = 'SELECT usus.persona_id, vp.id as participante_id, usus.nombres, usus.apellidos, usus.user_id, usus.username, usus.tipo from 
+		$consulta = 'SELECT usus.persona_id, usus.nombres, usus.apellidos, usus.user_id, usus.username, usus.tipo from 
 						(select p.id as persona_id, p.nombres, p.apellidos, p.user_id, u.username, ("Pr") as tipo from profesores p inner join users u on p.user_id=u.id
 						union
 						select a.id as persona_id, a.nombres, a.apellidos, a.user_id, u.username, ("Al") as tipo from alumnos a 
 							inner join users u on a.user_id=u.id
 							inner join matriculas m on m.alumno_id=a.id and (m.estado="MATR" or m.estado="ASIS")
-						)usus
-					inner join vt_participantes vp on vp.user_id=usus.user_id and vp.votacion_id = :votacion_id';
+						)usus';
 		
 		$participantes = DB::select(DB::raw($consulta), ['votacion_id' => $votacion->id]);
+		//$participantes = [];
 
 		return $participantes;
 	}

@@ -18,7 +18,7 @@ class VtVotacion extends Model {
 	public static function actual($user)
 	{
 		$consulta = 'SELECT * FROM vt_votaciones v WHERE v.user_id=:user_id and v.year_id=:year_id and v.deleted_at is null ';
-		$votaciones = DB::select($consulta, [ 'user_id' => $user->id, 'year_id' => $user->year_id ] );
+		$votaciones = DB::select($consulta, [ 'user_id' => $user->user_id, 'year_id' => $user->year_id ] );
 
 		if(count($votaciones) > 0){
 			return $votaciones[0];
@@ -37,46 +37,58 @@ class VtVotacion extends Model {
 
 	public static function actualesInscrito($user, $in_action=true)
 	{
-		
 		if ($in_action) {
-			$consulta = 'SELECT p.id as participante_id, p.user_id, p.votacion_id, p.locked, 
-						p.intentos, v.created_by, 
-						v.id as votacion_id, v.year_id, v.nombre, v.locked as locked_votacion,
-						v.actual, v.in_action, v.can_see_results, v.fecha_inicio, v.fecha_fin,
-						v.created_at
-					FROM vt_participantes p
-					inner join vt_votaciones v on v.id=p.votacion_id and p.deleted_at is null 
-						and v.in_action=true and v.locked=false 
-					where p.user_id=? and p.deleted_at is null';
-
+			$consulta = 'SELECT * FROM vt_votaciones v WHERE actual=true and in_action=true and v.deleted_at is null ';
 		}else{
-			$consulta = 'SELECT p.id as participante_id, p.user_id, p.votacion_id, p.locked, 
-						p.intentos, v.created_by, 
-						v.id as votacion_id, v.year_id, v.nombre, v.locked as locked_votacion,
-						v.actual, v.in_action, v.can_see_results, v.fecha_inicio, v.fecha_fin,
-						v.created_at
-					FROM vt_participantes p
-					inner join vt_votaciones v on v.id=p.votacion_id and p.deleted_at is null 
-						and v.locked=false 
-					where p.user_id=? and p.deleted_at is null';
-
+			$consulta = 'SELECT * FROM vt_votaciones v WHERE in_action=true and v.deleted_at is null ';
 		}
 		
-		$votaciones = DB::select($consulta, [$user->user_id]);
-		return $votaciones;
+		$votaciones 		= DB::select($consulta);
+		$votaciones_res 	= [];
+		
+		if (count($votaciones) > 0) {
+			
+			for ($j=0; $j < count($votaciones); $j++) { 
+				
+				if ($user->tipo == 'Profesor') {
+					if ($votaciones[$j]->votan_profes) {
+						array_push($votaciones_res, $votaciones[$j]);
+					}
+				}
+				
+				if ($user->tipo == 'Alumno') {
+					$consulta 		= 'SELECT * FROM vt_participantes p WHERE votacion_id=?';
+					$participantes 	= DB::select($consulta, [$votaciones[$j]->id]);
+					
+					for ($i=0; $i < count($participantes); $i++) { 
+						$consulta 		= 'SELECT m.grupo_id FROM matriculas m 
+											INNER JOIN vt_participantes p ON p.grupo_profes_acudientes=m.grupo_id and p.votacion_id=? and m.deleted_at is null
+											WHERE m.alumno_id=? and m.grupo_id=? and (m.estado="MATR" or m.estado="ASIS") and deleted_at is null';
+						$inscripc 	= DB::select($consulta, [$votaciones[$j]->id, $user->persona_id, $participantes[$i]->grupo_profes_acudientes]);
+						if (count($inscripc)>0) {
+							$votaciones[$j]->grupo_id = $inscripc[0]->grupo_id;
+							array_push($votaciones_res, $votaciones[$j]);
+						}
+					}
+				}
+			}
+		}
+		return $votaciones_res;
 	}
 
 
-	public static function verificarVotosCompletos($votacion_id, $particip_id)
-	{
-		$aspiraciones = VtAspiracion::where('votacion_id', '=', $votacion_id)->get();
-		$cons = 'SELECT vv.participante_id, vv.candidato_id, vp.votacion_id, vv.created_at
-				FROM vt_votos vv
-				inner join vt_participantes vp on vp.id=vv.participante_id and vv.participante_id=:participante_id
-				inner join vt_candidatos vc on vc.id=vv.candidato_id
-				inner join vt_aspiraciones va on va.id=vc.aspiracion_id and va.votacion_id=:votacion_id';
 
-		$votosVotados = DB::select($cons, array('votacion_id' => $votacion_id, 'participante_id' => $particip_id));
+
+	public static function verificarVotosCompletos($aspiraciones, $votacion_id, $user_id)
+	{
+		
+		$cons = 'SELECT vv.user_id, vv.candidato_id, va.votacion_id, vv.created_at
+		FROM vt_votos vv
+		inner join users u on u.id=vv.user_id and vv.user_id=:user_id
+		inner join vt_candidatos vc on vc.id=vv.candidato_id
+		inner join vt_aspiraciones va on va.id=vc.aspiracion_id and va.votacion_id=:votacion_id';
+
+		$votosVotados = DB::select($cons, ['votacion_id' => $votacion_id, 'user_id' => $user_id]);
 
 		$cantVotados = count($votosVotados);
 

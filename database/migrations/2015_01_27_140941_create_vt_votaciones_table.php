@@ -20,6 +20,8 @@ class CreateVtVotacionesTable extends Migration {
 			$table->integer('user_id')->unsigned()->nullable();
 			$table->integer('year_id')->unsigned()->nullable();
 			$table->string('nombre');
+			$table->boolean('votan_profes')->default(true);
+			$table->boolean('votan_acudientes')->default(false);
 			$table->boolean('locked')->default(false);
 			$table->boolean('actual')->default(false);
 			$table->boolean('in_action')->default(false);
@@ -57,18 +59,13 @@ class CreateVtVotacionesTable extends Migration {
 		{
 			$table->engine = "InnoDB";
 			$table->increments('id');
-			$table->integer('user_id')->unsigned();
+			$table->string('grupo_profes_acudientes')->nullable(); // 2, 8, 'Profesores' o 'Acudientes'
 			$table->integer('votacion_id')->unsigned();
 			$table->boolean('locked')->dafault(false);
 			$table->integer('intentos')->default(0); # Tal vez quiera borrar sus votos para que lo vuelva a intentar, al borrar esos votos, esta celda aumentaría
-			$table->integer('created_by')->nullable();
-			$table->integer('updated_by')->nullable();
-			$table->integer('deleted_by')->nullable();
-			$table->softDeletes();
 			$table->timestamps();
 		});
 		Schema::table('vt_participantes', function(Blueprint $table) {
-			$table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
 			$table->foreign('votacion_id')->references('id')->on('vt_votaciones')->onDelete('cascade');
 		});
 
@@ -76,7 +73,7 @@ class CreateVtVotacionesTable extends Migration {
 		{
 			$table->engine = "InnoDB";
 			$table->increments('id');
-			$table->integer('participante_id')->unsigned();
+			$table->integer('user_id')->unsigned();
 			$table->integer('aspiracion_id')->unsigned();
 			$table->string('plancha')->nullable();
 			$table->string('numero')->nullable();
@@ -88,7 +85,7 @@ class CreateVtVotacionesTable extends Migration {
 			$table->timestamps();
 		});
 		Schema::table('vt_candidatos', function(Blueprint $table) {
-			$table->foreign('participante_id')->references('id')->on('vt_participantes')->onDelete('cascade');
+			$table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
 			$table->foreign('aspiracion_id')->references('id')->on('vt_aspiraciones')->onDelete('cascade');;
 		});
 
@@ -97,7 +94,7 @@ class CreateVtVotacionesTable extends Migration {
 		{
 			$table->engine = "InnoDB";
 			$table->increments('id');
-			$table->integer('participante_id')->unsigned();
+			$table->integer('user_id')->unsigned();
 			$table->integer('candidato_id')->unsigned();
 			$table->boolean('locked')->default(false);
 			$table->integer('created_by')->nullable();
@@ -107,8 +104,7 @@ class CreateVtVotacionesTable extends Migration {
 			$table->timestamps();
 		});
 		Schema::table('vt_votos', function(Blueprint $table) {
-			$table->foreign('participante_id')->references('id')->on('vt_participantes')->onDelete('cascade');
-			$table->foreign('candidato_id')->references('id')->on('vt_candidatos')->onDelete('cascade');
+			$table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
 		});
 	}
 

@@ -19,7 +19,7 @@ class VtVotacionesController extends Controller {
 	{
 		$user = User::fromToken();
 		
-		$votaciones = VtVotacion::where('user_id', $user->id)
+		$votaciones = VtVotacion::where('user_id', $user->user_id)
 							->where('year_id', $user->year_id)->get();
 
 		for($i=0; $i<count($votaciones); $i++){
@@ -58,16 +58,18 @@ class VtVotacionesController extends Controller {
 
 			
 			
-			$datos = ['user_id'		=>	$user->id,
-					'nombre'		=>	Request::input('nombre'),
-					'year_id'		=>	$user->year_id,
-					'locked'		=>	Request::input('locked', false),
-					'actual'		=>	Request::input('actual', false),
-					'in_action'		=>	Request::input('in_action', false),
-					'fecha_inicio'	=>	$fecha_inicio,
-					'fecha_fin'		=>	$fecha_fin,
-					'created_at'	=>	$fecha,
-					'updated_at'	=>	$fecha,
+			$datos = ['user_id'			=>	$user->user_id,
+					'nombre'			=>	Request::input('nombre'),
+					'year_id'			=>	$user->year_id,
+					'votan_profes'		=>	Request::input('votan_profes', true),
+					'votan_acudientes'	=>	Request::input('votan_acudientes', true),
+					'locked'			=>	Request::input('locked', false),
+					'actual'			=>	Request::input('actual', false),
+					'in_action'			=>	Request::input('in_action', false),
+					'fecha_inicio'		=>	$fecha_inicio,
+					'fecha_fin'			=>	$fecha_fin,
+					'created_at'		=>	$fecha,
+					'updated_at'		=>	$fecha,
 					];
 
 
@@ -106,7 +108,7 @@ class VtVotacionesController extends Controller {
 	public function getActual()
 	{
 		$user = User::fromToken();
-		return VtVotacion::actual($user);
+		return (array)VtVotacion::actual($user);
 	}
 
 	public function getActualInAction()
@@ -121,6 +123,27 @@ class VtVotacionesController extends Controller {
 					FROM users u 
 					where u.id not in (select p.user_id from vt_participantes p)';
 		return DB::select(DB::raw($consulta));
+	}
+
+
+	public function putSetVotanProfes()
+	{
+		$user = User::fromToken();
+		$id = Request::input('id');
+		$locked = Request::input('votan_profes', true);
+
+		$vot = VtVotacion::where('id', $id)->update(['votan_profes' => $locked]);
+		return 'Cambiado';
+	}
+
+	public function putSetVotanAcudientes()
+	{
+		$user = User::fromToken();
+		$id = Request::input('id');
+		$locked = Request::input('votan_acudientes', true);
+
+		$vot = VtVotacion::where('id', $id)->update(['votan_acudientes' => $locked]);
+		return 'Cambiado';
 	}
 
 
@@ -211,12 +234,14 @@ class VtVotacionesController extends Controller {
 	{
 		$votacion = VtVotacion::findOrFail($id);
 		try {
-			$votacion->nombre		=	Request::input('nombre', $votacion->nombre);
-			$votacion->locked		=	Request::input('locked', $votacion->locked);
-			$votacion->actual		=	Request::input('actual', $votacion->actual);
-			$votacion->in_action	=	Request::input('in_action', $votacion->in_action);
-			$votacion->fecha_inicio	=	Request::input('fecha_inicio', $votacion->fecha_inicio);
-			$votacion->fecha_fin	=	Request::input('fecha_fin', $votacion->fecha_fin);
+			$votacion->nombre			=	Request::input('nombre', $votacion->nombre);
+			$votacion->votan_profes		=	Request::input('votan_profes', $votacion->votan_profes);
+			$votacion->votan_acudientes	=	Request::input('votan_acudientes', $votacion->votan_acudientes);
+			$votacion->locked			=	Request::input('locked', $votacion->locked);
+			$votacion->actual			=	Request::input('actual', $votacion->actual);
+			$votacion->in_action		=	Request::input('in_action', $votacion->in_action);
+			$votacion->fecha_inicio		=	Request::input('fecha_inicio', $votacion->fecha_inicio);
+			$votacion->fecha_fin		=	Request::input('fecha_fin', $votacion->fecha_fin);
 
 			$votacion->save();
 			return $votacion;
@@ -241,11 +266,11 @@ class VtVotacionesController extends Controller {
 		if ($cantVot > 0) {
 
 			for($i=0; $i < $cantVot; $i++){
-
-				$completos = VtVotacion::verificarVotosCompletos($votaciones[$i]->votacion_id, $votaciones[$i]->participante_id);
+				
+				$aspiraciones = DB::select('SELECT * FROM vt_aspiraciones WHERE votacion_id=?', [$votaciones[$i]->id]);
+				
+				$completos = VtVotacion::verificarVotosCompletos($aspiraciones, $votaciones[$i]->id, $user->user_id);
 				$votaciones[$i]->completos = $completos;
-
-				$aspiraciones = VtAspiracion::where('votacion_id', $votaciones[$i]->votacion_id)->get();
 				
 				$cantAsp = count($aspiraciones);
 
@@ -257,8 +282,7 @@ class VtVotacionesController extends Controller {
 
 						// Verificamos si ya votó en esta aspiración
 						$consulta = "SELECT * FROM vt_votos v 
-								inner join vt_participantes p on p.id=v.participante_id and p.deleted_at is null
-								inner join users u on u.id=p.user_id and u.id=:user_id 
+								inner join users u on u.id=v.user_id and u.id=:user_id 
 								inner join vt_candidatos c on c.id=v.candidato_id and c.deleted_at is null
 								where c.aspiracion_id=:aspiracion_id and v.deleted_at is null";
 						

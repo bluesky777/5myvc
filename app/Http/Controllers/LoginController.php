@@ -59,7 +59,9 @@ class LoginController extends Controller {
 
 		if ($cantVot > 0) {
 			for($i=0; $i<$cantVot; $i++) {
-				$completos = VtVotacion::verificarVotosCompletos($votaciones[$i]->votacion_id, $votaciones[$i]->participante_id);
+				$aspiraciones = DB::select('SELECT * FROM vt_aspiraciones WHERE votacion_id=?', [$votaciones[$i]->id]);
+				$completos = VtVotacion::verificarVotosCompletos($aspiraciones, $votaciones[$i]->id, $user->user_id);
+				$votaciones[$i]->completos = $completos;
 				if (!$completos) {
 					array_push($votacionesResult, $votaciones[$i]);
 				}

@@ -27,13 +27,13 @@ class VtCandidatosController extends Controller {
 	{
 		$user = User::fromToken();
 
-		$participante_id 	= Request::input('participante_id');
+		$user_id 			= Request::input('user_id');
 		$aspiracion_id 		= Request::input('aspiracion_id');
 		$plancha 			= Request::input('plancha');
 		$numero 			= Request::input('numero');
 		$locked 			= Request::input('locked', false);
 
-		$busqueda = VtCandidato::where('participante_id', $participante_id)
+		$busqueda = VtCandidato::where('user_id', $user_id)
 								->where('aspiracion_id', $aspiracion_id)->first();
 
 		if ( $busqueda ) {
@@ -41,7 +41,7 @@ class VtCandidatosController extends Controller {
 			return response()->json([ 'error'=> 400, 'message'=> 'Candidato ya inscrito' ], 400);
 		}else{
 			$candidato = new VtCandidato;
-			$candidato->participante_id		=	$participante_id;
+			$candidato->user_id				=	$user_id;
 			$candidato->aspiracion_id		=	$aspiracion_id;
 			$candidato->plancha				=	$plancha;
 			$candidato->numero				=	$numero;
@@ -50,8 +50,8 @@ class VtCandidatosController extends Controller {
 		}
 
 		try {
-			
-			return $candidato;
+			$candidatos = VtCandidato::porAspiracion($aspiracion_id, $user->year_id);
+			return $candidatos;
 		} catch (Exception $e) {
 			//return abort('400', 'Datos incorrectos');
 			return $e;
@@ -74,16 +74,18 @@ class VtCandidatosController extends Controller {
 		
 		$aspiraciones = VtAspiracion::where('votacion_id', $votacion->id)->get();
 		
-		$particip = VtParticipante::one($user->id);
+		//$particip = VtParticipante::one($user->user_id);
 
 
 		$result = array();
 
 		foreach ($aspiraciones as $aspira) {
 			$candidatos = VtCandidato::porAspiracion($aspira->id, $user->year_id);
+			//$candidatos = DB::select('SELECT * FROM vt_candidatos c INNER JOIN users u ON u.id=c.user_id and c.aspiracion_id=?', [$aspira->id]);
 			$aspira->candidatos = $candidatos;
-
+			
 			$votado = [];
+			/*
 			if ($particip) {
 				try {
 					$votado = VtVoto::votesInAspiracion($aspira->id, $particip->id);
@@ -92,6 +94,7 @@ class VtCandidatosController extends Controller {
 				}
 				
 			}
+			*/
 
 			$aspira->votado = $votado;
 			

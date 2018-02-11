@@ -44,6 +44,7 @@ class VtParticipante extends Model {
 		return $participante;
 	}
 
+	
 	public static function participantesDeEvento($votacion_id, $year_id)
 	{
 

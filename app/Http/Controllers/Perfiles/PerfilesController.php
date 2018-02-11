@@ -355,7 +355,9 @@ class PerfilesController extends Controller {
 		$perfil = User::findOrFail($id);
 
 		if (!$user->is_superuser){
-			abort(400, 'No tiene permisos para resetear password');
+			if(!($user->tipo == 'Profesor' && $user->profes_can_edit_alumnos)){
+				abort(400, 'No tiene permisos para resetear password');
+			}
 		}
 
 		$perfil->password = Hash::make((string)Request::input('password'));

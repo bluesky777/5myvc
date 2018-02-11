@@ -15,15 +15,15 @@ class VtVoto extends Model {
 	use SoftDeletes;
 	protected $softDelete = true;
 
-	public static function verificarNoVoto($aspira_id, $participante_id)
+	public static function verificarNoVoto($aspira_id, $user_id)
 	{
-		$consulta = 'SELECT vv.id, vv.participante_id, vv.locked, vv.candidato_id
+		$consulta = 'SELECT vv.id, vv.user_id, vv.locked, vv.candidato_id
 			from vt_votos vv
 			inner join vt_candidatos vc on vc.id=vv.candidato_id 
-				and vc.aspiracion_id=:aspiracion_id and vv.participante_id=:participante_id';
+				and vc.aspiracion_id=:aspiracion_id and vv.user_id=:user_id';
 
-		$datos = array(':aspiracion_id' => $aspira_id, ':participante_id' => $participante_id);
-		$votos = DB::select(DB::raw($consulta), $datos);
+		$datos = [':aspiracion_id' => $aspira_id, ':user_id' => $user_id];
+		$votos = DB::select($consulta, $datos);
 		
 		foreach ($votos as $voto) {
 			$voto = VtVoto::destroy($voto->id);
