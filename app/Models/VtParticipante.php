@@ -37,7 +37,7 @@ class VtParticipante extends Model {
 		}
 		
 		$votacion_id = VtAspiracion::find($aspira_id)->votacion_id;
-		$participante = VtParticipante::where('user_id', $user->id)
+		$participante = VtParticipante::where('user_id', $user->user_id)
 								->where('votacion_id', $votacion_id)
 								->first();
 

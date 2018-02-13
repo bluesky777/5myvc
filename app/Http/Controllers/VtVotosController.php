@@ -52,7 +52,7 @@ class VtVotosController extends Controller {
 
 	
 	
-	public function getShow()
+	public function putShow()
 	{
 		$user 			= User::fromToken();
 		$votaciones 	= VtVotacion::actualesInscrito($user, false); // Traer aunque no esté en acción.
@@ -100,7 +100,10 @@ class VtVotosController extends Controller {
 			}
 			
 		}
-		return $votaciones;
+		
+		$year			= Year::datos($user->year_id);
+		
+		return ['votaciones' => $votaciones, 'year' => $year];
 		
 	}
 

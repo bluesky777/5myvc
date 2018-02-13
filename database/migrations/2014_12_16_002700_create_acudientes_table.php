@@ -21,6 +21,7 @@ class CreateAcudientesTable extends Migration {
 			$table->string('apellidos')->nullable();
 			$table->string('sexo');
 			$table->integer('user_id')->unsigned()->nullable();
+			$table->boolean('is_acudiente')->default(false);
 			$table->date('fecha_nac')->nullable();
 			$table->integer('ciudad_nac')->nullable()->unsigned();
 			$table->integer('foto_id')->nullable();

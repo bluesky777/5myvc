@@ -170,7 +170,7 @@ class VtVotacionesController extends Controller {
 						WHERE v.id<>? and v.user_id=? 
 							and v.year_id=? and v.in_action=true AND v.deleted_at is null';
 
-			DB::statement($consulta, [$id, $user->id, $user->year_id]);
+			DB::statement($consulta, [$id, $user->user_id, $user->year_id]);
 
 			
 			$consulta = 'UPDATE vt_votaciones v SET v.in_action=true WHERE v.id=?';
@@ -211,7 +211,7 @@ class VtVotacionesController extends Controller {
 						WHERE v.id<>? and v.user_id=? 
 							and v.year_id=? and v.actual=true AND v.deleted_at is null';
 
-			DB::statement($consulta, [$id, $user->id, $user->year_id]);
+			DB::statement($consulta, [$id, $user->user_id, $user->year_id]);
 
 			
 			$consulta = 'UPDATE vt_votaciones v SET v.actual=true WHERE v.id=?';

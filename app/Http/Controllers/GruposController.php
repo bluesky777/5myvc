@@ -9,6 +9,10 @@ use App\Models\Year;
 use App\Models\Grado;
 use App\Models\Profesor;
 use App\Models\Grupo;
+use App\Models\Matricula;
+use App\Models\Acudiente;
+use Carbon\Carbon;
+use App\Http\Controllers\Alumnos\Definitivas;
 
 
 
@@ -21,8 +25,8 @@ class GruposController extends Controller {
 		$res 	= [];
 
 		$consulta = 'SELECT g.id, g.nombre, g.abrev, g.orden, gra.orden as orden_grado, g.grado_id, g.year_id, g.titular_id,
-			p.nombres as nombres_titular, p.apellidos as apellidos_titular, p.titulo, g.caritas, 
-			g.created_at, g.updated_at, gra.nombre as nombre_grado 
+				p.nombres as nombres_titular, p.apellidos as apellidos_titular, p.titulo, g.caritas, 
+				g.created_at, g.updated_at, gra.nombre as nombre_grado 
 			from grupos g
 			inner join grados gra on gra.id=g.grado_id and g.year_id=:year_id 
 			left join profesores p on p.id=g.titular_id
@@ -40,6 +44,23 @@ class GruposController extends Controller {
 		// Todos los Paises
 		$consulta = 'SELECT * FROM paises WHERE deleted_at is null';
 		$res['paises'] = DB::select($consulta);
+		
+		if ($user->tipo == 'Profesor') {
+			$consulta = Grupo::$consulta_grupos_titularia;
+			$res['grupos_titularia'] = DB::select($consulta, [':year_id'=>$user->year_id, ':titular_id'=>$user->persona_id] );
+			
+			for ($i=0; $i < count($res['grupos']); $i++) { 
+				$found = false;
+				for ($j=0; $j < count($res['grupos_titularia']); $j++) { 
+					if ($res['grupos'][$i]->id == $res['grupos_titularia'][$j]->id) {
+						$found = true;
+					}
+				}
+				if ($found) {
+					$res['grupos'][$i]->es_titular = true;
+				}
+			}
+		}
 
 		return $res;
 	}
@@ -63,6 +84,70 @@ class GruposController extends Controller {
 
 
 
+	public function putAlumnosConDatos()
+	{
+		$user = User::fromToken();
+		$grupo_actual 	= Request::input('grupo_actual');
+		$result 		= [];
+		
+		if (!$grupo_actual) {
+			return;
+		}
+
+
+		// Alumnos asistentes o matriculados del grupo
+		$consulta = Matricula::$consulta_asistentes_o_matriculados;
+		$result['AlumnosActuales'] = DB::select($consulta, [ ':grupo_id' => $grupo_actual['id'] ]);
+		
+		// Traigo los acudientes de 
+		$cantA = count($result['AlumnosActuales']);
+
+		for ($i=0; $i < $cantA; $i++) { 
+			$consulta = Matricula::$consulta_parientes;
+			
+			$acudientes 		= DB::select($consulta, [ $result['AlumnosActuales'][$i]->alumno_id ]);	
+
+			// Para el botón agregar
+			array_push($acudientes, ['nombres' => null]);
+
+			$btGrid1 = '<a uib-tooltip="Cambiar" ng-show="row.entity.nombres" tooltip-placement="left" class="btn btn-default btn-xs shiny icon-only info" ng-click="grid.appScope.cambiarAcudiente(grid.parentRow.entity, row.entity)"><i class="fa fa-edit "></i></a>';
+			$btGrid2 = '<a uib-tooltip="Quitar" ng-show="row.entity.nombres" tooltip-placement="right" class="btn btn-default btn-xs shiny icon-only danger" ng-click="grid.appScope.quitarAcudiente(grid.parentRow.entity, row.entity)"><i class="fa fa-trash "></i></a>';
+			$btGrid3 = '<a uib-tooltip="Seleccionar o crear acudiente para asignar a alumno" ng-show="!row.entity.nombres" class="btn btn-info btn-xs" ng-click="grid.appScope.agregarAcudiente(grid.parentRow.entity)">Agregar...</a>';
+			$btEdit = '<span style="padding-left: 2px; padding-top: 4px;" class="btn-group">' . $btGrid1 . $btGrid2 . $btGrid3 . '</span>';
+
+			$subGridOptions 	= [
+				'enableCellEditOnFocus' => true,
+				'columnDefs' 	=> [
+					['name' => 'edicion', 'displayName' => 'Edici', 'width' => 54, 'enableSorting' => false, 'cellTemplate' => $btEdit, 'enableCellEdit' => false],
+					['name' => "Nombres", 'field' => "nombres", 'maxWidth' => 120 ],
+					['name' => "Apellidos", 'field' => "apellidos", 'maxWidth' => 100],
+					['name' => "Sex", 'field' => "sexo", 'maxWidth' => 40],
+					['name' => "Parentesco", 'field' => "parentesco", 'maxWidth' => 90],
+					['name' => "Usuario", 'field' => "username", 'maxWidth' => 135, 'cellTemplate' => "==directives/botonesResetPassword.tpl.html", 'editableCellTemplate' => "==alumnos/botonEditUsername.tpl.html" ], 
+					['name' => "Documento", 'field' => "documento", 'maxWidth' => 70],
+					['name' => "Ciudad doc", 'field' => "ciudad_doc", 'cellTemplate' => "==directives/botonCiudadDoc.tpl.html", 'enableCellEdit' => false, 'maxWidth' => 100],
+					['name' => "Fecha nac", 'field' => "fecha_nac", 'cellFilter' => "date:mediumDate", 'type' => 'date', 'maxWidth' => 120],
+					['name' => "Ciudad nac", 'field' => "ciudad_nac", 'cellTemplate' => "==directives/botonCiudadNac.tpl.html", 'enableCellEdit' => false, 'maxWidth' => 100],
+					['name' => "Teléfono", 'field' => "telefono", 'maxWidth' => 80],
+					['name' => "Celular", 'field' => "celular", 'maxWidth' => 80],
+					['name' => "Ocupación", 'field' => "ocupacion", 'maxWidth' => 80],
+					['name' => "Email", 'field' => "email", 'maxWidth' => 80],
+					['name' => "Barrio", 'field' => "barrio", 'maxWidth' => 80],
+					['name' => "Dirección", 'field' => "direccion", 'maxWidth' => 80],
+				],
+				'data' 			=> $acudientes
+			];
+			$result['AlumnosActuales'][$i]->subGridOptions = $subGridOptions;
+
+		}
+		
+
+
+		return $result;
+	}
+
+
+
 	public function getListado($grupo_id)
 	{
 		$user = User::fromToken();
@@ -78,6 +163,9 @@ class GruposController extends Controller {
 					where a.deleted_at is null order by apellidos, nombres';
 
 		$list = DB::select(DB::raw($consulta), array(':grupo_id'=>$grupo_id));
+		
+		$definitivas 	= new Definitivas();
+		$asignaturas 	= $definitivas->asignaturas_docente($profe_id, $user->year_id);
 
 		return $list;
 	}

@@ -16,8 +16,8 @@ class VtAspiracionesController extends Controller {
 	{
 		$user = User::fromToken();
 
-		$votacion = VtVotacion::where('actual', '=', true)
-							->where('user_id', $user->id)
+		$votacion = VtVotacion::where('actual', true)
+							->where('user_id', $user->user_id)
 							->where('year_id', $user->year_id)->first();
 
 		$aspiraciones = VtAspiracion::where('votacion_id', $votacion->id)->get();

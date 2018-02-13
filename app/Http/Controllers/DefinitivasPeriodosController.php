@@ -9,6 +9,7 @@ use App\Models\Year;
 use App\Models\Profesor;
 use App\Models\Asignatura;
 use App\Models\Unidad;
+use App\Models\Grupo;
 use App\Http\Controllers\Alumnos\Definitivas;
 
 use App\Http\Controllers\Alumnos\Solicitudes;
@@ -34,14 +35,8 @@ class DefinitivasPeriodosController extends Controller {
 		
 		for ($i=0; $i < $cantAsig; $i++) { 
 			
-			$consulta = 'SELECT a.id, a.materia_id, a.grupo_id, a.profesor_id, a.creditos, a.orden,
-						a.created_by, a.updated_by, a.created_at, a.updated_at
-					FROM asignaturas a
-					inner join grupos g on g.id=a.grupo_id and g.year_id=?
-					where a.deleted_at is null
-					order by g.orden, a.orden';
-
-			$asignaturas = DB::select($consulta, array($user->year_id));
+			$alumnos = Grupo::alumnos($asignaturas[$i]->grupo_id);
+			$asignaturas[$i]->alumnos = $alumnos;
 		}
 		
 		return $asignaturas;

@@ -98,7 +98,7 @@ class AlumnosController extends Controller {
 
 	public function checkOrChangeUsername($user_id){
 
-		$user = User::where('username', '=', Request::input('username'))->first();
+		$user = User::where('username', Request::input('username'))->first();
 		//mientras el user exista iteramos y aumentamos i
 		if ($user) {
 
@@ -451,7 +451,22 @@ class AlumnosController extends Controller {
 	 *************************************************************/
 	public function putGuardarValor()
 	{
-		if (($this->user->roles[0]->name == 'Profesor' && $this->user->profes_can_edit_alumnos) || $this->user->roles[0]->name == 'Admin') {
+		if ($this->user->roles[0]->name == 'Profesor' && $this->user->profes_can_edit_alumnos) {
+			$consulta 	= 'SELECT a.id, a.user_id, g.id as grupo_id, g.titular_id FROM alumnos a
+							INNER JOIN matriculas m ON m.alumno_id=a.id
+							INNER JOIN grupos g ON g.id=m.grupo_id AND g.year_id=? AND g.titular_id=?
+							WHERE a.id=?';
+			$alumno 	= DB::select($consulta, [ $this->user->year_id, $this->user->persona_id, Request::input('alumno_id') ]);
+			
+			if (count($alumno)>0) {
+				$alumno = $alumno[0];
+				$guardarAlumno = new GuardarAlumno();
+				return $guardarAlumno->valor($this->user, $alumno, Request::input('propiedad'), Request::input('valor'), $this->user->user_id);
+			}else{
+				return response()->json([ 'autorizado'=> false, 'msg'=> 'No eres el titular' ], 400);
+			}
+			
+		} else if($this->user->roles[0]->name == 'Admin'){
 			$alumno = Alumno::findOrFail(Request::input('alumno_id'));
 
 			$guardarAlumno = new GuardarAlumno();

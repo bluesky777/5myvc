@@ -161,8 +161,8 @@ class AsignaturasController extends Controller {
 					$res['pedidos']	= $pedidos;
 
 					$consulta = 'SELECT g.id, g.nombre, g.abrev, g.orden, gra.orden as orden_grado, g.grado_id, g.year_id, g.titular_id,
-						p.nombres as nombres_titular, p.apellidos as apellidos_titular, p.titulo,
-						g.created_at, g.updated_at, gra.nombre as nombre_grado 
+							p.nombres as nombres_titular, p.apellidos as apellidos_titular, p.titulo,
+							g.created_at, g.updated_at, gra.nombre as nombre_grado 
 						from grupos g
 						inner join grados gra on gra.id=g.grado_id and g.year_id=:year_id 
 						left join profesores p on p.id=g.titular_id
@@ -224,7 +224,7 @@ class AsignaturasController extends Controller {
 
 
 
-	// Solo las asignaturas para el popup del menú "notas" de los profesores
+	// Solo las asignaturas para el popup del menú "planillas" de los profesores
 	public function getListasignaturasAlone()
 	{
 		$user = User::fromToken();

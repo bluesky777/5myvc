@@ -45,7 +45,7 @@ class ConfigCertificadosController extends Controller {
 		$certif->piepagina_margin_bottom = Request::input('piepagina_margin_bottom');
 		$certif->piepagina_margin_left 	= Request::input('piepagina_margin_left');
 		$certif->piepagina_solo_ultima_pagina = Request::input('piepagina_solo_ultima_pagina', 0);
-		$certif->created_by = $user->id;
+		$certif->created_by = $user->user_id;
 		$certif->save();
 
 
@@ -78,7 +78,7 @@ class ConfigCertificadosController extends Controller {
 		$certif->piepagina_margin_bottom = Request::input('piepagina_margin_bottom');
 		$certif->piepagina_margin_left 	= Request::input('piepagina_margin_left');
 		$certif->piepagina_solo_ultima_pagina = Request::input('piepagina_solo_ultima_pagina', 0);
-		$certif->created_by = $user->id;
+		$certif->created_by = $user->user_id;
 		$certif->save();
 
 

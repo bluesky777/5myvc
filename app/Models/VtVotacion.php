@@ -29,7 +29,7 @@ class VtVotacion extends Model {
 	public function actualInAction($user)
 	{
 		return VtVotacion::where('actual', true)
-					->where('user_id', $user->id)
+					->where('user_id', $user->user_id)
 					->where('in_action', true)
 					->where('year_id', $user->year_id)
 					->first();
