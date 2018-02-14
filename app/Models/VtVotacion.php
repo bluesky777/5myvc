@@ -83,14 +83,24 @@ class VtVotacion extends Model {
 	{
 		
 		$cons = 'SELECT vv.user_id, vv.candidato_id, va.votacion_id, vv.created_at
-		FROM vt_votos vv
-		inner join users u on u.id=vv.user_id and vv.user_id=:user_id
-		inner join vt_candidatos vc on vc.id=vv.candidato_id
-		inner join vt_aspiraciones va on va.id=vc.aspiracion_id and va.votacion_id=:votacion_id';
+			FROM vt_votos vv
+			inner join users u on u.id=vv.user_id and vv.user_id=:user_id
+			inner join vt_candidatos vc on vc.id=vv.candidato_id
+			inner join vt_aspiraciones va on va.id=vc.aspiracion_id and va.votacion_id=:votacion_id 
+			WHERE vv.deleted_at is null';
 
 		$votosVotados = DB::select($cons, ['votacion_id' => $votacion_id, 'user_id' => $user_id]);
 
-		$cantVotados = count($votosVotados);
+		
+		$cons = 'SELECT vv.user_id, vv.candidato_id, va.votacion_id, vv.created_at
+			FROM vt_votos vv
+			inner join users u on u.id=vv.user_id and vv.user_id=:user_id
+			inner join vt_aspiraciones va on va.id=vv.blanco_aspiracion_id and va.votacion_id=:votacion_id
+			WHERE vv.deleted_at is null';
+
+		$votosVotadosBlancos = DB::select($cons, ['votacion_id' => $votacion_id, 'user_id' => $user_id]);
+
+		$cantVotados = count($votosVotados) + count($votosVotadosBlancos);
 
 		if ($cantVotados < count($aspiraciones)) {
 			$completo = false;

@@ -27,24 +27,42 @@ class VtVotosController extends Controller {
 		$user = User::fromToken();
 
 		$votacion_actual_id = Request::input('votacion_id');
-		$aspiracion_id = VtCandidato::find(Request::input('candidato_id'))->aspiracion_id;
+		$voto_blanco 		= false;
+		
+		if (Request::has('blanco_aspiracion_id')) {
+			$voto_blanco 		= true;
+			$aspiracion_id 		= Request::input('blanco_aspiracion_id');
+		}else{
+			$aspiracion_id = VtCandidato::find(Request::input('candidato_id'))->aspiracion_id;
+		}
+		
+		
 
 
 		VtVoto::verificarNoVoto($aspiracion_id, $user->user_id);
 
 		try {
-			$voto = new VtVoto;
-			$voto->user_id			=	$user->user_id;
-			$voto->candidato_id		=	Request::input('candidato_id');
-			$voto->locked			=	false;
-			$voto->save();
-
+			if ($voto_blanco) {
+				$voto = new VtVoto;
+				$voto->user_id				=	$user->user_id;
+				$voto->blanco_aspiracion_id	=	$aspiracion_id;
+				$voto->locked				=	false;
+				$voto->save();
+			}else{
+				$voto = new VtVoto;
+				$voto->user_id			=	$user->user_id;
+				$voto->candidato_id		=	Request::input('candidato_id');
+				$voto->locked			=	false;
+				$voto->save();
+			}
+			
 			$aspiraciones = DB::select('SELECT * FROM vt_aspiraciones WHERE votacion_id=?', [$votacion_actual_id]);
 			$completos = VtVotacion::verificarVotosCompletos($aspiraciones, $votacion_actual_id, $user->user_id);
 
 			$voto->completo = $completos; // Para verificar en el frontend cuando se guarde el voto.
 
 			return $voto;
+			
 		} catch (Exception $e) {
 			return Response::json(array('msg'=>'Error al intentar guardar el voto'), 400);
 		}
@@ -89,6 +107,16 @@ class VtVotosController extends Controller {
 						$candidatos[$i]->cantidad 	= $votos->cantidad;
 						$candidatos[$i]->total 		= $votos->total;
 					}
+					
+					// Voto en blanco como candidato
+					$blanco 	= ['nombres' => 'Voto en Blanco', 'voto_blanco' => true, 'foto_nombre' => 'voto_en_blanco.jpg'];
+					$consulta 	= 'SELECT count(*) as cantidad from vt_votos vv 
+									where vv.blanco_aspiracion_id=:aspiracion_id and vv.deleted_at is null';
+					$vt_blancos	= DB::select($consulta, [':aspiracion_id' => $aspira->id])[0];
+					$blanco['cantidad'] = $vt_blancos->cantidad;
+						
+					array_push($candidatos, $blanco);
+					// Fin voto en blanco
 
 					$aspira->candidatos = $candidatos;
 					

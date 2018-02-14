@@ -95,7 +95,8 @@ class CreateVtVotacionesTable extends Migration {
 			$table->engine = "InnoDB";
 			$table->increments('id');
 			$table->integer('user_id')->unsigned();
-			$table->integer('candidato_id')->unsigned();
+			$table->integer('candidato_id')->unsigned()->nullable();
+			$table->integer('blanco_aspiracion_id')->unsigned()->nullable();
 			$table->boolean('locked')->default(false);
 			$table->integer('created_by')->nullable();
 			$table->integer('updated_by')->nullable();

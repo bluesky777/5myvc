@@ -82,7 +82,11 @@ class VtCandidatosController extends Controller {
 		foreach ($aspiraciones as $aspira) {
 			$candidatos = VtCandidato::porAspiracion($aspira->id, $user->year_id);
 			//$candidatos = DB::select('SELECT * FROM vt_candidatos c INNER JOIN users u ON u.id=c.user_id and c.aspiracion_id=?', [$aspira->id]);
+			
+			$blanco = ['nombres' => 'Voto en Blanco', 'voto_blanco' => true, 'foto_nombre' => 'voto_en_blanco.jpg'];
+			array_push($candidatos, $blanco);
 			$aspira->candidatos = $candidatos;
+			
 			
 			$votado = [];
 			/*

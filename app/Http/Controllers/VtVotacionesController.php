@@ -290,6 +290,15 @@ class VtVotacionesController extends Controller {
 
 						if (count($votado)>0) {
 							$aspiraciones[$j]->votado = true;
+						}else{
+							$consulta = "SELECT * FROM vt_votos v 
+									inner join users u on u.id=v.user_id and u.id=:user_id 
+									where v.blanco_aspiracion_id=:aspiracion_id and v.deleted_at is null";
+						
+							$votado = DB::select($consulta, ["user_id"=>$user->user_id, "aspiracion_id"=>$aspiraciones[$j]->id]);
+							if (count($votado)>0) {
+								$aspiraciones[$j]->votado = true;
+							}
 						}
 
 						// Traemos los votos que tiene cada candidato
@@ -299,6 +308,18 @@ class VtVotacionesController extends Controller {
 							$candidatos[$k]->cantidad = $votos->cantidad;
 							$candidatos[$k]->total = $votos->total;
 						}
+						
+						// Voto en blanco
+						$blanco 			= ['nombres' => 'Voto en Blanco', 'voto_blanco' => true, 'foto_nombre' => 'voto_en_blanco.jpg', 'imagen_nombre' => 'voto_en_blanco.jpg'];
+						array_push($candidatos, $blanco);
+						$consulta 			= 'SELECT count(*) as cantidad from vt_votos vv 
+												where vv.blanco_aspiracion_id=:aspiracion_id and vv.deleted_at is null';
+						$vt_blancos			= DB::select($consulta, [':aspiracion_id' => $aspiraciones[$j]->id])[0];
+						$blanco['cantidad'] = $vt_blancos->cantidad;
+						$blanco['total'] 	= $vt_blancos->cantidad;
+						
+						$aspiraciones[$j]->candidatos = $candidatos;
+						// Fin Voto en blanco
 
 						$aspiraciones[$j]->candidatos = $candidatos;
 						

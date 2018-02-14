@@ -22,8 +22,19 @@ class VtVoto extends Model {
 			inner join vt_candidatos vc on vc.id=vv.candidato_id 
 				and vc.aspiracion_id=:aspiracion_id and vv.user_id=:user_id';
 
-		$datos = [':aspiracion_id' => $aspira_id, ':user_id' => $user_id];
-		$votos = DB::select($consulta, $datos);
+		$votos = DB::select($consulta, [':aspiracion_id' => $aspira_id, ':user_id' => $user_id]);
+		
+		foreach ($votos as $voto) {
+			$voto = VtVoto::destroy($voto->id);
+		}
+		
+		// Votos en blanco
+		$consulta = 'SELECT vv.id, vv.user_id, vv.locked, vv.candidato_id
+			from vt_votos vv
+			inner join vt_aspiraciones va on va.id=vv.blanco_aspiracion_id 
+				and va.id=:aspiracion_id and vv.user_id=:user_id';
+
+		$votos = DB::select($consulta, [':aspiracion_id' => $aspira_id, ':user_id' => $user_id]);
 		
 		foreach ($votos as $voto) {
 			$voto = VtVoto::destroy($voto->id);
