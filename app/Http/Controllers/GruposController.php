@@ -164,9 +164,6 @@ class GruposController extends Controller {
 
 		$list = DB::select(DB::raw($consulta), array(':grupo_id'=>$grupo_id));
 		
-		$definitivas 	= new Definitivas();
-		$asignaturas 	= $definitivas->asignaturas_docente($profe_id, $user->year_id);
-
 		return $list;
 	}
 
