@@ -9,6 +9,7 @@ use Excel;
 use App\Models\User;
 use App\Models\Year;
 use App\Models\Matricula;
+use App\Models\Acudiente;
 use App\Http\Controllers\Alumnos\OperacionesAlumnos;
 
 
@@ -46,9 +47,34 @@ class SimatController extends Controller {
                     
                     $consulta   = Matricula::$consulta_asistentes_o_matriculados_simat;
                     $alumnos    = DB::select($consulta, [ ':grupo_id' => $grupo->id ] );
-
+                    
+                    $sheet->setBorder('A3:AJ'.(count($alumnos)+3), 'thin', "D8572C");
+                    $sheet->mergeCells('A2:E2');
+                    
                     $opera = new OperacionesAlumnos;
                     $opera->recorrer_y_dividir_nombres($alumnos);
+                    
+                    // Traigo los acudientes de 
+		            $cantA = count($alumnos);
+                    for ($i=0; $i < $cantA; $i++) { 
+                        $consulta                   = Matricula::$consulta_parientes;
+                        $acudientes                 = DB::select($consulta, [ $alumnos[$i]->alumno_id ]);
+                        
+                        if (count($acudientes) == 0) {
+                            $acu1       = (object)Acudiente::$acudiente_vacio;
+                            $acu1->id   = -1;
+                            array_push($acudientes, $acu1);
+                            
+                            $acu2       = (object)Acudiente::$acudiente_vacio;
+                            $acu2->id   = 0;
+                            array_push($acudientes, $acu2);
+                        }else if (count($acudientes) == 1) {
+                            $acu1 = (object)Acudiente::$acudiente_vacio;
+                            $acu1->id = -1;
+                            array_push($acudientes, $acu1);
+                        }
+                        $alumnos[$i]->acudientes    = $acudientes;
+                    }
                     
                     $sheet->loadView('simat', compact('alumnos', 'grupo') )->mergeCells('A1:E1');
                     $sheet->setStyle([

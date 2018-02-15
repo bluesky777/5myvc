@@ -22,6 +22,9 @@ class Acudiente extends Model {
 						left join ciudades c1 on c1.id=ac.ciudad_nac and c1.deleted_at is null
 						left join ciudades c2 on c2.id=ac.ciudad_doc and c2.deleted_at is null
 						WHERE pa.alumno_id=? and pa.deleted_at is null';
+						
+	public static $acudiente_vacio = ['nombres' => '', 'apellidos' => '', 'sexo' => '', 'es_acudiente' => '', 'fecha_nac' => '', 'ciudad_nac_nombre' => '', 'ciudad_doc_nombre' => '', 'departamento_doc_nombre' => '', 'telefono' => '', 'parentesco' => '', 
+				'celular' => '', 'ocupacion' => '', 'email' => '', 'barrio' => '', 'direccion' => '', 'tipo_doc' => '', 'tipo_doc_nombre' => '', 'documento' => '', 'username' => '', 'is_active' => ''];
 
 
 }

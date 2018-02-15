@@ -25,7 +25,7 @@ class Matricula extends Model {
 							u.imagen_id, IFNULL(i.nombre, IF(a.sexo="F","default_female.png", "default_male.png")) as imagen_nombre, 
 							u.username, u.is_superuser, u.is_active,
 							a.foto_id, IFNULL(i2.nombre, IF(a.sexo="F","default_female.png", "default_male.png")) as foto_nombre,
-							m.fecha_retiro as fecha_retiro, m.estado, m.fecha_matricula 
+							m.fecha_retiro as fecha_retiro, m.estado, m.fecha_matricula, m.nuevo 
 						FROM alumnos a 
 						inner join matriculas m on a.id=m.alumno_id and m.grupo_id=:grupo_id and (m.estado="ASIS" or m.estado="MATR")
 						left join users u on a.user_id=u.id and u.deleted_at is null
@@ -48,7 +48,7 @@ class Matricula extends Model {
 							u.imagen_id, IFNULL(i.nombre, IF(a.sexo="F","default_female.png", "default_male.png")) as imagen_nombre, 
 							u.username, u.is_superuser, u.is_active,
 							a.foto_id, IFNULL(i2.nombre, IF(a.sexo="F","default_female.png", "default_male.png")) as foto_nombre,
-							m.fecha_retiro as fecha_retiro, m.estado, m.fecha_matricula, m.nuevo,
+							m.fecha_retiro as fecha_retiro, m.estado, m.fecha_matricula, m.nuevo, IF(m.nuevo, "SI", "NO") as es_nuevo,
 							a.has_sisben, a.nro_sisben, a.has_sisben_3, a.nro_sisben_3 
 						FROM alumnos a 
 						inner join matriculas m on a.id=m.alumno_id and m.grupo_id=:grupo_id and (m.estado="ASIS" or m.estado="MATR")
@@ -64,17 +64,18 @@ class Matricula extends Model {
 
 
 
-public static $consulta_parientes = 'SELECT ac.id, ac.nombres, ac.apellidos, ac.sexo, ac.fecha_nac, ac.ciudad_nac, c1.ciudad as ciudad_nac_nombre, ac.ciudad_doc, c2.ciudad as ciudad_doc_nombre, ac.telefono, pa.parentesco, pa.id as parentesco_id, ac.user_id, 
-							ac.celular, ac.ocupacion, ac.email, ac.barrio, ac.direccion, ac.tipo_doc, ac.documento, ac.created_by, ac.updated_by, ac.created_at, ac.updated_at, 
+	public static $consulta_parientes = 'SELECT ac.id, ac.nombres, ac.apellidos, ac.sexo, ac.fecha_nac, ac.ciudad_nac, c1.ciudad as ciudad_nac_nombre, ac.ciudad_doc, c2.ciudad as ciudad_doc_nombre, c2.departamento as departamento_doc_nombre, ac.telefono, pa.parentesco, pa.id as parentesco_id, ac.user_id, 
+							ac.celular, ac.ocupacion, ac.email, ac.barrio, ac.direccion, ac.tipo_doc, t1.tipo as tipo_doc_nombre, ac.documento, ac.created_by, ac.updated_by, ac.created_at, ac.updated_at, 
 							ac.foto_id, IFNULL(i.nombre, IF(ac.sexo="F","default_female.png", "default_male.png")) as foto_nombre, 
-							u.username, u.is_active
+							u.username, u.is_active, ac.is_acudiente, IF(ac.is_acudiente, "SI", "NO") as es_acudiente
 						FROM parentescos pa
 						left join acudientes ac on ac.id=pa.acudiente_id and ac.deleted_at is null
 						left join users u on ac.user_id=u.id and u.deleted_at is null
 						left join images i on i.id=ac.foto_id and i.deleted_at is null
+						left join tipos_documentos t1 on t1.id=ac.tipo_doc and t1.deleted_at is null
 						left join ciudades c1 on c1.id=ac.ciudad_nac and c1.deleted_at is null
 						left join ciudades c2 on c2.id=ac.ciudad_doc and c2.deleted_at is null
-						WHERE pa.alumno_id=? and pa.deleted_at is null';
+						WHERE pa.alumno_id=? and pa.deleted_at is null Order by ac.is_acudiente desc, ac.id ';
 
 
 

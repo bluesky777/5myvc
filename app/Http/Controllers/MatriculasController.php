@@ -327,6 +327,20 @@ class MatriculasController extends Controller {
 
 
 
+	public function putToggleNuevo()
+	{
+		$id 		= Request::input('matricula_id');
+		$is_nuevo 	= Request::input('is_nuevo');
+
+		$matri 	= Matricula::findOrFail($id);
+		$matri->nuevo 			= $is_nuevo;
+		$matri->updated_by 		= $this->user->user_id;
+		$matri->save();
+
+		return $matri;
+	}
+
+
 	public function putRetirar()
 	{
 		$id 	= Request::input('matricula_id');
