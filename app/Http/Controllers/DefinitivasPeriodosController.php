@@ -3,6 +3,7 @@
 
 use DB;
 use Request;
+use Carbon\Carbon;
 
 use App\Models\User;
 use App\Models\Year;
@@ -10,6 +11,7 @@ use App\Models\Profesor;
 use App\Models\Asignatura;
 use App\Models\Unidad;
 use App\Models\Grupo;
+use App\Models\NotaFinal;
 use App\Http\Controllers\Alumnos\Definitivas;
 
 use App\Http\Controllers\Alumnos\Solicitudes;
@@ -23,7 +25,7 @@ class DefinitivasPeriodosController extends Controller {
 
 		if ($user->roles[0]->name == 'Profesor') {
 			$profe_id = $user->persona_id;
-		} else if($user->roles[0]->name == 'User' && $user->is_superuser){
+		} else if($user->roles[0]->name == 'Admin' && $user->is_superuser){
 			$profe_id = Request::input('profesor_id');
 		}
 		
@@ -35,11 +37,74 @@ class DefinitivasPeriodosController extends Controller {
 		
 		for ($i=0; $i < $cantAsig; $i++) { 
 			
-			$alumnos = Grupo::alumnos($asignaturas[$i]->grupo_id);
-			$asignaturas[$i]->alumnos = $alumnos;
+			$asignaturas[$i]->alumnos = NotaFinal::alumnos_grupo_nota_final($asignaturas[$i]->grupo_id, $asignaturas[$i]->asignatura_id, $user->user_id);
+			
 		}
 		
 		return $asignaturas;
+	}
+
+
+	public function putCalcularNotasFinalesAsignatura()
+	{
+		$user 			= User::fromToken();
+
+		if ($user->roles[0]->name == 'Profesor' || ($user->roles[0]->name == 'User' && $user->is_superuser)) {
+			$asignatura_id 	= Request::input('profesor_id');
+		}else{
+			return 'No tienes privilegios';
+		}
+		
+		$definitivas 	= new Definitivas();
+		$definitivas->calcular_notas_finales_asignatura($asignatura_id);
+		
+		$cantAsig 		= count($asignaturas);
+		
+		for ($i=0; $i < $cantAsig; $i++) { 
+			
+			$asignaturas[$i]->alumnos = NotaFinal::alumnos_grupo_nota_final($asignaturas[$i]->grupo_id, $asignaturas[$i]->asignatura_id);
+			
+		}
+		
+		return $asignaturas;
+	}
+
+
+	public function putUpdate()
+	{
+		$user 			= User::fromToken();
+
+		if ($user->roles[0]->name == 'Profesor' || ($user->roles[0]->name == 'Admin' && $user->is_superuser)) {
+			// No pasa nada
+		}else{
+			return App::abort(400, 'No tienes privilegios.');
+		}
+		
+		$now 		= Carbon::now('America/Bogota');
+		$consulta 	= 'UPDATE notas_finales SET nota=?, manual=true, updated_by=?, updated_at=? WHERE id=?';
+		
+		DB::update($consulta, [ Request::input('nota'), $user->user_id, $now, Request::input('nf_id') ]);
+		
+		return 'Cambiada';
+	}
+
+
+	public function putToggleRecuperada()
+	{
+		$user 			= User::fromToken();
+
+		if ($user->roles[0]->name == 'Profesor' || ($user->roles[0]->name == 'Admin' && $user->is_superuser)) {
+			// No pasa nada
+		}else{
+			return App::abort(400, 'No tienes privilegios.');
+		}
+		
+		$now 		= Carbon::now('America/Bogota');
+		$consulta 	= 'UPDATE notas_finales SET recuperada=?, updated_by=?, updated_at=? WHERE id=?';
+		
+		DB::update($consulta, [ Request::input('recuperada'), $user->user_id, $now, Request::input('nf_id') ]);
+		
+		return 'Cambiada';
 	}
 
 

@@ -56,7 +56,7 @@ class ImportarController extends Controller {
 					$opera = new OperacionesAlumnos();
 					
 					$usuario = new User;
-					$usuario->username		=	$opera->username_no_repetido($alumno->nombres . $alumno->nombres);
+					$usuario->username		=	$opera->username_no_repetido($alumno->nombres);
 					$usuario->password		=	Hash::make('123456');
 					$usuario->sexo			=	$alumno_row->sexo;
 					$usuario->is_superuser	=	false;

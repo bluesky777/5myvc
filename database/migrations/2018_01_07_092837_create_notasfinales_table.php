@@ -16,6 +16,7 @@ class CreateNotasfinalesTable extends Migration {
             $table->integer('alumno_id')->unsigned()->nullable();
             $table->integer('asignatura_id')->unsigned()->nullable();
             $table->integer('periodo_id')->unsigned()->nullable();
+            $table->integer('periodo')->unsigned()->nullable();
 			$table->integer('nota')->default(0);
             $table->boolean('recuperada')->nullable()->default(false);
             $table->boolean('manual')->nullable()->default(false); // Define si No fue calculada sino escrita manualmente por el docente

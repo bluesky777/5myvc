@@ -18,20 +18,13 @@ class PaisesController extends Controller {
 	}
 
 
-	public function store()
+	public function postStore()
 	{
 		
-		try {
-			$pais 			= new Pais;
-			$pais->pais		=	Request::input('pais');
-			$pais->abrev	=	Request::input('abrev');
-			$pais->save();
-
-			return $pais;
-
-		} catch (Exception $e) {
-			return $e;
-		}
+		DB::insert('INSERT INTO paises(pais) VALUES(?)', [Request::input('pais_new')]);
+		
+		$consulta = 'SELECT * FROM paises where deleted_at is null';
+		return DB::select($consulta);
 	}
 
 

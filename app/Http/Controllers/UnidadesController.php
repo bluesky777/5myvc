@@ -39,20 +39,16 @@ class UnidadesController extends Controller {
 					// Creo las nuevas unidades basado en las unidades por defecto del año
 					$consulta 		= 'INSERT INTO unidades(definicion, porcentaje, periodo_id, asignatura_id, obligatoria, orden, por_defecto, created_by, created_at) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?) ';
 					$insertadas 	= DB::insert($consulta, [$unidad_d->definicion, $unidad_d->porcentaje, $periodo_id, $asignatura_id, $unidad_d->obligatoria, $unidad_d->orden, true, $user->user_id, $now ]);
-
-					$unidades = DB::select($this->cons_unidades, [$asignatura_id, $periodo_id]);
-
-					for ($i=0; $i < count($unidades); $i++) { 
-
-						$consulta 				= 'SELECT * FROM subunidades_por_defecto WHERE unidad_defec_id=? and deleted_at is null';
-						$subunidades_default 	= DB::select($consulta, [$unidad_d->id]);
+					$last_id 	    = DB::getPdo()->lastInsertId();
+					
+					$consulta 				= 'SELECT * FROM subunidades_por_defecto WHERE unidad_defec_id=? and deleted_at is null';
+					$subunidades_default 	= DB::select($consulta, [$unidad_d->id]);
 						
-						for ($j=0; $j < count($subunidades_default); $j++) { 
-							// Creo las subunidades por defecto de cada Unidad por defecto
-							$consulta 		= 'INSERT INTO subunidades(definicion, porcentaje, unidad_id, nota_default, obligatoria, orden, por_defecto, created_by, created_at) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?) ';
-							$insertadas 	= DB::insert($consulta, [$subunidades_default[$j]->definicion, $subunidades_default[$j]->porcentaje, $unidades[$i]->id, $subunidades_default[$j]->nota_default, $subunidades_default[$j]->obligatoria, $subunidades_default[$j]->orden, true, $user->user_id, $now ]);
-			
-						}
+					for ($j=0; $j < count($subunidades_default); $j++) { 
+						// Creo las subunidades por defecto de cada Unidad por defecto
+						$consulta 		= 'INSERT INTO subunidades(definicion, porcentaje, unidad_id, nota_default, obligatoria, orden, por_defecto, created_by, created_at) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?) ';
+						$insertadas 	= DB::insert($consulta, [$subunidades_default[$j]->definicion, $subunidades_default[$j]->porcentaje, $last_id, $subunidades_default[$j]->nota_default, $subunidades_default[$j]->obligatoria, $subunidades_default[$j]->orden, true, $user->user_id, $now ]);
+		
 					}
 				}
 			}else{

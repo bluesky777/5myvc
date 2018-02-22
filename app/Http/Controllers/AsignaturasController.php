@@ -20,11 +20,13 @@ class AsignaturasController extends Controller {
 		$user = User::fromToken();
 
 		$consulta = 'SELECT a.id, a.materia_id, a.grupo_id, a.profesor_id, a.creditos, a.orden,
-						a.created_by, a.updated_by, a.created_at, a.updated_at
+						a.created_by, a.updated_by, a.created_at, a.updated_at, ar.nombre as nombre_area, ar.alias as alias_area
 					FROM asignaturas a
+					inner join materias m on m.id=a.materia_id and m.deleted_at is null
+					left join areas ar on ar.id=m.area_id and ar.deleted_at is null
 					inner join grupos g on g.id=a.grupo_id and g.year_id=?
 					where a.deleted_at is null
-					order by g.orden, a.orden';
+					order by g.orden, ar.orden, a.orden';
 
 		$asignaturas = DB::select($consulta, array($user->year_id));
 		return $asignaturas;

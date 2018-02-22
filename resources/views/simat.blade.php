@@ -12,6 +12,7 @@
             <th style="background-color: #fff7ad">Segundo apellido</th>
             <th style="background-color: #fff7ad">Primer nombre</th>
             <th style="background-color: #fff7ad">Segundo nombre</th>
+            <th style="background-color: #fff7ad">Usuario</th>
             <th style="background-color: #fff7ad">Estado Matricula</th>
             <th style="background-color: #fff7ad">Dirección residencia</th>
             <th style="background-color: #fff7ad">Teléfono</th>
@@ -55,6 +56,7 @@
             <td>{{$alumno->apellidos_divididos['last']}}</td>
             <td>{{$alumno->nombres_divididos['first']}}</td>
             <td>{{$alumno->nombres_divididos['last']}}</td>
+            <td>{{$alumno->username}}</td>
             <td>{{$alumno->estado}}</td>
             <td>{{$alumno->direccion}}</td>
             <td>{{$alumno->telefono}}</td>

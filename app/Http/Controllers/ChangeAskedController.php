@@ -247,12 +247,14 @@ class ChangeAskedController extends Controller {
 		}
 
 		if ($tipo == "asignatura") {
+			
+			$assignment_id 	= Request::input('assignment_id');
+			
 			$consulta = 'UPDATE change_asked_assignment SET asignatura_to_remove_accepted=false, materia_to_add_accepted=false, creditos_accepted=false, updated_at=:updated_at 
 						WHERE id=:assignment_id';
-			DB::update($consulta, [ ':updated_at' => $now, ':assignment_id' => $data_id ]);
-			$pedido->asignatura_to_remove_accepted 		= false;
-			$pedido->materia_to_add_accepted 			= false;
-			$pedido->creditos_accepted 					= false;
+			DB::update($consulta, [ ':updated_at' => $now, ':assignment_id' => $assignment_id ]);
+			$consulta = 'UPDATE change_asked SET answered_by=:user_id, deleted_by=:user_id2, deleted_at=:dt WHERE id=:asked_id';
+			DB::update($consulta, [ ':user_id' => $user->user_id, ':user_id2' => $user->user_id, ':dt' => $now, ':asked_id' => $asked_id ]);
 			return [ 'finalizado'=> true, 'msg'=>'Cambio rechazado con éxito'];
 		}
 

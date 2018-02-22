@@ -26,7 +26,6 @@ class Grupo extends Model {
 						order by g.orden';
 
 
-
 	public static function alumnos($grupo_id, $con_retirados='')
 	{
 		$consulta = '';
@@ -85,10 +84,11 @@ class Grupo extends Model {
 				p.foto_id, IFNULL(i.nombre, IF(p.sexo="F","default_female.png", "default_male.png")) as foto_nombre
 			FROM asignaturas a 
 			inner join materias m on m.id=a.materia_id and m.deleted_at is null
+			left join areas ar on ar.id=m.area_id and ar.deleted_at is null
 			inner join profesores p on p.id=a.profesor_id and p.deleted_at is null' . $complemento .
 			' left join images i on p.foto_id=i.id and i.deleted_at is null
 			where a.grupo_id=:grupo_id and a.deleted_at is null
-			order by a.orden, m.orden';
+			order by ar.orden, m.orden, a.orden';
 
 		$asignaturas = DB::select($consulta, [':grupo_id' => $grupo_id]);
 
