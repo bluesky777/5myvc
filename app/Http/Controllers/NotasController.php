@@ -6,6 +6,7 @@ use Carbon\Carbon;
 
 use App\Models\User;
 use App\Models\Nota;
+use App\Models\Profesor;
 use App\Models\Unidad;
 use App\Models\Subunidad;
 use App\Models\Asignatura;
@@ -24,43 +25,44 @@ class NotasController extends Controller {
 	}
 
 
-	public function getDetailed($asignatura_id)
+	public function putDetailed()
 	{
 		$user = User::fromToken();
+		
+		$profe_id 			= Request::input('profesor_id');
+		$asignatura_id 		= Request::input('asignatura_id');
+		$con_asignaturas 	= Request::input('con_asignaturas');
 
 		$resultado = [];
-
-		$unidades = Unidad::where('asignatura_id', $asignatura_id)
-					->where('periodo_id', $user->periodo_id)->orderBy('orden')->orderBy('id')->get();
-
+		
+		// Unidades con Subunidades
+		$unidadesT 	= DB::select('SELECT * FROM unidades u WHERE u.asignatura_id=? and u.deleted_at is null and u.periodo_id=? order by u.orden, u.id', [$asignatura_id, $user->periodo_id]);
+		$unidades 	= [];
+		
 		$asignatura = (object)Asignatura::detallada($asignatura_id, $user->year_id);
 		
-		foreach ($unidades as $unidad) {
-			$subunidades = Subunidad::where('unidad_id', $unidad->id)->orderBy('orden')->orderBy('id')->get();
+		foreach ($unidadesT as $unidad) {
+			$subunidades = DB::select('SELECT * FROM subunidades s WHERE s.unidad_id=? and s.deleted_at is null order by s.orden, s.id', [$unidad->id]);
 
 			foreach ($subunidades as $subunidad) {
-
-				$notas = Nota::where('subunidad_id', $subunidad->id)->get();
+				$notas = DB::select('SELECT * FROM notas n WHERE n.subunidad_id=?', [$subunidad->id]);
 
 				if (count($notas) == 0) {
-
-					$notasTemp = Nota::crearNotas($asignatura->grupo_id, $subunidad);
-
-					$subunidad->notas = $notasTemp;
+					Nota::crearNotas($asignatura->grupo_id, $subunidad);
 				}else{
-
-					$notas = Nota::verificarCrearNotas($asignatura->grupo_id, $subunidad);
-					$subunidad->notas = $notas;
-
+					Nota::verificarCrearNotas($asignatura->grupo_id, $subunidad);
 				}
 			}
 
 			$unidad->subunidades = $subunidades;
+			if (count($subunidades) > 0) {
+				array_push($unidades, $unidad);
+			}
 		}
 
 		
 
-
+		// alumnos con sus notas
 		$alumnos = Grupo::alumnos($asignatura->grupo_id);
 
 		foreach ($alumnos as $alumno) {
@@ -83,19 +85,86 @@ class NotasController extends Controller {
 						inner join periodos p on p.id=a.periodo_id and p.year_id=:year_id
 						WHERE a.tipo='tardanza' and a.asignatura_id=:asignatura_id and a.alumno_id=:alumno_id and a.deleted_at is null;";
 			$tardanzas = DB::select($cons_tar, [":year_id" => $user->year_id, ':asignatura_id' => $asignatura->asignatura_id, ':alumno_id' => $alumno->alumno_id ]);
+			
+			// Notas
+			$cons = "SELECT n.id, n.nota, n.subunidad_id, n.alumno_id, n.created_by, n.updated_by, n.deleted_by, n.deleted_at, n.created_at, n.updated_at, u.asignatura_id,
+							s.porcentaje/100 as subunidad_porc, u.porcentaje/100 as unidad_porc, s.definicion, s.porcentaje as subunidad_porcentaje
+						FROM notas n
+						INNER JOIN alumnos a ON a.id=n.alumno_id and n.deleted_at is null
+						INNER JOIN subunidades s ON s.id=n.subunidad_id and s.deleted_at is null
+						INNER JOIN unidades u ON u.id=s.unidad_id and u.deleted_at is null and u.periodo_id=:per_id
+						INNER JOIN asignaturas asi ON asi.id=u.asignatura_id and asi.deleted_at is null and asi.grupo_id=:grupo_id
+						WHERE n.alumno_id=:alumno_id and asi.id=:asignatura_id
+						order by u.orden, s.orden;";
+			$notas = DB::select($cons, [":per_id" => $user->periodo_id, ':grupo_id' => $asignatura->grupo_id, ':alumno_id' => $alumno->alumno_id, ':asignatura_id' => $asignatura->asignatura_id ]);
+			
+			
+			// Traemos las Definitivas
+			$consulta  = 'SELECT a.id as alumno_id, a.no_matricula, nf1.periodo, u.username as updated_by_username,
+							nf1.nota as nota_final, nf1.id as nf_id, nf1.recuperada, nf1.manual, nf1.updated_by, nf1.created_at, nf1.updated_at,
+							cast(r1.DefMateria as decimal(4,1)) as def_materia_auto, r1.updated_at as updated_at_def, IF(nf1.updated_at > r1.updated_at, FALSE, TRUE) AS nfinal_desactualizada 
+						FROM alumnos a 
+						left join notas_finales nf1 on nf1.alumno_id=a.id and nf1.asignatura_id=:asign_id1 and nf1.periodo=:periodo
+						left join users u on u.id=nf1.updated_by 
+						left join (
+							SELECT df1.alumno_id, df1.periodo_id, MAX(df1.updated_at) as updated_at, df1.numero_periodo, sum( df1.ValorUnidad ) DefMateria 
+							FROM(
+								SELECT n.alumno_id, u.periodo_id, u.id as unidad_id, p1.numero as numero_periodo, MAX(n.updated_at) as updated_at, 
+									sum( ((u.porcentaje/100)*((s.porcentaje/100)*n.nota)) ) ValorUnidad
+								FROM asignaturas asi 
+								inner join unidades u on u.asignatura_id=asi.id and u.deleted_at is null
+								inner join subunidades s on s.unidad_id=u.id and s.deleted_at is null
+								inner join notas n on n.subunidad_id=s.id and n.deleted_at is null
+								inner join periodos p1 on p1.numero=1 and p1.id=u.periodo_id and p1.deleted_at is null
+								where asi.deleted_at is null and asi.id=:asign_id2
+								group by n.alumno_id, s.unidad_id, s.id
+							)df1
+							group by df1.alumno_id, df1.periodo_id
+						)r1 ON r1.alumno_id=a.id
+						where a.deleted_at is null and a.id=:alumno_id';
+				
+			$nota_final = DB::select($consulta, [':asign_id1'=>$asignatura->asignatura_id, ':periodo'=>$user->numero_periodo, ':asign_id2'=>$asignatura->asignatura_id, ':alumno_id'=>$alumno->alumno_id])[0];
+			
+			if ($nota_final->nfinal_desactualizada && $nota_final->updated_at_def) {
+				$now 		= Carbon::now('America/Bogota');
+				if (!$nota_final->manual && !$nota_final->recuperada) {
+					DB::delete('DELETE FROM notas_finales WHERE id=?', [ $nota_final->nf_id ]);
+					
+					$consulta = 'INSERT INTO notas_finales(alumno_id, asignatura_id, periodo_id, periodo, nota, recuperada, manual, updated_by, created_at, updated_at) 
+						VALUES(:alumno_id, :asignatura_id, :periodo_id, :periodo, :nota, :recuperada, :manual, :updated_by, :created_at, :updated_at)';
+				
+					DB::insert($consulta, [':alumno_id' => $alumno->alumno_id, ':asignatura_id' => $asignatura_id, ':periodo_id' => $user->periodo_id, 
+											':periodo' => $user->numero_periodo, ':nota' => round($nota_final->def_materia_auto), ':recuperada' => 0, ':manual' => 0, ':updated_by' => $user->user_id, ':created_at' => $now, ':updated_at' => $now ]);
+				}
+			}
+			
+
+			$alumno->nota_final 		= $nota_final;
+			$alumno->notas 				= $notas;
 			$alumno->tardanzas 			= $tardanzas;
 			$alumno->tardanzas_count 	= count($tardanzas);
 
 		}
+		
+		
+		// Traermos las asignaturas si las pidieron
+		if ($con_asignaturas) {
+			$asignaturas 				= Profesor::asignaturas($user->year_id, $profe_id);
+			$resultado['asignaturas'] 	= $asignaturas;
+		}
 
-		// No cambiar el orden!
-		array_push($resultado, $asignatura);
-		array_push($resultado, $alumnos);
-		array_push($resultado, $unidades);
+		
+		$resultado['asignatura'] 	= $asignatura;
+		$resultado['alumnos'] 		= $alumnos;
+		$resultado['unidades'] 		= $unidades;
+		
 
 		return $resultado;
 	}
 
+	
+	
+	
 	public function getAlumno($alumno_id='')
 	{
 		$user = User::fromToken();
@@ -129,6 +198,8 @@ class NotasController extends Controller {
 
 
 
+	
+	
 	public function getShow($nota_id)
 	{
 		$user 	= User::fromToken();
@@ -136,6 +207,8 @@ class NotasController extends Controller {
 		return $nota;
 	}
 
+	
+	
 
 	public function postStore()
 	{
@@ -144,6 +217,7 @@ class NotasController extends Controller {
 
 
 
+	
 	public function putUpdate($id)
 	{
 		$user 	= User::fromToken();

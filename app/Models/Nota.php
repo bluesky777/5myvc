@@ -13,6 +13,8 @@ use App\Models\Subunidad;
 use App\Models\Asignatura;
 
 use \stdClass;
+use DB;
+use Carbon\Carbon;
 
 
 class Nota extends Model {
@@ -25,54 +27,32 @@ class Nota extends Model {
 	// Solo si la subunidad tiene cero notas
 	public static function crearNotas($grupo_id, $subunidad)
 	{
-		$alumnos = Grupo::alumnos($grupo_id);
-
-		$notas = [];
+		$alumnos 	= Grupo::alumnos($grupo_id);
+		$now 		= Carbon::now('America/Bogota');
 
 		foreach ($alumnos as $alumno) {
-			$nota = new Nota;
-			$nota->alumno_id 		= $alumno->alumno_id;
-			$nota->subunidad_id 	= $subunidad->id;
-			$nota->nota 			= $subunidad->nota_default;
-
-			$nota->save();
-
-			array_push($notas, $nota);
+			DB::insert('INSERT INTO notas(subunidad_id, alumno_id, nota, created_at) VALUES(?, ?, ?, ?)', [$subunidad->id, $alumno->alumno_id, $subunidad->nota_default, $now]);
 		}
 
-		return $notas;
+		return;
 	}
 
 	// Verificar cada alumno si tiene nota en la subunidad
 	public static function verificarCrearNotas($grupo_id, $subunidad)
 	{
-		$alumnos = Grupo::alumnos($grupo_id);
-
-		$notas = [];
+		$alumnos 	= Grupo::alumnos($grupo_id);
+		$now 		= Carbon::now('America/Bogota');
 
 		foreach ($alumnos as $alumno) {
 
-			$nota = '';
+			$notVerif = DB::select('SELECT * from notas WHERE subunidad_id=? and alumno_id=? and deleted_at is null', [$subunidad->id, $alumno->alumno_id]);
 
-			$notVerif = Nota::where('subunidad_id', '=', $subunidad->id)
-							->where('alumno_id', '=', $alumno->alumno_id)->first();
-
-			if ($notVerif) {
-				$nota = $notVerif;
-			}else{
-
-				$nota = new Nota;
-				$nota->alumno_id 		= $alumno->alumno_id;
-				$nota->subunidad_id 	= $subunidad->id;
-				$nota->nota 			= $subunidad->nota_default;
-
-				$nota->save();
+			if (count($notVerif) == 0) {
+				DB::insert('INSERT INTO notas(subunidad_id, alumno_id, nota, created_at) VALUES(?, ?, ?, ?)', [$subunidad->id, $alumno->alumno_id, $subunidad->nota_default, $now]);
 			}
-
-			array_push($notas, $nota);
 		}
 
-		return $notas;
+		return;
 	}
 
 	// Verificar nota de un alumno si tiene o crearla

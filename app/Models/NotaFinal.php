@@ -126,7 +126,7 @@ class NotaFinal extends Model {
             
             $alumnos[$i]->promedio_automatico = round(($alumnos[$i]->def_materia_auto_1 + $alumnos[$i]->def_materia_auto_2 + $alumnos[$i]->def_materia_auto_3 + $alumnos[$i]->def_materia_auto_4) / 4, 1);
             
-            if($alumnos[$i]->nfinal1_desactualizada){
+            if($alumnos[$i]->nfinal1_desactualizada && $alumnos[$i]->updated_at_def_1){
                 $per_desact['per1'] = true;
                 
                 if (!$alumnos[$i]->manual_1 && !$alumnos[$i]->recuperada_1) {
@@ -142,7 +142,7 @@ class NotaFinal extends Model {
                 }
                 
             }
-            if($alumnos[$i]->nfinal2_desactualizada){
+            if($alumnos[$i]->nfinal2_desactualizada && $alumnos[$i]->updated_at_def_2){
                 $per_desact['per2'] = true;
                 
                 if (!$alumnos[$i]->manual_2 && !$alumnos[$i]->recuperada_2) {
@@ -157,7 +157,7 @@ class NotaFinal extends Model {
                 }
                 
             }
-            if($alumnos[$i]->nfinal3_desactualizada){
+            if($alumnos[$i]->nfinal3_desactualizada && $alumnos[$i]->updated_at_def_3){
                 $per_desact['per3'] = true;
                 
                 if (!$alumnos[$i]->manual_3 && !$alumnos[$i]->recuperada_3) {
@@ -172,7 +172,7 @@ class NotaFinal extends Model {
                 }
                 
             }
-            if($alumnos[$i]->nfinal4_desactualizada){
+            if($alumnos[$i]->nfinal4_desactualizada && $alumnos[$i]->updated_at_def_4){
                 $per_desact['per4'] = true;
                 
                 if (!$alumnos[$i]->manual_4 && !$alumnos[$i]->recuperada_4) {

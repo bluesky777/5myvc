@@ -98,11 +98,40 @@ class DefinitivasPeriodosController extends Controller {
 		}else{
 			return App::abort(400, 'No tienes privilegios.');
 		}
-		
 		$now 		= Carbon::now('America/Bogota');
-		$consulta 	= 'UPDATE notas_finales SET recuperada=?, updated_by=?, updated_at=? WHERE id=?';
+		$recu 		= Request::input('recuperada');
 		
-		DB::update($consulta, [ Request::input('recuperada'), $user->user_id, $now, Request::input('nf_id') ]);
+		if ($recu) {
+			$consulta 	= 'UPDATE notas_finales SET recuperada=?, manual=?, updated_by=?, updated_at=? WHERE id=?';
+			DB::update($consulta, [ $recu, true, $user->user_id, $now, Request::input('nf_id') ]);
+		}else{
+			$consulta 	= 'UPDATE notas_finales SET recuperada=?, updated_by=?, updated_at=? WHERE id=?';
+			DB::update($consulta, [ $recu, $user->user_id, $now, Request::input('nf_id') ]);
+		}
+		
+		return 'Cambiada';
+	}
+
+
+
+	public function putToggleManual()
+	{
+		$user 			= User::fromToken();
+
+		if ($user->roles[0]->name == 'Profesor' || ($user->roles[0]->name == 'Admin' && $user->is_superuser)) {
+			// No pasa nada
+		}else{
+			return App::abort(400, 'No tienes privilegios.');
+		}
+		$now 		= Carbon::now('America/Bogota');
+		$manual 	= Request::input('manual');
+		if ($manual){
+			$consulta 	= 'UPDATE notas_finales SET manual=?, updated_by=?, updated_at=? WHERE id=?';
+			DB::update($consulta, [ $manual, $user->user_id, $now, Request::input('nf_id') ]);
+		}else{
+			$consulta 	= 'UPDATE notas_finales SET manual=?, recuperada=?, updated_by=?, updated_at=? WHERE id=?';
+			DB::update($consulta, [ $manual, true, $user->user_id, $now, Request::input('nf_id') ]);
+		}
 		
 		return 'Cambiada';
 	}

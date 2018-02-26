@@ -48,7 +48,7 @@ class Profesor extends Model {
 						inner join grupos g on g.id=a.grupo_id and g.year_id=:year_id and g.deleted_at is null
 						inner join grados gr on gr.id=g.grado_id and gr.deleted_at is null 
 						where a.profesor_id=:profesor_id and a.deleted_at is null
-						order by g.orden, a.orden, a.id';
+						order by g.orden, a.orden, m.materia, m.alias, a.id';
 
 		$asignaturas = DB::select(DB::raw($consulta), array(':year_id' => $year_id, ':profesor_id' => $profesor_id));
 
