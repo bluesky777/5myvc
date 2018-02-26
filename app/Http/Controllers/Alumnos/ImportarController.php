@@ -5,6 +5,7 @@ use DB;
 use Request;
 use Excel;
 use Hash;
+use Carbon\Carbon;
 
 use App\Models\User;
 use App\Models\Role;
@@ -17,6 +18,7 @@ use App\Http\Controllers\Alumnos\Definitivas;
 
 use App\Http\Controllers\Alumnos\Solicitudes;
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Alumnos\ImporterFixer;
 
 
 class ImportarController extends Controller {
@@ -87,6 +89,51 @@ class ImportarController extends Controller {
 		return (array)$rr;
 	}
 
+	
+	
+	
 
+	public function getModificar()
+	{
+
+		$rr = Excel::load('app/Http/Controllers/Alumnos/archivos/alumnos-modificar.xls', function($reader) {
+
+			$now 		= Carbon::now('America/Bogota');
+			$results 	= $reader->all();
+			$fixer 		= new ImporterFixer();
+			
+			for ($i=0; $i < count($results); $i++) { 
+				
+				
+				$abrev 		= $results[$i]->getTitle();
+				$consulta 	= 'SELECT * FROM grupos WHERE abrev=?';
+				$grupo 		= DB::select($consulta, [$abrev])[0];
+				
+				for ($f=0; $f < count($results[$i]); $f++) { 
+					
+					$alumno = $results[$i][$f];
+					$fixer->verificar($alumno);
+					
+					if ($alumno->id) {
+						$consulta 	= 'UPDATE alumnos SET no_matricula=?, nombres=?, apellidos=?, sexo=?, fecha_nac=?, 
+							tipo_doc=?, updated_at=? WHERE id=?';
+						DB::update($consulta, [$alumno->no_matricula, $alumno->primer_nombre.' '.$alumno->segundo_nombre, $alumno->primer_apellido.' '.$alumno->segundo_apellido, $alumno->sexo, $alumno->fecha_de_nac, 
+										$alumno->tipo_doc, $now, $alumno->id])[0];
+						Debugging::pin('Alum', $alumno->id) ;
+					}
+					
+					
+					
+				}
+				
+			}
+			
+		});
+		
+		return (array)$rr;
+	}
+
+
+	
 }
 
