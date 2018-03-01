@@ -25,20 +25,20 @@ class Nota extends Model {
 
 
 	// Solo si la subunidad tiene cero notas
-	public static function crearNotas($grupo_id, $subunidad)
+	public static function crearNotas($grupo_id, $subunidad, $user_id)
 	{
 		$alumnos 	= Grupo::alumnos($grupo_id);
 		$now 		= Carbon::now('America/Bogota');
 
 		foreach ($alumnos as $alumno) {
-			DB::insert('INSERT INTO notas(subunidad_id, alumno_id, nota, created_at) VALUES(?, ?, ?, ?)', [$subunidad->id, $alumno->alumno_id, $subunidad->nota_default, $now]);
+			DB::insert('INSERT INTO notas(subunidad_id, alumno_id, nota, created_by, created_at, updated_at) VALUES(?, ?, ?, ?, ?, ?)', [$subunidad->id, $alumno->alumno_id, $subunidad->nota_default, $user_id, $now, $now]);
 		}
 
 		return;
 	}
 
 	// Verificar cada alumno si tiene nota en la subunidad
-	public static function verificarCrearNotas($grupo_id, $subunidad)
+	public static function verificarCrearNotas($grupo_id, $subunidad, $user_id)
 	{
 		$alumnos 	= Grupo::alumnos($grupo_id);
 		$now 		= Carbon::now('America/Bogota');
@@ -48,7 +48,7 @@ class Nota extends Model {
 			$notVerif = DB::select('SELECT * from notas WHERE subunidad_id=? and alumno_id=? and deleted_at is null', [$subunidad->id, $alumno->alumno_id]);
 
 			if (count($notVerif) == 0) {
-				DB::insert('INSERT INTO notas(subunidad_id, alumno_id, nota, created_at) VALUES(?, ?, ?, ?)', [$subunidad->id, $alumno->alumno_id, $subunidad->nota_default, $now]);
+				DB::insert('INSERT INTO notas(subunidad_id, alumno_id, nota, created_by, created_at, updated_at) VALUES(?, ?, ?, ?, ?, ?)', [$subunidad->id, $alumno->alumno_id, $subunidad->nota_default, $user_id, $now, $now]);
 			}
 		}
 

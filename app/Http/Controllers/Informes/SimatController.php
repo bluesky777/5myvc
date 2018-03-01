@@ -25,7 +25,12 @@ class SimatController extends Controller {
 
 	public function getAlumnos()
 	{
-
+        $host = parse_url(request()->headers->get('referer'), PHP_URL_HOST);
+        if ($host == '0.0.0.0' || $host == 'localhost' || $host == '127.0.0.1') {
+            $extension = 'xls';
+        }else{
+            $extension = 'xlsx';
+        }
 
 		Excel::create('Alumnos con acudientes', function($excel) {
 
@@ -50,6 +55,20 @@ class SimatController extends Controller {
                     
                     $sheet->setBorder('A3:AJ'.(count($alumnos)+3), 'thin', "D8572C");
                     $sheet->mergeCells('A2:E2');
+                    
+                    $sheet->getComment('C3')->getText()->createTextRun('Coloque: "CÉDULA", "PERMISO ESPECIAL DE PERMANENCIA", "TARJETA DE IDENTIDAD", "CÉDULA EXTRANJERA", "REGISTRO CIVIL", "NÚMERO DE IDENTIFICACIÓN PERSONAL", "NÚMERO ÚNICO DE IDENTIFICACIÓN PERSONAL", "NÚMERO DE SECRETARÍA", "PASAPORTE"');
+                    $sheet->getComment('E3')->getText()->createTextRun('No coloque departamento, solo ciudad');
+                    $sheet->getComment('K3')->getText()->createTextRun('Ignore esta columna');
+                    $sheet->getComment('L3')->getText()->createTextRun('Coloque: MATR, ASIS, RETI, DESE');
+                    $sheet->getComment('Q3')->getText()->createTextRun('Coloque "No aplica" o deje vacío si no tiene el antiguo SISBEN.');
+                    $sheet->getComment('R3')->getText()->createTextRun('Coloque "No aplica" o deje vacío si no tiene el nuevo SISBEN tipo 3.');
+                    $sheet->getComment('V3')->getText()->createTextRun('Si el año pasado NO finalizó en la institución, coloque SI, de lo contrario, especifique que NO es nuevo.');
+                    $sheet->getComment('AA3')->getText()->createTextRun('Coloque: "CÉDULA", "PERMISO ESPECIAL DE PERMANENCIA", "TARJETA DE IDENTIDAD", "CÉDULA EXTRANJERA", "REGISTRO CIVIL", "NÚMERO DE IDENTIFICACIÓN PERSONAL", "NÚMERO ÚNICO DE IDENTIFICACIÓN PERSONAL", "NÚMERO DE SECRETARÍA", "PASAPORTE"');
+                    $sheet->getComment('AB3')->getText()->createTextRun('SI o NO');
+                    $sheet->getComment('AD3')->getText()->createTextRun('Ignore esta columna');
+                    $sheet->getComment('AJ3')->getText()->createTextRun('SI o NO');
+                    $sheet->getComment('AL3')->getText()->createTextRun('Ignore esta columna');
+                    
                     
                     $opera = new OperacionesAlumnos;
                     $opera->recorrer_y_dividir_nombres($alumnos);
@@ -92,7 +111,7 @@ class SimatController extends Controller {
 
             
         
-        })->download('xls', ['Access-Control-Allow-Origin' => '*']);
+        })->download($extension, ['Access-Control-Allow-Origin' => '*']);
 
 
     }

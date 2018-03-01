@@ -7,7 +7,7 @@
             <th style="background-color: #fff7ad">Tipo de Documento</th>
             <th style="background-color: #fff7ad">Nro de documento</th>
             <th style="background-color: #fff7ad">Lugar de Expedición Departamento</th>
-            <th style="background-color: #fff7ad">Lugar de Expedición Municipio</th>
+            <th style="background-color: #fff7ad">Lugar de Expedición Ciudad</th>
             <th style="background-color: #fff7ad">Primer apellido</th>
             <th style="background-color: #fff7ad">Segundo apellido</th>
             <th style="background-color: #fff7ad">Primer nombre</th>
@@ -19,6 +19,7 @@
             <th style="background-color: #fff7ad">Teléfono</th>
             <th style="background-color: #fff7ad">Estrato</th>
             <th style="background-color: #fff7ad">SISBEN</th>
+            <th style="background-color: #fff7ad">SISBEN 3</th>
             <th style="background-color: #fff7ad">Fecha de nac</th>
             <th style="background-color: #fff7ad">Departamento nacimiento</th>
             <th style="background-color: #fff7ad">Municipio nacimiento</th>
@@ -64,6 +65,7 @@
             <td>{{$alumno->telefono}}</td>
             <td>{{$alumno->estrato}}</td>
             <td>{{$alumno->sisben}}</td>
+            <td>{{$alumno->sisben_3}}</td>
             <td>{{$alumno->fecha_nac}}</td>
             <td>{{$alumno->departamento_nac_nombre}}</td>
             <td>{{$alumno->ciudad_nac_nombre}}</td>

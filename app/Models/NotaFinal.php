@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Carbon\Carbon;
 use App\Models\Grupo;
 use App\Models\Periodo;
+use App\Models\Debugging;
 use DB;
 
 
@@ -116,7 +117,7 @@ class NotaFinal extends Model {
 
         $alumnos = DB::select($consulta, [':grupo_id'=>$grupo_id, ':asign_id1'=>$asignatura_id, ':asign_id2'=>$asignatura_id, ':asign_id3'=>$asignatura_id, ':asign_id4'=>$asignatura_id, 
                                             ':asign_id5'=>$asignatura_id, ':asign_id6'=>$asignatura_id, ':asign_id7'=>$asignatura_id, ':asign_id8'=>$asignatura_id ]);
-        
+        Debugging::pin('alumnos_grupo_nota_final', $grupo_id, $asignatura_id );
         $per_desact = ['per1' => false, 'per2' => false, 'per3' => false, 'per4' => false];
         
         $now 		= Carbon::now('America/Bogota');
@@ -130,7 +131,7 @@ class NotaFinal extends Model {
                 $per_desact['per1'] = true;
                 
                 if (!$alumnos[$i]->manual_1 && !$alumnos[$i]->recuperada_1) {
-                    
+                    Debugging::pin('if (!$alumnos[$i]->manual_1 && !$alumnos[$i]->recuperada_1)', $alumnos[$i]->periodo_id1 );
                     DB::delete('DELETE FROM notas_finales WHERE asignatura_id=? and (manual is null or manual=0) and (recuperada is null or recuperada=0) and periodo=? and alumno_id=?', [ $asignatura_id, 1, $alumnos[$i]->alumno_id ]);
                     
                     $consulta = 'INSERT INTO notas_finales(alumno_id, asignatura_id, periodo_id, periodo, nota, recuperada, manual, updated_by, created_at, updated_at) 
@@ -176,6 +177,7 @@ class NotaFinal extends Model {
                 $per_desact['per4'] = true;
                 
                 if (!$alumnos[$i]->manual_4 && !$alumnos[$i]->recuperada_4) {
+                    Debugging::pin('alumnos[$i]->manual_2)', $alumnos[$i]->periodo_id4 );
                     DB::delete('DELETE FROM notas_finales WHERE asignatura_id=? and (manual is null or manual=0) and (recuperada is null or recuperada=0) and periodo_id=? and alumno_id=?', [ $asignatura_id, $alumnos[$i]->periodo_id4, $alumnos[$i]->alumno_id ]);
                     
                     $consulta = 'INSERT INTO notas_finales(alumno_id, asignatura_id, periodo_id, periodo, nota, recuperada, manual, updated_by, created_at, updated_at) 

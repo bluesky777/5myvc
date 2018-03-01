@@ -38,8 +38,6 @@ class ImportarController extends Controller {
 				$consulta 	= 'SELECT * FROM grupos WHERE abrev=?';
 				$grupo 		= DB::select($consulta, [$abrev])[0];
 				
-				
-				
 				for ($f=0; $f < count($results[$i]); $f++) { 
 					
 					$alumno_row = $results[$i][$f];
@@ -95,8 +93,14 @@ class ImportarController extends Controller {
 
 	public function getModificar()
 	{
-
-		$rr = Excel::load('app/Http/Controllers/Alumnos/archivos/alumnos-modificar.xls', function($reader) {
+		$host = apache_request_headers()['Host'];
+        if ($host == '0.0.0.0' || $host == 'localhost' || $host == '127.0.0.1') {
+            $extension = 'xls';
+        }else{
+            $extension = 'xlsx';
+		}
+		
+		$rr = Excel::load('app/Http/Controllers/Alumnos/archivos/alumnos-modificar.'.$extension, function($reader) {
 
 			$now 		= Carbon::now('America/Bogota');
 			$results 	= $reader->all();
@@ -112,17 +116,15 @@ class ImportarController extends Controller {
 				for ($f=0; $f < count($results[$i]); $f++) { 
 					
 					$alumno = $results[$i][$f];
-					$fixer->verificar($alumno);
+					$res = $fixer->verificar($alumno);
 					
 					if ($alumno->id) {
 						$consulta 	= 'UPDATE alumnos SET no_matricula=?, nombres=?, apellidos=?, sexo=?, fecha_nac=?, 
-							tipo_doc=?, updated_at=? WHERE id=?';
+							tipo_doc=?, updated_at=?'.$res['consulta'].' WHERE id=?';
 						DB::update($consulta, [$alumno->no_matricula, $alumno->primer_nombre.' '.$alumno->segundo_nombre, $alumno->primer_apellido.' '.$alumno->segundo_apellido, $alumno->sexo, $alumno->fecha_de_nac, 
 										$alumno->tipo_doc, $now, $alumno->id])[0];
-						Debugging::pin('Alum', $alumno->id) ;
+						Debugging::pin('Alum', $alumno->id, 'Grupo: ' . $abrev, 'Grupo_id: ' . $grupo->id) ;
 					}
-					
-					
 					
 				}
 				

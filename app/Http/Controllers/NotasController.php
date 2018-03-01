@@ -48,9 +48,9 @@ class NotasController extends Controller {
 				$notas = DB::select('SELECT * FROM notas n WHERE n.subunidad_id=?', [$subunidad->id]);
 
 				if (count($notas) == 0) {
-					Nota::crearNotas($asignatura->grupo_id, $subunidad);
+					Nota::crearNotas($asignatura->grupo_id, $subunidad, $user->user_id);
 				}else{
-					Nota::verificarCrearNotas($asignatura->grupo_id, $subunidad);
+					Nota::verificarCrearNotas($asignatura->grupo_id, $subunidad, $user->user_id);
 				}
 			}
 
@@ -100,7 +100,7 @@ class NotasController extends Controller {
 			
 			
 			// Traemos las Definitivas
-			$consulta  = 'SELECT a.id as alumno_id, a.no_matricula, nf1.periodo, u.username as updated_by_username,
+			$cons_nf  = 'SELECT a.id as alumno_id, a.no_matricula, nf1.periodo, u.username as updated_by_username,
 							nf1.nota as nota_final, nf1.id as nf_id, nf1.recuperada, nf1.manual, nf1.updated_by, nf1.created_at, nf1.updated_at,
 							cast(r1.DefMateria as decimal(4,1)) as def_materia_auto, r1.updated_at as updated_at_def, IF(nf1.updated_at > r1.updated_at, FALSE, TRUE) AS nfinal_desactualizada 
 						FROM alumnos a 
@@ -123,7 +123,7 @@ class NotasController extends Controller {
 						)r1 ON r1.alumno_id=a.id
 						where a.deleted_at is null and a.id=:alumno_id';
 				
-			$nota_final = DB::select($consulta, [':asign_id1'=>$asignatura->asignatura_id, ':periodo'=>$user->numero_periodo, ':asign_id2'=>$asignatura->asignatura_id, ':alumno_id'=>$alumno->alumno_id])[0];
+			$nota_final = DB::select($cons_nf, [':asign_id1'=>$asignatura->asignatura_id, ':periodo'=>$user->numero_periodo, ':asign_id2'=>$asignatura->asignatura_id, ':alumno_id'=>$alumno->alumno_id])[0];
 			
 			if ($nota_final->nfinal_desactualizada && $nota_final->updated_at_def) {
 				$now 		= Carbon::now('America/Bogota');
@@ -136,6 +136,7 @@ class NotasController extends Controller {
 					DB::insert($consulta, [':alumno_id' => $alumno->alumno_id, ':asignatura_id' => $asignatura_id, ':periodo_id' => $user->periodo_id, 
 											':periodo' => $user->numero_periodo, ':nota' => round($nota_final->def_materia_auto), ':recuperada' => 0, ':manual' => 0, ':updated_by' => $user->user_id, ':created_at' => $now, ':updated_at' => $now ]);
 				}
+				$nota_final = DB::select($cons_nf, [':asign_id1'=>$asignatura->asignatura_id, ':periodo'=>$user->numero_periodo, ':asign_id2'=>$asignatura->asignatura_id, ':alumno_id'=>$alumno->alumno_id])[0];
 			}
 			
 

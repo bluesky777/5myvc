@@ -246,6 +246,27 @@ class ChangeAskedController extends Controller {
 			$pedido->image_to_delete_accepted 	= false;
 		}
 
+		if ($tipo == "nombres") {
+			$consulta = 'UPDATE change_asked_data SET nombres_accepted=false, updated_at=:updated_at WHERE id=:data_id';
+			DB::update($consulta, [ ':updated_at' => $now, ':data_id' => $data_id ]);
+			$pedido->sexo_accepted 	= false;
+		}
+		if ($tipo == "apellidos") {
+			$consulta = 'UPDATE change_asked_data SET apellidos_accepted=false, updated_at=:updated_at WHERE id=:data_id';
+			DB::update($consulta, [ ':updated_at' => $now, ':data_id' => $data_id ]);
+			$pedido->sexo_accepted 	= false;
+		}
+		if ($tipo == "sexo") {
+			$consulta = 'UPDATE change_asked_data SET sexo_accepted=false, updated_at=:updated_at WHERE id=:data_id';
+			DB::update($consulta, [ ':updated_at' => $now, ':data_id' => $data_id ]);
+			$pedido->sexo_accepted 	= false;
+		}
+		if ($tipo == "fecha_nac") {
+			$consulta = 'UPDATE change_asked_data SET fecha_nac_accepted=false, updated_at=:updated_at WHERE id=:data_id';
+			DB::update($consulta, [ ':updated_at' => $now, ':data_id' => $data_id ]);
+			$pedido->fecha_nac_accepted 	= false;
+		}
+
 		if ($tipo == "asignatura") {
 			
 			$assignment_id 	= Request::input('assignment_id');
@@ -389,7 +410,7 @@ class ChangeAskedController extends Controller {
 	private $creado = false;
 	public function crear_o_modificar_datos_de_pedido($user, $cambios){
 		$pedido = ChangeAsked::verificar_pedido_actual($user->user_id, $user->year_id, $user->tipo);
-		Debugging::pin('$pedido->data_id', $pedido->data_id);
+
 		if ($pedido->data_id) {
 			Debugging::pin('Tiene data_id');
 			if (array_key_exists('nombres', $cambios)) {
@@ -409,9 +430,9 @@ class ChangeAskedController extends Controller {
 				$consulta = 'UPDATE change_asked_data SET fecha_nac_new=:fecha_nac WHERE id=:data_id';
 				DB::update($consulta, [ ':fecha_nac'	=> $cambios['fecha_nac'], ':data_id'	=> $pedido->data_id ]);
 			}
-			Debugging::pin(' Final Tiene');
+
 		}else{
-			Debugging::pin(' NO  Tiene data_id');
+			//Debugging::pin(' NO  Tiene data_id');
 			
 			if (!$this->creado) {
 				if (array_key_exists('nombres', $cambios)) {
@@ -431,6 +452,13 @@ class ChangeAskedController extends Controller {
 				if (array_key_exists('sexo', $cambios)) {
 					$consulta 	= 'INSERT INTO change_asked_data(sexo_new) VALUES(:sexo)';
 					DB::insert($consulta, [ ':sexo'	=> $cambios['sexo'] ]);
+					$this->cambiar_data_id($pedido);
+					$this->creado = true;
+					$this->crear_o_modificar_datos_de_pedido($user, $cambios);
+				}
+				if (array_key_exists('fecha_nac', $cambios)) {
+					$consulta 	= 'INSERT INTO change_asked_data(fecha_nac_new) VALUES(:fecha_nac_new)';
+					DB::insert($consulta, [ ':fecha_nac_new'	=> $cambios['fecha_nac'] ]);
 					$this->cambiar_data_id($pedido);
 					$this->creado = true;
 					$this->crear_o_modificar_datos_de_pedido($user, $cambios);

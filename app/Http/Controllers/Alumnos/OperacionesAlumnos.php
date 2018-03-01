@@ -38,6 +38,11 @@ class OperacionesAlumnos {
 			}else{
 				$alumnos[$i]->sisben = 'No aplica';
 			}
+			if($alumnos[$i]->has_sisben_3){
+				$alumnos[$i]->sisben_3 = $alumnos[$i]->nro_sisben_3;
+			}else{
+				$alumnos[$i]->sisben_3 = 'No aplica';
+			}
 		}
 		return $alumnos;
 	}

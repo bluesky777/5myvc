@@ -20,7 +20,7 @@ class CreateMatriculasTable extends Migration {
 			$table->integer('alumno_id')->unsigned();
 			$table->integer('grupo_id')->unsigned();
 			//$table->boolean('matriculado')->default(true);
-			$table->string('estado', 4)->default('MATR'); // MATR, ASIS, RETI     == Matriculado, Asistente y Retirado
+			$table->string('estado', 4)->default('MATR'); // MATR, ASIS, RETI, DESE     == Matriculado, Asistente, Retirado y Desertor
 			$table->date('fecha_retiro')->nullable(); // Cuando fue retirado o desertado
 			$table->date('fecha_matricula')->nullable(); // Cuando por fin lo matricularon
 			$table->string('programar')->nullable(); // 'MATRIC CONDICIONAL', 'COMPROM ACADÉMICO', 'COMPROM DISCIPLINARIO', 'PERDIDA DE CUPO', 'CAMBIO INSTITUCI'     == Lo que se recomienda 
