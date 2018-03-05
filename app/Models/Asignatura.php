@@ -67,10 +67,10 @@ class Asignatura extends Model {
 
 			foreach ($unidad->subunidades as $subunidad) {
 				
-				$nota = Nota::where('subunidad_id',	'=', $subunidad->subunidad_id)
-							->where('alumno_id',	'=', $alumno_id)->first();
+				$nota = DB::select('SELECT * FROM notas WHERE subunidad_id=? AND alumno_id=? AND deleted_at is null', [ $subunidad->subunidad_id, $alumno_id ]);
 
-				if ($nota) {
+				if (count($nota)>0) {
+					$nota = $nota[0];
 					$subunidad->nota = $nota;
 
 					$subunidad->nota->valor = ($nota->nota * $subunidad->porcentaje_subunidad) / 100;
@@ -79,13 +79,51 @@ class Asignatura extends Model {
 				
 			}
 
-			$unidad->nota_unidad = $nota_unidad;
-			$valor_unidad = ($unidad->nota_unidad * $unidad->porcentaje_unidad) / 100;
-			$unidad->valor_unidad = $valor_unidad;
+			$unidad->nota_unidad 	= $nota_unidad;
+			$valor_unidad 			= ($unidad->nota_unidad * $unidad->porcentaje_unidad) / 100;
+			$unidad->valor_unidad 	= $valor_unidad;
 
 			$nota_asignatura += $unidad->valor_unidad;
 		}
 
+
+		$asignatura->nota_asignatura = round($nota_asignatura); // Definitiva de la materia
+
+		return $asignatura;
+	}
+
+
+
+
+	public static function calculoAlumnoNotas2(&$asignatura, $alumno_id)
+	{
+		$nota_asignatura = 0;
+/*
+		foreach ($asignatura->unidades as $unidad) {
+			
+			$nota_unidad = 0;
+
+			foreach ($unidad->subunidades as $subunidad) {
+				
+				$nota = DB::select('SELECT * FROM notas WHERE subunidad_id=? AND alumno_id=? AND deleted_at is null', [ $subunidad->subunidad_id, $alumno_id ]);
+
+				if (count($nota)>0) {
+					$nota = $nota[0];
+					$subunidad->nota = $nota;
+
+					$subunidad->nota->valor = ($nota->nota * $subunidad->porcentaje_subunidad) / 100;
+					$nota_unidad += $subunidad->nota->valor;
+				}
+				
+			}
+
+			$unidad->nota_unidad 	= $nota_unidad;
+			$valor_unidad 			= ($unidad->nota_unidad * $unidad->porcentaje_unidad) / 100;
+			$unidad->valor_unidad 	= $valor_unidad;
+
+			$nota_asignatura += $unidad->valor_unidad;
+		}
+*/
 
 		$asignatura->nota_asignatura = $nota_asignatura; // Definitiva de la materia
 

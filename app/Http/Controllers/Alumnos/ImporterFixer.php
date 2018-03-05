@@ -10,6 +10,7 @@ use Carbon\Carbon;
 use App\Models\User;
 use App\Models\Year;
 use App\Models\Periodo;
+use App\Models\Debugging;
 
 
 
@@ -28,40 +29,109 @@ class ImporterFixer {
     }
     
 
-	public function verificar($alumno)
+	public function verificar($alumno, $year)
 	{
 		$cons = '';
+		$consA1 = '';
+		$consA2 = '';
 
-		if ($alumno->tipo_de_documento == 'fecha_nac')
-			$valor = Carbon::parse($valor);
+		//if ($alumno->tipo_de_documento == 'fecha_nac')
+		//	$valor = Carbon::parse($valor);
 
 		// Tipo doc
 		for ($i=0; $i < $this->cant_td; $i++) { 
-            if($this->tipos_doc[$i]->tipo == $alumno->tipo_de_documento){
+            if(strtolower($this->tipos_doc[$i]->tipo) == strtolower($alumno->tipo_de_documento)){
                 $alumno->tipo_doc = $this->tipos_doc[$i]->id;
+            }
+            if(strtolower($this->tipos_doc[$i]->tipo) == strtolower($alumno->tipo_docu_acud1)){
+                $alumno->tipo_docu_acud1_id = $this->tipos_doc[$i]->id;
+            }
+            if(strtolower($this->tipos_doc[$i]->tipo) == strtolower($alumno->tipo_docu_acud2)){
+                $alumno->tipo_docu_acud2_id = $this->tipos_doc[$i]->id;
             }
         } 
         if(!$alumno->tipo_doc){
             $alumno->tipo_doc = null;
 		}
 		
-		// ciudad de nac
+		// ciudad de doc y ciudad de nac
 		for ($i=0; $i < $this->cant_ciud; $i++) { 
-            if($this->ciudades[$i]->ciudad == $alumno->lugar_de_expedicion_ciudad){
-				$alumno->ciudad_id = $this->ciudades[$i]->id;
-				$cons .= ', ciudad_doc='.$alumno->ciudad_id;
+            if(strtolower($this->ciudades[$i]->ciudad) == strtolower($alumno->lugar_de_expedicion_ciudad) || $this->ciudades[$i]->id == $alumno->lugar_de_expedicion_ciudad){
+				$cons .= ', ciudad_doc='.$this->ciudades[$i]->id;
+			}
+			if(strtolower($this->ciudades[$i]->ciudad) == strtolower($alumno->ciudad_nacimiento) || $this->ciudades[$i]->id == $alumno->ciudad_nacimiento){
+				$cons .= ', ciudad_nac='.$this->ciudades[$i]->id;
+            }
+			if(strtolower($this->ciudades[$i]->ciudad) == strtolower($alumno->ciudad_residencia) || $this->ciudades[$i]->id == $alumno->ciudad_residencia){
+				$cons .= ', ciudad_resid='.$this->ciudades[$i]->id;
+            }
+			if(strtolower($this->ciudades[$i]->ciudad) == strtolower($alumno->ciudad_docu_acud1) || $this->ciudades[$i]->id == $alumno->ciudad_docu_acud1){
+				$consA1 .= ', ciudad_doc='.$this->ciudades[$i]->id;
+				Debugging::pin('ciudad_docu_acud1 ', $this->ciudades[$i]->id);
+            }
+			if(strtolower($this->ciudades[$i]->ciudad) == strtolower($alumno->ciudad_docu_acud2) || $this->ciudades[$i]->id == $alumno->ciudad_docu_acud2){
+				$consA2 .= ', ciudad_doc='.$this->ciudades[$i]->id;
             }
 		}
 		
-		// ciudad de nac
-		for ($i=0; $i < $this->cant_ciud; $i++) { 
-            if($this->ciudades[$i]->ciudad == $alumno->lugar_de_expedicion_ciudad){
-				$alumno->ciudad_id = $this->ciudades[$i]->id;
-				$cons .= ', ciudad_doc='.$alumno->ciudad_id;
-            }
-        }
+		// is_urbana
+		if(strtolower($alumno->urbana)=='si'){
+            $cons .= ', is_urbana=1';
+		}else if(strtolower($alumno->urbana)=='no'){
+			$cons .= ', is_urbana=0';
+		}
 		
-		return ['consulta' => $cons];
+		// SISBEN
+		if(strtolower($alumno->sisben)=='no aplica' || $alumno->sisben=='' || is_null($alumno->sisben)){
+            $cons .= ', has_sisben=0, nro_sisben=null';
+		}else{
+			$cons .= ', has_sisben=1, nro_sisben='.$alumno->sisben;
+		}
+		
+		// SISBEN 3
+		if(strtolower($alumno->sisben_3)=='no aplica' || $alumno->sisben_3=='' || is_null($alumno->sisben_3)){
+            $cons .= ', has_sisben_3=0, nro_sisben_3=null';
+		}else{
+			$cons .= ', has_sisben_3=1, nro_sisben_3='.$alumno->sisben_3;
+		}
+		
+		// Nuevo
+		if(strtolower($alumno->nuevo)=='no' || $alumno->nuevo=='' || is_null($alumno->nuevo)){
+			$alumno->es_nuevo=0;
+		}else if(strtolower($alumno->nuevo)=='si'){
+			$alumno->es_nuevo=1;
+		}
+		
+		
+		
+		// Es acudiente 1
+		if(strtolower($alumno->es_el_acudiente_acud1)=='no' || $alumno->es_el_acudiente_acud1=='' || is_null($alumno->es_el_acudiente_acud1)){
+			$alumno->is_acudiente1=0;
+			Debugging::pin('$alumno->es_el_acudiente_acud1=="no" ', $alumno->es_el_acudiente_acud1);
+		}else if(strtolower($alumno->es_el_acudiente_acud1)=='si'){
+			$alumno->is_acudiente1=1;
+			Debugging::pin('$alumno->es_el_acudiente_acud1=="SI" ');
+		}
+		
+		// Es acudiente 2
+		if(strtolower($alumno->es_el_acudiente_acud2)=='no' || $alumno->es_el_acudiente_acud2=='' || is_null($alumno->es_el_acudiente_acud2)){
+			$alumno->is_acudiente2=0;
+		}else if(strtolower($alumno->es_el_acudiente_acud2)=='si'){
+			$alumno->is_acudiente2=1;
+		}
+		
+		// Parentesco 1
+		if(is_null($alumno->parentesco_acud1) || $alumno->parentesco_acud1==''){
+			$alumno->parentesco_acud1 = 'Madre';
+		}
+		// Parentesco 2
+		if(is_null($alumno->parentesco_acud2) || $alumno->parentesco_acud2==''){
+			$alumno->parentesco_acud2 = 'Madre';
+		}
+		
+		
+		
+		return ['consulta' => $cons, 'consultaA1' => $consA1, 'consultaA2' => $consA2];
 
 	}
 

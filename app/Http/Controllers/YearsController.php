@@ -319,6 +319,21 @@ class YearsController extends Controller {
 		
 	}
 
+	public function putToggleMostrarNotaComportEnBoletin(){
+		$user = User::fromToken();
+
+		$year_id 	= 	Request::input('year_id');
+		$can 		= 	(boolean) Request::input('can');
+
+		$year = Year::findOrFail($year_id);
+		$year->mostrar_nota_comport_boletin = $can;
+		$year->save();
+
+		if ($can) { return 'Ahora se mostrará la nota de comportamiento en el boletín.';
+		}else{ return 'Ahora NO se mostrarán la nota de comportamiento en el boletín';}
+		
+	}
+
 
 	public function putToggleIgnorarNotasPerdidas(){
 		$user = User::fromToken();

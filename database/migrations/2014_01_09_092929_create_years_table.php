@@ -53,6 +53,7 @@ class CreateYearsTable extends Migration {
 			$table->boolean('alumnos_can_see_notas')->default(false);
 			$table->boolean('profes_can_edit_alumnos')->default(false);
 			$table->boolean('mostrar_puesto_boletin')->default(true);
+			$table->boolean('mostrar_nota_comport_boletin')->default(true);
 			$table->boolean('si_recupera_materia_recup_indicador')->default(true); // Si pasa la materia, ya no tiene por qué nivelar indicadores
 
 			$table->integer('config_certificado_estudio_id')->unsigned()->nullable();

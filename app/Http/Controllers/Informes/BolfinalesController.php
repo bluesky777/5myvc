@@ -71,7 +71,7 @@ class BolfinalesController extends Controller {
 	public function detailedNotasGrupo($grupo_id, $user, $requested_alumnos='')
 	{
 
-		$this->escalas_val = EscalaDeValoracion::where('year_id', $user->year_id)->get();
+		$this->escalas_val = DB::select('SELECT * FROM escalas_de_valoracion WHERE year_id=? AND deleted_at is null', [$user->year_id]);
 		
 		$grupo			= Grupo::datos($grupo_id);
 		$year			= Year::datos($user->year_id);

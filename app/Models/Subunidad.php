@@ -34,6 +34,32 @@ class Subunidad extends Model {
 		return $unidades;
 	}
 
+
+	public static function deUnidad2($alumno_id, $unidad_id, $year_id)
+	{
+		$consulta = 'SELECT s.id as subunidad_id, s.definicion as definicion_subunidad, s.porcentaje as porcentaje_subunidad,
+						s.nota_default, s.orden as orden_subunidad, s.inicia_at, s.finaliza_at, ROUND((n.nota*s.porcentaje/100), 1) as valor_nota, n.nota, e.desempenio, 
+						CONCAT("<div class=\"row\">
+							<div class=\"col-lg-9 col-xs-9 subunidad-definicion no-padding-right\">", s.definicion, "</div>
+							<div class=\"col-lg-1 col-xs-1 subunidad-porc\">", s.porcentaje,"</div>
+							<div style=\"font-size: 5pt; line-height: 2;\" class=\"col-lg-1 col-xs-1 subunidad-nota\">", e.desempenio,"</div>
+							<div class=\"col-lg-1 col-xs-1 subunidad-nota\">
+								<span ", IF(n.nota<:min_aceptada, "class=\"nota-perdida-bold\" ", ""), " uib-tooltip=\"Valor nota: {{::subunidad.valor_nota}}\">", n.nota,"</div>
+						</div>") as fila_subunidad
+					FROM subunidades s
+					left join notas n ON n.subunidad_id=s.id and n.deleted_at is null and alumno_id=:alumno_id
+					left join escalas_de_valoracion e ON e.porc_inicial<=n.nota and e.porc_final>=n.nota and e.deleted_at is null and e.year_id=:year_id
+					where s.unidad_id=:unidad_id and s.deleted_at is null
+					order by s.orden';
+
+		$unidades = DB::select(DB::raw($consulta), array(
+			':min_aceptada' => User::$nota_minima_aceptada, ':alumno_id'	=> $alumno_id, ':unidad_id'	=> $unidad_id, ':year_id'	=> $year_id 
+		));
+
+		return $unidades;
+	}
+	
+
 	public static function notas($subunidad_id)
 	{
 		$notas = Nota::where('subunidad_id', '=', $subunidad_id)->get();

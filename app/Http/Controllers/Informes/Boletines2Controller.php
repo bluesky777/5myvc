@@ -27,7 +27,7 @@ use App\Models\EscalaDeValoracion;
 use Carbon\Carbon;
 
 
-class BoletinesController extends Controller {
+class Boletines2Controller extends Controller {
 	
 	public $user;
 	public $escalas_val;
@@ -41,19 +41,9 @@ class BoletinesController extends Controller {
 
 	public function putDetailedNotasGroup($grupo_id)
 	{
-		
-
 		$periodo_a_calcular = Request::input('periodo_a_calcular', 10);
-
 		$boletines = $this->detailedNotasGrupo($grupo_id, $this->user, '', $periodo_a_calcular);
-
-		//$grupo->alumnos = $alumnos;
-		//$grupo->asignaturas = $asignaturas;
-		//return (array)$grupo;
-
 		return $boletines;
-
-
 	}
 
 	public function getDetailedNotasYear($grupo_id, $periodo_a_calcular=10)
@@ -64,18 +54,11 @@ class BoletinesController extends Controller {
 		$year			= Year::datos($this->user->year_id);
 		$alumnos		= Grupo::alumnos($grupo_id);
 
-		//return Nota::alumnoAsignaturasPeriodosDetailed($alumno->alumno_id, $user->year_id, $periodos_a_calcular, $user->numero_periodo); // borrar
-
 		foreach ($alumnos as $keyAlum => $alumno) {
 			$alumno = Nota::alumnoAsignaturasPeriodosDetailed($alumno->alumno_id, $this->user->year_id, $periodo_a_calcular, $this->user->numero_periodo);
 			array_push($alumnos_response, $alumno);
 		}
-
-
-
 		return array($grupo, $year, $alumnos_response);
-
-
 	}
 
 
@@ -83,11 +66,9 @@ class BoletinesController extends Controller {
 	{
 		$periodo_a_calcular 	= Request::input('periodo_a_calcular', 10);
 		$requested_alumnos 		= Request::input('requested_alumnos', '');
-
+        
 		$boletines = $this->detailedNotasGrupo($grupo_id, $this->user, $requested_alumnos, $periodo_a_calcular);
 		return $boletines;
-
-
 	}
 
 	public function detailedNotasGrupo($grupo_id, &$user, $requested_alumnos='', $periodo_a_calcular=10)
@@ -171,28 +152,25 @@ class BoletinesController extends Controller {
 	{
 
 
-		$asignaturas		= Grupo::detailed_materias($grupo_id);
+		$asignaturas		= Grupo::detailed_materias2($alumno->alumno_id, $grupo_id, $periodo_id, $this->user->year_id);
 		$ausencias_total	= Ausencia::totalDeAlumno($alumno->alumno_id, $periodo_id);
 
-		$sumatoria_asignaturas = 0;
-		$alumno->ausencias_total = $ausencias_total;
+		$sumatoria_asignaturas 		= 0;
+		$alumno->ausencias_total 	= $ausencias_total;
 
 		foreach ($asignaturas as $asignatura) {
-			$asignatura->unidades = Unidad::deAsignatura($asignatura->asignatura_id, $periodo_id);
+			$asignatura->unidades = Unidad::deAsignatura2($alumno->alumno_id, $asignatura->asignatura_id, $periodo_id);
 
 			foreach ($asignatura->unidades as $unidad) {
-				$unidad->subunidades = Subunidad::deUnidad($unidad->unidad_id);
-			}
-			
-			// Esta parte la tenía repitiendo en otro forear igual
+				$unidad->subunidades = Subunidad::deUnidad2($alumno->alumno_id, $unidad->unidad_id, $this->user->year_id); // Traemos las subunidades con todo y nota y desempeño
+            }
+            
 			if ($comport_and_frases) {
 				$asignatura->ausencias	= Ausencia::deAlumno($asignatura->asignatura_id, $alumno->alumno_id, $periodo_id);
 				$asignatura->frases		= FraseAsignatura::deAlumno($asignatura->asignatura_id, $alumno->alumno_id, $periodo_id);
 			}
 
-			
-			Asignatura::calculoAlumnoNotas($asignatura, $alumno->alumno_id);
-			
+			//Asignatura::calculoAlumnoNotas2($asignatura, $alumno->alumno_id);
 
 			$sumatoria_asignaturas += $asignatura->nota_asignatura; // Para sacar promedio del periodo
 
@@ -213,6 +191,7 @@ class BoletinesController extends Controller {
 				$asignatura->total_ausencias = $cantAus;
 				$asignatura->total_tardanzas = $cantTar;
 			}
+
 		}
 
 		$alumno->asignaturas = $asignaturas;

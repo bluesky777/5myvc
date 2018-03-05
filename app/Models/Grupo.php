@@ -95,6 +95,32 @@ class Grupo extends Model {
 		return $asignaturas;
 	}
 
+	
+
+	public static function detailed_materias2($alumno_id, $grupo_id, $periodo_id, $year_id)
+	{
+		$consulta = 'SELECT a.id as asignatura_id, a.grupo_id, a.profesor_id, a.creditos, a.orden,
+				m.materia, m.alias as alias_materia, ar.nombre as area_nombre, ar.alias as area_alias,
+				p.id as profesor_id, p.nombres as nombres_profesor, p.apellidos as apellidos_profesor,
+				p.foto_id, IFNULL(i.nombre, IF(p.sexo="F","default_female.png", "default_male.png")) as foto_nombre, 
+				n.nota as nota_asignatura, n.recuperada, n.manual, e.desempenio
+			FROM asignaturas a 
+			inner join materias m on m.id=a.materia_id and m.deleted_at is null
+			left join areas ar on ar.id=m.area_id and ar.deleted_at is null
+			left join notas_finales n on n.asignatura_id=a.id and n.alumno_id=:alumno_id and n.periodo_id=:periodo_id
+			inner join profesores p on p.id=a.profesor_id and p.deleted_at is null 
+			left join images i on p.foto_id=i.id and i.deleted_at is null
+			left join escalas_de_valoracion e ON e.porc_inicial<=n.nota and e.porc_final>=n.nota and e.deleted_at is null and e.year_id=:year_id
+			where a.grupo_id=:grupo_id and a.deleted_at is null
+			order by ar.orden, m.orden, a.orden';
+
+		$asignaturas = DB::select($consulta, [ ':alumno_id' => $alumno_id, ':periodo_id' => $periodo_id, ':year_id' => $year_id, ':grupo_id' => $grupo_id ]);
+
+		return $asignaturas;
+	}
+
+	
+	
 	public function materias()
 	{
 		return $this->belongsToMany('Materia', 'asignaturas');

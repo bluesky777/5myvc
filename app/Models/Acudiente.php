@@ -11,7 +11,7 @@ class Acudiente extends Model {
 	protected $softDelete = true;
 
 
-	public static $consulta_acudientes_de_alumno = 'SELECT ac.id, ac.nombres, ac.apellidos, ac.sexo, ac.fecha_nac, ac.ciudad_nac, c1.ciudad as ciudad_nac_nombre, ac.ciudad_doc, c2.ciudad as ciudad_doc_nombre, ac.telefono, pa.parentesco, pa.id as parentesco_id, ac.user_id, 
+	public static $consulta_acudientes_de_alumno = 'SELECT ac.id, ac.nombres, ac.apellidos, ac.sexo, ac.fecha_nac, ac.ciudad_nac, c1.ciudad as ciudad_nac_nombre, ac.ciudad_doc, c2.ciudad as ciudad_doc_nombre, ac.telefono, pa.parentesco, pa.observaciones, pa.id as parentesco_id, ac.user_id, 
 							ac.celular, ac.ocupacion, ac.email, ac.barrio, ac.direccion, ac.tipo_doc, ac.documento, ac.created_by, ac.updated_by, ac.created_at, ac.updated_at, 
 							ac.foto_id, IFNULL(i.nombre, IF(ac.sexo="F","default_female.png", "default_male.png")) as foto_nombre, 
 							u.username, u.is_active
@@ -23,7 +23,7 @@ class Acudiente extends Model {
 						left join ciudades c2 on c2.id=ac.ciudad_doc and c2.deleted_at is null
 						WHERE pa.alumno_id=? and pa.deleted_at is null';
 						
-	public static $acudiente_vacio = ['nombres' => '', 'apellidos' => '', 'sexo' => '', 'es_acudiente' => '', 'fecha_nac' => '', 'ciudad_nac_nombre' => '', 'ciudad_doc_nombre' => '', 'departamento_doc_nombre' => '', 'telefono' => '', 'parentesco' => '', 
+	public static $acudiente_vacio = ['id' => '', 'nombres' => '', 'apellidos' => '', 'sexo' => '', 'es_acudiente' => '', 'fecha_nac' => '', 'ciudad_nac_nombre' => '', 'ciudad_doc_nombre' => '', 'departamento_doc_nombre' => '', 'telefono' => '', 'parentesco' => '', 'observaciones' => '', 
 				'celular' => '', 'ocupacion' => '', 'email' => '', 'barrio' => '', 'direccion' => '', 'tipo_doc' => '', 'tipo_doc_nombre' => '', 'documento' => '', 'username' => '', 'is_active' => ''];
 
 

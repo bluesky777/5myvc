@@ -22,6 +22,7 @@ class Unidad extends Model {
 		return $this->hasMany('Subunidad');
 	}
 
+	
 	public static function deAsignatura($asignatura_id, $periodo_id)
 	{
 		$consulta = 'SELECT u.id as unidad_id, u.definicion as definicion_unidad, u.porcentaje as porcentaje_unidad, 
@@ -31,6 +32,27 @@ class Unidad extends Model {
 					order by u.orden, u.id';
 
 		$unidades = DB::select(DB::raw($consulta), array(
+			':asignatura_id'	=> $asignatura_id,
+			':periodo_id'		=> $periodo_id
+		));
+
+		return $unidades;
+	}
+
+
+	public static function deAsignatura2($alumno_id, $asignatura_id, $periodo_id)
+	{
+		$consulta = 'SELECT u.id as unidad_id, u.definicion as definicion_unidad, u.porcentaje as porcentaje_unidad, 
+						u.asignatura_id, u.orden as orden_unidad, u.periodo_id, ROUND(sum((n.nota*s.porcentaje/100))) as nota_unidad
+					FROM unidades u
+					left join subunidades s ON s.unidad_id=u.id and s.deleted_at is null
+					left join notas n ON n.subunidad_id=s.id and n.deleted_at is null and alumno_id=:alumno_id
+					where u.asignatura_id=:asignatura_id and u.periodo_id=:periodo_id and u.deleted_at is null
+					group by u.id 
+					order by u.orden, u.id';
+
+		$unidades = DB::select(DB::raw($consulta), array(
+			':alumno_id'		=> $alumno_id,
 			':asignatura_id'	=> $asignatura_id,
 			':periodo_id'		=> $periodo_id
 		));
