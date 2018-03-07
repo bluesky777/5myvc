@@ -99,7 +99,7 @@ class TLoginController extends Controller {
 				));
 
 				break;
-		}
+		} 
 
 
 		$usuario = (array)$usuario[0];
@@ -211,7 +211,7 @@ class TLoginController extends Controller {
 		} 
 
 		// Alumnos
-		$cons_alum = "SELECT a.id, a.nombres, a.apellidos, sexo, user_id, a.fecha_nac, a.religion, a.pazysalvo, a.deuda from alumnos a";
+		$cons_alum = "SELECT a.id, a.nombres, a.apellidos, sexo, user_id, a.fecha_nac, a.religion, a.pazysalvo, a.deuda from alumnos a WHERE a.deleted_at is null";
 		$alumnos = DB::select($cons_alum);
 
 
@@ -223,7 +223,7 @@ class TLoginController extends Controller {
 		// Matriculas
 		$cons_matri = "SELECT m.id, m.alumno_id, m.grupo_id, m.estado, g.nombre as nombre_grupo, g.abrev, g.year_id 
 					FROM matriculas m
-					inner join grupos g on g.id=m.grupo_id";
+					inner join grupos g on g.id=m.grupo_id and (m.estado='MATR' or m.estado='ASIS')";
 		$matriculas = DB::select($cons_matri);
 
 		// Grupos
