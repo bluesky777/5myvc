@@ -229,18 +229,16 @@ class BoletinesController extends Controller {
 
 		// COMPORTAMIENTO Y SUS FRASES
 		if ($comport_and_frases) {
-			/* eliminar:
-			$comportamiento = NotaComportamiento::where('alumno_id', $alumno->alumno_id)
-												->where('periodo_id', $periodo_id)
-												->first();
-			*/
+			
 			$comportamiento = NotaComportamiento::nota_comportamiento($alumno->alumno_id, $periodo_id);
 
 			$alumno->comportamiento = $comportamiento;
 			$definiciones = [];
-
+			
+			$alumno->encabezado_comportamiento = $this->encabezado_comportamiento_boletin($alumno->comportamiento, $this->user->nota_minima_aceptada, $this->user->mostrar_nota_comport_boletin, $alumno->sexo);
+			
 			if ($comportamiento) {
-				$alumno->encabezado_comportamiento = $this->encabezado_comportamiento_boletin($alumno->comportamiento->nota, $this->user->nota_minima_aceptada, $this->user->mostrar_nota_comport_boletin, $alumno->sexo);
+				
 				$definiciones = DefinicionComportamiento::frases($comportamiento->id);
 				$alumno->comportamiento->definiciones = $definiciones;
 			}
@@ -440,30 +438,39 @@ class BoletinesController extends Controller {
 	
 	
 	private function encabezado_comportamiento_boletin($nota, $nota_minima_aceptada, $mostrar_nota_comport, $sexo){
-		$clase 		= '';
-		$la_nota 	= '';
-		$icono 		= '';
-		$escala = '';
-		
-		if ( $mostrar_nota_comport ) {
-			$la_nota = $nota;
-			if ($nota < $nota_minima_aceptada) {
-				$clase = ' nota-perdida-bold ';
-			}
-			$escala = EscalaDeValoracion::valoracion($nota, $this->escalas_val)->desempenio;
-		}
-		
 		if ($sexo == 'F') {
 			$icono = 'fa-male';
 		}else{
 			$icono = 'fa-female';
 		}
 		
-		$res = '<div class="row comportamiento-head">
-					<div class="col-lg-10 col-xs-10 comportamiento-title"><i style="padding-right: 5px;" class="fa '.$icono.'"></i>  Comportamiento</div>
-					<div style="padding: 0px; text-align: center;" class="col-lg-1 col-xs-1 comportamiento-desempenio ">'.$escala.'</div>
-					<div class="col-lg-1 col-xs-1 comportamiento-nota '. $clase .'">'.$la_nota.'</div>
-				</div>';
+		if ($nota) {
+			$clase 		= '';
+			$la_nota 	= '';
+			$icono 		= '';
+			$escala = '';
+			
+			if ( $mostrar_nota_comport ) {
+				$la_nota = $nota->nota;
+				if ($la_nota < $nota_minima_aceptada) {
+					$clase = ' nota-perdida-bold ';
+				}
+				$escala = EscalaDeValoracion::valoracion($la_nota, $this->escalas_val)->desempenio;
+			}
+			
+			
+			
+			$res = '<div class="row comportamiento-head">
+						<div class="col-lg-10 col-xs-10 comportamiento-title"><i style="padding-right: 5px;" class="fa '.$icono.'"></i>  Comportamiento</div>
+						<div style="padding: 0px; text-align: center;" class="col-lg-1 col-xs-1 comportamiento-desempenio ">'.$escala.'</div>
+						<div class="col-lg-1 col-xs-1 comportamiento-nota '. $clase .'">'.$la_nota.'</div>
+					</div>';
+			
+		}else{
+			$res = '<div class="row comportamiento-head">
+						<div class="col-lg-10 col-xs-10 comportamiento-title"><i style="padding-right: 5px;" class="fa '.$icono.'"></i>  Comportamiento</div>
+					</div>';
+		}
 		return $res;
 	}
 	

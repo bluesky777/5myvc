@@ -19,11 +19,6 @@ use App\Models\FraseAsignatura;
 class NotasController extends Controller {
 
 
-	public function getIndex()
-	{
-		return Nota::all();
-	}
-
 
 	public function putDetailed()
 	{
@@ -223,7 +218,9 @@ class NotasController extends Controller {
 	{
 		$user 	= User::fromToken();
 		$now 	= Carbon::now('America/Bogota');
-
+		
+		User::pueden_editar_notas($user);
+		
 		try {
 
 			$consulta 	= 'SELECT n.*, h.id as history_id FROM notas n, 
@@ -253,15 +250,16 @@ class NotasController extends Controller {
 		} catch (Exception $e) {
 			return abort(400, 'No se pudo guardar la nota');
 		}
-		
-
+	
 		return (array)$nota;
 	}
 
 
 	public function deleteDestroy($id)
 	{
-		$nota = Nota::findOrFail($id);
+		$user 	= User::fromToken();
+		User::pueden_editar_notas($user);
+		$nota 	= Nota::findOrFail($id);
 		$nota->delete();
 
 		return $nota;

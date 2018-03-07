@@ -208,11 +208,7 @@ class Boletines2Controller extends Controller {
 
 		// COMPORTAMIENTO Y SUS FRASES
 		if ($comport_and_frases) {
-			/* eliminar:
-			$comportamiento = NotaComportamiento::where('alumno_id', $alumno->alumno_id)
-												->where('periodo_id', $periodo_id)
-												->first();
-			*/
+			
 			$comportamiento = NotaComportamiento::nota_comportamiento($alumno->alumno_id, $periodo_id);
 
 			$alumno->comportamiento = $comportamiento;

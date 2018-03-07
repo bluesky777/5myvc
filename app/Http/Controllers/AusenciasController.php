@@ -55,7 +55,8 @@ class AusenciasController extends Controller {
 	public function postStore()
 	{
 		$user = User::fromToken();
-
+		User::pueden_editar_notas($user);
+		
 		$aus = new Ausencia;
 		$aus->alumno_id 		= Request::input('alumno_id');
 		$aus->asignatura_id 	= Request::input('asignatura_id');
@@ -90,6 +91,7 @@ class AusenciasController extends Controller {
 			return $dato;
 		}
 		*/
+		User::pueden_editar_notas($user);
 		
 
 		$aus = Ausencia::findOrFail(Request::input('ausencia_id'));
@@ -106,7 +108,8 @@ class AusenciasController extends Controller {
 	public function deleteDestroy($id)
 	{
 		$user = User::fromToken();
-
+		User::pueden_editar_notas($user);
+		
 		$aus = Ausencia::findOrFail($id);
 		$aus->delete();
 		return $aus;

@@ -74,10 +74,12 @@ class DefinitivasPeriodosController extends Controller {
 	{
 		$user 			= User::fromToken();
 
-		if ($user->roles[0]->name == 'Profesor' || ($user->roles[0]->name == 'Admin' && $user->is_superuser)) {
-			// No pasa nada
+		if ($user->roles[0]->name == 'Profesor' && $user->profes_pueden_nivelar) {
+			return abort(400, 'No tienes permiso');
+		}else if($user->roles[0]->name == 'Admin' && $user->is_superuser){
+			// todo bien
 		}else{
-			return App::abort(400, 'No tienes privilegios.');
+			return App::abort(400, 'No tienes permiso.');
 		}
 		
 		$now 		= Carbon::now('America/Bogota');
@@ -93,6 +95,14 @@ class DefinitivasPeriodosController extends Controller {
 	{
 		$user 			= User::fromToken();
 
+		if ($user->roles[0]->name == 'Profesor' && $user->profes_pueden_nivelar) {
+			return abort(400, 'No tienes permiso');
+		}else if($user->roles[0]->name == 'Admin' && $user->is_superuser){
+			// todo bien
+		}else{
+			return App::abort(400, 'No tienes permiso.');
+		}
+		
 		if ($user->roles[0]->name == 'Profesor' || ($user->roles[0]->name == 'Admin' && $user->is_superuser)) {
 			// No pasa nada
 		}else{
@@ -118,6 +128,14 @@ class DefinitivasPeriodosController extends Controller {
 	{
 		$user 			= User::fromToken();
 
+		if ($user->roles[0]->name == 'Profesor' && $user->profes_pueden_nivelar) {
+			return abort(400, 'No tienes permiso');
+		}else if($user->roles[0]->name == 'Admin' && $user->is_superuser){
+			// todo bien
+		}else{
+			return App::abort(400, 'No tienes permiso.');
+		}
+		
 		if ($user->roles[0]->name == 'Profesor' || ($user->roles[0]->name == 'Admin' && $user->is_superuser)) {
 			// No pasa nada
 		}else{

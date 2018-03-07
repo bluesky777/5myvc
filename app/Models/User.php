@@ -1,12 +1,5 @@
 <?php namespace App\Models;
 
-/*
-use Illuminate\Auth\Authenticatable;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Auth\Passwords\CanResetPassword;
-use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
-use Illuminate\Contracts\Auth\CanResetPassword as CanResetPasswordContract;
-*/
 
 use Tymon\JWTAuth\Contracts\JWTSubject as AuthenticatableUserContract;
 
@@ -28,11 +21,6 @@ use Request;
 use DB;
 
 
-/*
-class User extends Model implements AuthenticatableContract, CanResetPasswordContract {
-
-	use Authenticatable, CanResetPassword;
-*/
 
 class User extends Authenticatable implements AuthenticatableUserContract
 {
@@ -133,7 +121,7 @@ class User extends Authenticatable implements AuthenticatableUserContract
 									p.foto_id, IFNULL(i2.nombre, IF(p.sexo="F","default_female.png", "default_male.png")) as foto_nombre, 
 									p.firma_id, i3.nombre as firma_nombre, 
 									"N/A" as grupo_id, ("N/A") as nombre_grupo, ("N/A") as abrev_grupo, 
-									"N/A" as year_matricula_id, per.id as periodo_id, per.numero as numero_periodo, 
+									"N/A" as year_matricula_id, per.id as periodo_id, per.numero as numero_periodo, per.profes_pueden_editar_notas, per.profes_pueden_nivelar,
 									y.id as year_id, y.year, y.nota_minima_aceptada, y.actual as year_actual, per.actual as periodo_actual, 
 									y.unidad_displayname, y.subunidad_displayname, y.unidades_displayname, y.subunidades_displayname, 
 									y.genero_unidad, y.genero_subunidad, per.fecha_plazo, y.alumnos_can_see_notas, y.logo_id,
@@ -221,7 +209,7 @@ class User extends Authenticatable implements AuthenticatableUserContract
 									u.imagen_id, IFNULL(i.nombre, IF(u.sexo="F","default_female.png", "default_male.png")) as imagen_nombre, 
 									u.imagen_id as foto_id, IFNULL(i.nombre, IF(u.sexo="F","default_female.png", "default_male.png")) as foto_nombre, 
 									"N/A" as grupo_id, ("N/A") as nombre_grupo, ("N/A") as abrev_grupo, 
-									"N/A" as year_matricula_id, per.id as periodo_id, per.numero as numero_periodo, 
+									"N/A" as year_matricula_id, per.id as periodo_id, per.numero as numero_periodo, per.profes_pueden_editar_notas, per.profes_pueden_nivelar,
 									y.id as year_id, y.year, y.nota_minima_aceptada, y.actual as year_actual, per.actual as periodo_actual, 
 									y.unidad_displayname, y.subunidad_displayname, y.unidades_displayname, y.subunidades_displayname, 
 									y.genero_unidad, y.genero_subunidad, per.fecha_plazo, y.si_recupera_materia_recup_indicador, y.mostrar_nota_comport_boletin, y.alumnos_can_see_notas, y.logo_id
@@ -341,7 +329,20 @@ class User extends Authenticatable implements AuthenticatableUserContract
                 'id' => $this->id,
              ]
         ];
-    }
+	}
+	
+	
+	public static function pueden_editar_notas($user){
+		
+		if ($user->roles[0]->name == 'Profesor' && $user->profes_pueden_editar_notas==0) {
+			return abort(400, 'No tienes permiso');
+		}else if(($user->roles[0]->name == 'Admin' && $user->is_superuser) || $user->roles[0]->name == 'Profesor'){
+			// todo bien
+		}else{
+			return App::abort(400, 'No tienes permiso.');
+		}
+
+	}
 
 }
 

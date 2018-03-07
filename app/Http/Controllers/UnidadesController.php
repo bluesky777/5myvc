@@ -114,7 +114,8 @@ class UnidadesController extends Controller {
 	public function putUpdate($id)
 	{
 		$user = User::fromToken();
-		
+		User::pueden_editar_notas($user);
+
 		$unidad = Unidad::findOrFail($id);
 		$unidad->definicion		= Request::input('definicion');
 		$unidad->porcentaje		= Request::input('porcentaje');
@@ -128,8 +129,8 @@ class UnidadesController extends Controller {
 	public function deleteDestroy($id)
 	{
 		$user = User::fromToken();
+		User::pueden_editar_notas($user);
 		$unidad = Unidad::find($id);
-		
 
 		if ($unidad) {
 			$unidad->deleted_by = $user->user_id;
@@ -145,6 +146,8 @@ class UnidadesController extends Controller {
 	public function deleteForcedelete($id)
 	{
 		$user = User::fromToken();
+		User::pueden_editar_notas($user);
+
 		$unidad = Unidad::onlyTrashed()->findOrFail($id);
 		
 		if ($unidad) {

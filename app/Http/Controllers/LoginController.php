@@ -20,6 +20,10 @@ use App\Models\VtVotacion;
 
 
 class LoginController extends Controller {
+	
+	
+	private $entorno = 'Desktop';
+	private $direccion = '';
 
 
 	public function postIndex(Request $request)
@@ -84,8 +88,9 @@ class LoginController extends Controller {
 	public function postCredentials(Request $request)
 	{
 
-		$user = [];
-		$token = [];
+		$user 		= [];
+		$token 		= [];
+		$now 		= Carbon::now('America/Bogota');
 
 		// grab credentials from the request
 		
@@ -98,6 +103,12 @@ class LoginController extends Controller {
 		try {
 			// attempt to verify the credentials and create a token for the user
 			if (! $token = app('auth')->attempt($credentials)) {
+				$this->datos_entorno_direccion();
+				$maquina = 'Intento login>> Entorno: '.$this->entorno.', Dirección: '.$this->direccion.', plataforma: '.Browser::browserEngine().', platfamilia: '.Browser::platformFamily().', device_fami: '.Browser::deviceFamily().', device_model: '.Browser::deviceModel();
+				$consulta 	= 'INSERT INTO bitacoras (descripcion, affected_person_name, affected_element_type, created_at) 
+					VALUES (?, ?, "intento_login", ?)';
+				DB::insert($consulta, [$maquina, $request->input('username'), $now]);
+				
 				return response()->json(['error' => 'invalid_credentials'], 400);
 			}
 
@@ -111,36 +122,14 @@ class LoginController extends Controller {
 
 		if (Hash::check($credentials['password'], $usuario->password)){
 
-			//$br 		= Browser::detect(); return Browser::isDesktop() . '';
-			$entorno 	= 'Desktop';
-			$now 		= Carbon::now('America/Bogota');
-
-			if (Browser::isMobile()) {
-				$entorno 	= 'Mobile';
-			}else if(Browser::isTablet()){
-				$entorno 	= 'Tablet';
-			}else if(Browser::isBot()){
-				$entorno 	= 'Bot';
-			}
-
-			// Averiguamos la IP
-			$direccion = '';
-			if (!empty($_SERVER['HTTP_CLIENT_IP']))
-				$direccion = $_SERVER['HTTP_CLIENT_IP'];
-			if (!empty($_SERVER['HTTP_X_FORWARDED_FOR']))
-				$direccion = $_SERVER['HTTP_X_FORWARDED_FOR'];
-			if (!empty($_SERVER['REMOTE_ADDR']))
-				$direccion = $_SERVER['REMOTE_ADDR'];
-
-
 			
 			// Alumnos asistentes o matriculados del grupo
 			$consulta = 'INSERT INTO historiales(user_id, tipo, ip, browser_name, browser_version, browser_family, browser_engine, entorno, platform_name, platform_family, device_family, device_model, device_grade, updated_at, created_at) 
 										VALUES(:user_id, :tipo, :ip, :browser_name, :browser_version, :browser_family, :browser_engine, :entorno, :platform_name, :platform_family, :device_family, :device_model, :device_grade, :updated_at, :created_at)';
 			
-			$result = DB::insert($consulta, [ ':user_id' => $usuario->id, ':tipo' => $usuario->tipo, ':ip' => $direccion, 
+			$result = DB::insert($consulta, [ ':user_id' => $usuario->id, ':tipo' => $usuario->tipo, ':ip' => $this->direccion, 
 				':browser_name' => Browser::browserName(), ':browser_version' => Browser::browserVersion(), ':browser_family' => Browser::browserFamily(), 
-				':browser_engine' => Browser::browserEngine(), ':entorno' => $entorno, ':platform_name' => Browser::browserEngine(), ':platform_family' => Browser::platformFamily(), ':device_family' => Browser::deviceFamily(), ':device_model' => Browser::deviceModel(), ':device_grade' => Browser::mobileGrade(), ':updated_at' => $now, ':created_at' => $now ]);
+				':browser_engine' => Browser::browserEngine(), ':entorno' => $this->entorno, ':platform_name' => Browser::browserEngine(), ':platform_family' => Browser::platformFamily(), ':device_family' => Browser::deviceFamily(), ':device_model' => Browser::deviceModel(), ':device_grade' => Browser::mobileGrade(), ':updated_at' => $now, ':created_at' => $now ]);
 			
 		}
 
@@ -339,6 +328,25 @@ class LoginController extends Controller {
 		}else{
 			return 'default_male.png';
 		}
+	}
+	
+	
+	private function datos_entorno_direccion(){
+		if (Browser::isMobile()) {
+			$this->entorno 	= 'Mobile';
+		}else if(Browser::isTablet()){
+			$this->entorno 	= 'Tablet';
+		}else if(Browser::isBot()){
+			$this->entorno 	= 'Bot';
+		}
+		
+		if (!empty($_SERVER['HTTP_CLIENT_IP']))
+			$this->direccion = $_SERVER['HTTP_CLIENT_IP'];
+		if (!empty($_SERVER['HTTP_X_FORWARDED_FOR']))
+			$this->direccion = $_SERVER['HTTP_X_FORWARDED_FOR'];
+		if (!empty($_SERVER['REMOTE_ADDR']))
+			$this->direccion = $_SERVER['REMOTE_ADDR'];
+
 	}
 
 

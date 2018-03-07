@@ -104,7 +104,7 @@ class Nota extends Model {
 
 		foreach ($periodos as $keyPer => $periodo) {
 			
-			$asignaturas = Grupo::detailed_materias($alumno->grupo_id);
+			$asignaturas = Grupo::detailed_materias_notafinal($alumno_id, $alumno->grupo_id, $periodo->id, $year_id);
 			$sumatoria_asignaturas_per = 0;
 
 			foreach ($asignaturas as $keyAsig => $asignatura) {

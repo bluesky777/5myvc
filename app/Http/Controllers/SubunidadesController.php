@@ -15,6 +15,7 @@ class SubunidadesController extends Controller {
 	public function postIndex()
 	{
 		$user = User::fromToken();
+		User::pueden_editar_notas($user);
 
 		$cant = Subunidad::where('unidad_id', Request::input('unidad_id'))->count();
 
@@ -47,6 +48,7 @@ class SubunidadesController extends Controller {
 	public function putUpdateOrden()
 	{
 		$user = User::fromToken();
+		User::pueden_editar_notas($user);
 
 		$sortHash = Request::input('sortHash');
 
@@ -69,6 +71,7 @@ class SubunidadesController extends Controller {
 	public function putUpdateOrdenVarias()
 	{
 		$user = User::fromToken();
+		User::pueden_editar_notas();
 
 		$sortHash1 	= Request::input('sortHash1');
 		$sortHash2 	= Request::input('sortHash2');
@@ -108,6 +111,8 @@ class SubunidadesController extends Controller {
 	public function putUpdate($id)
 	{
 		$user = User::fromToken();
+		User::pueden_editar_notas($user);
+
 		$subunidad = Subunidad::findOrFail($id);
 
 		$nota_def = Request::input('nota_default');
