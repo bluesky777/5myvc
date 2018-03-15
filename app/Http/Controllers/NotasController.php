@@ -110,7 +110,7 @@ class NotasController extends Controller {
 								inner join unidades u on u.asignatura_id=asi.id and u.deleted_at is null
 								inner join subunidades s on s.unidad_id=u.id and s.deleted_at is null
 								inner join notas n on n.subunidad_id=s.id and n.deleted_at is null
-								inner join periodos p1 on p1.numero=1 and p1.id=u.periodo_id and p1.deleted_at is null
+								inner join periodos p1 on p1.numero='.$user->numero_periodo.' and p1.id=u.periodo_id and p1.deleted_at is null
 								where asi.deleted_at is null and asi.id=:asign_id2
 								group by n.alumno_id, s.unidad_id, s.id
 							)df1
@@ -120,19 +120,25 @@ class NotasController extends Controller {
 				
 			$nota_final = DB::select($cons_nf, [':asign_id1'=>$asignatura->asignatura_id, ':periodo'=>$user->numero_periodo, ':asign_id2'=>$asignatura->asignatura_id, ':alumno_id'=>$alumno->alumno_id])[0];
 			
-			if ($nota_final->nfinal_desactualizada && $nota_final->updated_at_def) {
-				$now 		= Carbon::now('America/Bogota');
-				if (!$nota_final->manual && !$nota_final->recuperada) {
-					DB::delete('DELETE FROM notas_finales WHERE id=?', [ $nota_final->nf_id ]);
-					
-					$consulta = 'INSERT INTO notas_finales(alumno_id, asignatura_id, periodo_id, periodo, nota, recuperada, manual, updated_by, created_at, updated_at) 
-						VALUES(:alumno_id, :asignatura_id, :periodo_id, :periodo, :nota, :recuperada, :manual, :updated_by, :created_at, :updated_at)';
+			$now 		= Carbon::now('America/Bogota');
+			
+			$consulta = 'INSERT INTO notas_finales(alumno_id, asignatura_id, periodo_id, periodo, nota, recuperada, manual, updated_by, created_at, updated_at) 
+				VALUES(:alumno_id, :asignatura_id, :periodo_id, :periodo, :nota, :recuperada, :manual, :updated_by, :created_at, :updated_at)';
+		
+			if ($nota_final->nfinal_desactualizada && $nota_final->updated_at_def && !$nota_final->manual && !$nota_final->recuperada) {
+				DB::delete('DELETE FROM notas_finales WHERE id=?', [ $nota_final->nf_id ]);
 				
-					DB::insert($consulta, [':alumno_id' => $alumno->alumno_id, ':asignatura_id' => $asignatura_id, ':periodo_id' => $user->periodo_id, 
-											':periodo' => $user->numero_periodo, ':nota' => round($nota_final->def_materia_auto), ':recuperada' => 0, ':manual' => 0, ':updated_by' => $user->user_id, ':created_at' => $now, ':updated_at' => $now ]);
-				}
-				$nota_final = DB::select($cons_nf, [':asign_id1'=>$asignatura->asignatura_id, ':periodo'=>$user->numero_periodo, ':asign_id2'=>$asignatura->asignatura_id, ':alumno_id'=>$alumno->alumno_id])[0];
+				DB::insert($consulta, [':alumno_id' => $alumno->alumno_id, ':asignatura_id' => $asignatura_id, ':periodo_id' => $user->periodo_id, 
+					':periodo' => $user->numero_periodo, ':nota' => round($nota_final->def_materia_auto), ':recuperada' => 0, ':manual' => 0, ':updated_by' => $user->user_id, ':created_at' => $now, ':updated_at' => $now ]);
+
+			}else if($nota_final->nfinal_desactualizada && !$nota_final->updated_at_def){
+				
+				DB::insert($consulta, [':alumno_id' => $alumno->alumno_id, ':asignatura_id' => $asignatura_id, ':periodo_id' => $user->periodo_id, 
+					':periodo' => $user->numero_periodo, ':nota' => round($nota_final->def_materia_auto), ':recuperada' => 0, ':manual' => 0, ':updated_by' => $user->user_id, ':created_at' => $now, ':updated_at' => $now ]);
 			}
+				
+			$nota_final = DB::select($cons_nf, [':asign_id1'=>$asignatura->asignatura_id, ':periodo'=>$user->numero_periodo, ':asign_id2'=>$asignatura->asignatura_id, ':alumno_id'=>$alumno->alumno_id])[0];
+			
 			
 
 			$alumno->nota_final 		= $nota_final;

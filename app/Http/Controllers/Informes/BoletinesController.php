@@ -110,7 +110,7 @@ class BoletinesController extends Controller {
 			$this->allNotasAlumno($alumno, $grupo_id, $user->periodo_id, true);
 
 			$alumno->userData = Alumno::userData($alumno->alumno_id);
-
+			// Quitar el 2
 			$asignaturas_perdidas = $this->asignaturasPerdidasDeAlumno($alumno, $grupo_id, $user->year_id, $periodo_a_calcular);
 
 			if (count($asignaturas_perdidas) > 0) {
@@ -319,17 +319,91 @@ class BoletinesController extends Controller {
 
 	}
 
+
+
+	public function asignaturasPerdidasDeAlumno2($alumno, $grupo_id, $year_id, $periodo_a_calcular)
+	{
+		$consulta = '';
+		DB::select();
+		
+		return;
+		$asignaturas	= Grupo::detailed_materias($grupo_id);
+
+
+		foreach ($asignaturas as $keyAsig => $asignatura) {
+			
+			$periodos = Periodo::hastaPeriodoN($year_id, $periodo_a_calcular);
+
+			$asignatura->cantTotal = 0;
+
+			foreach ($periodos as $keyPer => $periodo) {
+
+				$periodo->cantNotasPerdidas = 0;
+				$periodo->unidades = Unidad::deAsignatura($asignatura->asignatura_id, $periodo->id);
+
+
+				foreach ($periodo->unidades as $keyUni => $unidad) {
+					
+					$subunidades = Subunidad::perdidasDeUnidad($unidad->unidad_id, $alumno->alumno_id);
+					
+					if (count($subunidades) > 0) {
+						$unidad->subunidades = $subunidades;
+						$periodo->cantNotasPerdidas += count($subunidades);
+					}else{
+						$uniTemp = $periodo->unidades;
+						unset($uniTemp[$keyUni]);
+						$periodo->unidades = $uniTemp;
+					}
+				}
+				#$periodo->unidades = $unidades;
+
+				$asignatura->cantTotal += $periodo->cantNotasPerdidas;
+				
+				if (count($periodo->unidades) > 0) {
+					#$periodo->unidades = $unidades;
+				}else{
+					unset($periodos[$keyPer]);
+				}
+				
+				
+			}
+
+			if (count($periodos) > 0) {
+				$asignatura->periodos = $periodos;
+			}else{
+				unset($asignaturas[$keyAsig]);
+			}
+
+			$hasPeriodosConPerdidas = false;
+
+			foreach ($periodos as $keyPer => $periodo) {
+				if (count($periodo->unidades) > 0) {
+					$hasPeriodosConPerdidas = true;
+				}
+			}
+
+			if (!$hasPeriodosConPerdidas) {
+				unset($asignaturas[$keyAsig]);
+			}
+
+		}
+
+		return $asignaturas;
+
+	}
+
 	public function periodosPerdidosDeAlumno($alumno, $grupo_id, $year_id, $periodos)
 	{
-		//$periodos = Periodo::where('year_id', '=', $year_id)->get();
-
+		$perdidos = new IndicadoresPerdidos();
+		$perdidos->de_asignaturas_por_periodos($alumno->alumno_id, $grupo_id, $periodos);
+		/*
 		foreach ($periodos as $key => $periodo) {
 			$periodo->asignaturas = $this->asignaturasPerdidasDeAlumnoPorPeriodo($alumno->alumno_id, $grupo_id, $periodo->id);
 
 			if (count($periodo->asignaturas)==0) {
 				unset($periodos[$key]);
 			}
-		}
+		}*/
 	}
 
 	public function asignaturasPerdidasDeAlumnoPorPeriodo($alumno_id, $grupo_id, $periodo_id)
@@ -362,12 +436,7 @@ class BoletinesController extends Controller {
 	public function deleteDestroy($id)
 	{
 		$alumno = Alumno::find($id);
-		//Alumno::destroy($id);
-		//$alumno->restore();
-		//$queries = DB::getQueryLog();
-		//$last_query = end($queries);
-		//return $last_query;
-
+		
 		if ($alumno) {
 			$alumno->delete();
 		}else{

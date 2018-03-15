@@ -62,4 +62,34 @@ class Definitivas {
     }
 
 
+	
+    public function calcular_notas_finales_asignatura_periodo($asignatura_id){
+
+		DB::delete('DELETE FROM notas_finales WHERE asignatura_id=? and (manual is null or manual=1)', [ $asignatura_id ]);
+		
+		$consulta = 'SELECT alumno_id FROM alumnos a 
+					INNER JOIN matriculas m ON m.alumno_id=a.id and m.deleted_at is null
+					INNER JOIN grupos g ON g.id=m.grupo_id and g.deleted_at is null 
+					INNER JOIN asignaturas asi ON asi.id=g.asignatura_id and asi.deleted_at is null 
+					WHERE asi.id=? and a.deleted_at is null';
+		
+		$alumnos = DB::select($consulta, [$asignatura_id]);
+		
+		$cant_alum = count($alumnos);
+		
+		for ($i=0; $i < $cant_alum; $i++) { 
+			
+			$alumnos[$i];
+			$consulta = 'INSERT INTO notas_finales(alumno_id, asignatura_id, periodo_id, periodo, nota, recuperada, manual, updated_by, created_at, updated_at) 
+						VALUES(:alumno_id, :asignatura_id, :periodo_id, :periodo, :nota, :recuperada, :manual, :updated_by, :created_at, :updated_at)';
+			$alumnos = DB::insert($consulta, [':alumno_id' => $alumno_id, ':asignatura_id' => $asignatura_id]);
+		}
+		
+		
+		
+		return $asignaturas;
+
+    }
+
+
 }

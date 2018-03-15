@@ -96,7 +96,7 @@ class Nota extends Model {
 	public static function alumnoPeriodosDetailed($alumno_id, $year_id, $profesor_id='')
 	{
 		$alumno 	= Alumno::alumnoData($alumno_id, $year_id);
-		$periodos 	= Periodo::where('year_id', $year_id)->get();
+		$periodos 	= DB::select('SELECT * FROM periodos WHERE year_id=? and deleted_at is null', [ $year_id ]); 
 
 		if (!$alumno) {
 			return false;
