@@ -5,6 +5,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 use \stdClass;
 use DB;
+use App\Models\User;
 
 class Periodo extends Model {
 	protected $fillable = [];
@@ -53,6 +54,9 @@ class Periodo extends Model {
 		$periodos = DB::select($consulta, ['year_id' => $year_id]);
 		return $periodos;
 	}
+	
+	
+
 
 }
 

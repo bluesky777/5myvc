@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\Controller;
 
+use App\Http\Controllers\Informes\CalcPerdidasDefinitivas;
+
 use Request;
 use DB;
 use Hash;
@@ -23,6 +25,7 @@ use App\Models\NotaComportamiento;
 use App\Models\DefinicionComportamiento;
 use App\Models\ImageModel;
 use App\Models\EscalaDeValoracion;
+use App\Models\Debugging;
 
 use Carbon\Carbon;
 
@@ -47,10 +50,6 @@ class BoletinesController extends Controller {
 
 		$boletines = $this->detailedNotasGrupo($grupo_id, $this->user, '', $periodo_a_calcular);
 
-		//$grupo->alumnos = $alumnos;
-		//$grupo->asignaturas = $asignaturas;
-		//return (array)$grupo;
-
 		return $boletines;
 
 
@@ -72,9 +71,7 @@ class BoletinesController extends Controller {
 		}
 
 
-
 		return array($grupo, $year, $alumnos_response);
-
 
 	}
 
@@ -110,35 +107,11 @@ class BoletinesController extends Controller {
 			$this->allNotasAlumno($alumno, $grupo_id, $user->periodo_id, true);
 
 			$alumno->userData = Alumno::userData($alumno->alumno_id);
-			// Quitar el 2
-			$asignaturas_perdidas = $this->asignaturasPerdidasDeAlumno($alumno, $grupo_id, $user->year_id, $periodo_a_calcular);
-
-			if (count($asignaturas_perdidas) > 0) {
-				
-				$alumno->asignaturas_perdidas = $asignaturas_perdidas;
-				$alumno->notas_perdidas_year = 0;
-				$alumno->periodos_con_perdidas = Periodo::hastaPeriodoN($user->year_id, $periodo_a_calcular);
-
-				foreach ($alumno->periodos_con_perdidas as $keyPerA => $periodoAlone) {
-
-					$periodoAlone->cant_perdidas = 0;
-					
-					foreach ($alumno->asignaturas_perdidas as $keyAsig => $asignatura_perdida) {
-
-						foreach ($asignatura_perdida->periodos as $keyPer => $periodo) {
-
-							if ($periodoAlone->periodo_id == $periodo->periodo_id) {
-								if ($periodo->id == $periodoAlone->id) {
-									$periodoAlone->cant_perdidas += $periodo->cantNotasPerdidas;
-								}
-								
-							}
-						}
-					}
-
-					$alumno->notas_perdidas_year += $periodoAlone->cant_perdidas;
-					
-				}
+			
+			$this->asignaturasPerdidasDeAlumno($alumno, $grupo_id, $user->year_id, $periodo_a_calcular);
+			
+			if ($this->user->year_pasado_en_bol) {
+				$this->datosYearPasado($alumno, $grupo_id, $user->year_id);
 			}
 		}
 
@@ -171,27 +144,25 @@ class BoletinesController extends Controller {
 	{
 
 
-		$asignaturas		= Grupo::detailed_materias($grupo_id);
-		$ausencias_total	= Ausencia::totalDeAlumno($alumno->alumno_id, $periodo_id);
-
+		//$asignaturas			= Grupo::detailed_materias($grupo_id);
+		$asignaturas			= Grupo::detailed_materias_notafinal($alumno->alumno_id, $grupo_id, $periodo_id, $this->user->year_id);
+		$ausencias_total		= Ausencia::totalDeAlumno($alumno->alumno_id, $periodo_id);
+		$asignaturas_perdidas 	= [];
+	
 		$sumatoria_asignaturas = 0;
 		$alumno->ausencias_total = $ausencias_total;
 
 		foreach ($asignaturas as $asignatura) {
-			$asignatura->unidades = Unidad::deAsignatura($asignatura->asignatura_id, $periodo_id);
+			$asignatura->unidades = Unidad::deAsignatura2($alumno->alumno_id, $asignatura->asignatura_id, $periodo_id);
 
 			foreach ($asignatura->unidades as $unidad) {
-				$unidad->subunidades = Subunidad::deUnidad($unidad->unidad_id);
+				$unidad->subunidades = Subunidad::deUnidadCalculada($alumno->alumno_id, $unidad->unidad_id, $this->user->year_id);
 			}
 			
-			// Esta parte la tenía repitiendo en otro forear igual
 			if ($comport_and_frases) {
 				$asignatura->ausencias	= Ausencia::deAlumno($asignatura->asignatura_id, $alumno->alumno_id, $periodo_id);
 				$asignatura->frases		= FraseAsignatura::deAlumno($asignatura->asignatura_id, $alumno->alumno_id, $periodo_id);
 			}
-
-			
-			Asignatura::calculoAlumnoNotas($asignatura, $alumno->alumno_id);
 			
 
 			$sumatoria_asignaturas += $asignatura->nota_asignatura; // Para sacar promedio del periodo
@@ -226,7 +197,6 @@ class BoletinesController extends Controller {
 			
 
 
-
 		// COMPORTAMIENTO Y SUS FRASES
 		if ($comport_and_frases) {
 			
@@ -247,150 +217,131 @@ class BoletinesController extends Controller {
 		}
 		
 
-
 		return $alumno;
 	}
 
 
-	public function asignaturasPerdidasDeAlumno($alumno, $grupo_id, $year_id, $periodo_a_calcular)
+	public function asignaturasPerdidasDeAlumno(&$alumno, $grupo_id, $year_id, $periodo_a_calcular)
 	{
-		$asignaturas	= Grupo::detailed_materias($grupo_id);
+		//$asignaturas	= Grupo::detailed_materias_notas_finales($alumno->alumno_id, $grupo_id, $this->user->year_id);
+		$alumno->asignaturas_perdidas = [];
+		$alumno->notas_perdidas_year = 0;
+		$alumno->notas_perdidas_per1 = 0;
+		$alumno->notas_perdidas_per2 = 0;
+		$alumno->notas_perdidas_per3 = 0;
+		$alumno->notas_perdidas_per4 = 0;
 
-
-		foreach ($asignaturas as $keyAsig => $asignatura) {
+		foreach ($alumno->asignaturas as $keyAsig => $asignatura) {
 			
-			$periodos = Periodo::hastaPeriodoN($year_id, $periodo_a_calcular);
-
-			$asignatura->cantTotal = 0;
-
-			foreach ($periodos as $keyPer => $periodo) {
-
-				$periodo->cantNotasPerdidas = 0;
-				$periodo->unidades = Unidad::deAsignatura($asignatura->asignatura_id, $periodo->id);
-
-
-				foreach ($periodo->unidades as $keyUni => $unidad) {
+			$calcPerdidas = new CalcPerdidasDefinitivas();
+			$periodos = $calcPerdidas->hastaPeriodoConDefinitivas($alumno->alumno_id, $asignatura->asignatura_id, $grupo_id, $periodo_a_calcular);
+			if(count($periodos)>0){
+				
+				if ($this->user->si_recupera_materia_recup_indicador){
+					if ($periodos[0]->definitiva_year < $this->user->nota_minima_aceptada && $periodos[0]->cant_perdidas_year > 0) {
+						$asignatura->detalle_periodos = $periodos[0];
+						
+						$alumno->notas_perdidas_year += $periodos[0]->cant_perdidas_year;
+						$alumno->notas_perdidas_per1 += $periodos[0]->cant_perdidas_1;
+						if(isset($periodos[0]->cant_perdidas_2)) $alumno->notas_perdidas_per2 += $periodos[0]->cant_perdidas_2;
+						if(isset($periodos[0]->cant_perdidas_3)) $alumno->notas_perdidas_per3 += $periodos[0]->cant_perdidas_3;
+						if(isset($periodos[0]->cant_perdidas_4)) $alumno->notas_perdidas_per4 += $periodos[0]->cant_perdidas_4;
+						
+						array_push($alumno->asignaturas_perdidas, $asignatura);
+					}
 					
-					$subunidades = Subunidad::perdidasDeUnidad($unidad->unidad_id, $alumno->alumno_id);
-					
-					if (count($subunidades) > 0) {
-						$unidad->subunidades = $subunidades;
-						$periodo->cantNotasPerdidas += count($subunidades);
-					}else{
-						$uniTemp = $periodo->unidades;
-						unset($uniTemp[$keyUni]);
-						$periodo->unidades = $uniTemp;
+				}else{
+					if ($periodos[0]->cant_perdidas_year > 0) {
+						$asignatura->detalle_periodos = $periodos[0];
+						
+						$alumno->notas_perdidas_year += $periodos[0]->cant_perdidas_year;
+						$alumno->notas_perdidas_per1 += $periodos[0]->cant_perdidas_1;
+						if(isset($periodos[0]->cant_perdidas_2)) $alumno->notas_perdidas_per2 += $periodos[0]->cant_perdidas_2;
+						if(isset($periodos[0]->cant_perdidas_3)) $alumno->notas_perdidas_per3 += $periodos[0]->cant_perdidas_3;
+						if(isset($periodos[0]->cant_perdidas_4)) $alumno->notas_perdidas_per4 += $periodos[0]->cant_perdidas_4;
+						
+						array_push($alumno->asignaturas_perdidas, $asignatura);
 					}
 				}
-				#$periodo->unidades = $unidades;
-
-				$asignatura->cantTotal += $periodo->cantNotasPerdidas;
 				
-				if (count($periodo->unidades) > 0) {
-					#$periodo->unidades = $unidades;
-				}else{
-					unset($periodos[$keyPer]);
-				}
-				
-				
-			}
-
-			if (count($periodos) > 0) {
-				$asignatura->periodos = $periodos;
-			}else{
-				unset($asignaturas[$keyAsig]);
-			}
-
-			$hasPeriodosConPerdidas = false;
-
-			foreach ($periodos as $keyPer => $periodo) {
-				if (count($periodo->unidades) > 0) {
-					$hasPeriodosConPerdidas = true;
-				}
-			}
-
-			if (!$hasPeriodosConPerdidas) {
-				unset($asignaturas[$keyAsig]);
-			}
+			} 
 
 		}
 
-		return $asignaturas;
+		return $alumno;
 
 	}
 
 
 
-	public function asignaturasPerdidasDeAlumno2($alumno, $grupo_id, $year_id, $periodo_a_calcular)
+	public function datosYearPasado(&$alumno, $grupo_id, $year_id)
 	{
-		$consulta = '';
-		DB::select();
+		$year_ant_num 	= $this->user->year - 1;
 		
-		return;
-		$asignaturas	= Grupo::detailed_materias($grupo_id);
-
-
-		foreach ($asignaturas as $keyAsig => $asignatura) {
+		$consulta 		= 'SELECT y.year, y.id as year_id, g.id as grupo_id, si_recupera_materia_recup_indicador, nota_minima_aceptada
+						FROM years y
+						INNER JOIN grupos g ON g.year_id=y.id and g.deleted_at is null
+						INNER JOIN matriculas m ON m.grupo_id=g.id and (m.estado="MATR" or m.estado="ASIS") and m.deleted_at is null and m.alumno_id=?
+						WHERE y.deleted_at is null and y.year=?';
+						
+		$year_ant 		= DB::select($consulta, [$alumno->alumno_id, $year_ant_num]);
+		
+		if (count($year_ant) > 0) {
+			//Debugging::pin('Mas de cero');
+			$year_ant 				= $year_ant[0];
+			$asignaturas			= Grupo::detailed_materias($year_ant->grupo_id);
 			
-			$periodos = Periodo::hastaPeriodoN($year_id, $periodo_a_calcular);
+			$alumno->asignaturas_year_pasado = [];
+			$alumno->yp_notas_perdidas_year = 0;
+			$alumno->yp_notas_perdidas_per1 = 0;
+			$alumno->yp_notas_perdidas_per2 = 0;
+			$alumno->yp_notas_perdidas_per3 = 0;
+			$alumno->yp_notas_perdidas_per4 = 0;
 
-			$asignatura->cantTotal = 0;
-
-			foreach ($periodos as $keyPer => $periodo) {
-
-				$periodo->cantNotasPerdidas = 0;
-				$periodo->unidades = Unidad::deAsignatura($asignatura->asignatura_id, $periodo->id);
-
-
-				foreach ($periodo->unidades as $keyUni => $unidad) {
+			foreach ($asignaturas as $keyAsig => $asignatura) {
+				
+				$calcPerdidas = new CalcPerdidasDefinitivas();
+				$periodos = $calcPerdidas->hastaPeriodoConDefinitivas($alumno->alumno_id, $asignatura->asignatura_id, $grupo_id, 4);
+				if(count($periodos)>0){
 					
-					$subunidades = Subunidad::perdidasDeUnidad($unidad->unidad_id, $alumno->alumno_id);
-					
-					if (count($subunidades) > 0) {
-						$unidad->subunidades = $subunidades;
-						$periodo->cantNotasPerdidas += count($subunidades);
+					if ($year_ant->si_recupera_materia_recup_indicador){
+						if ($periodos[0]->definitiva_year < $year_ant->nota_minima_aceptada && $periodos[0]->cant_perdidas_year > 0) {
+							$asignatura->detalle_periodos = $periodos[0];
+							
+							$alumno->yp_notas_perdidas_year += $periodos[0]->cant_perdidas_year;
+							$alumno->yp_notas_perdidas_per1 += $periodos[0]->cant_perdidas_1;
+							$alumno->yp_notas_perdidas_per2 += $periodos[0]->cant_perdidas_2;
+							$alumno->yp_notas_perdidas_per3 += $periodos[0]->cant_perdidas_3;
+							$alumno->yp_notas_perdidas_per4 += $periodos[0]->cant_perdidas_4;
+							
+							array_push($alumno->asignaturas_year_pasado, $asignatura);
+						}
+						
 					}else{
-						$uniTemp = $periodo->unidades;
-						unset($uniTemp[$keyUni]);
-						$periodo->unidades = $uniTemp;
+						if ($periodos[0]->cant_perdidas_year > 0) {
+							$asignatura->detalle_periodos = $periodos[0];
+							
+							$alumno->yp_notas_perdidas_year += $periodos[0]->cant_perdidas_year;
+							$alumno->yp_notas_perdidas_per1 += $periodos[0]->cant_perdidas_1;
+							$alumno->yp_notas_perdidas_per2 += $periodos[0]->cant_perdidas_2;
+							$alumno->yp_notas_perdidas_per3 += $periodos[0]->cant_perdidas_3;
+							$alumno->yp_notas_perdidas_per4 += $periodos[0]->cant_perdidas_4;
+							
+							array_push($alumno->asignaturas_year_pasado, $asignatura);
+						}
 					}
-				}
-				#$periodo->unidades = $unidades;
-
-				$asignatura->cantTotal += $periodo->cantNotasPerdidas;
-				
-				if (count($periodo->unidades) > 0) {
-					#$periodo->unidades = $unidades;
-				}else{
-					unset($periodos[$keyPer]);
-				}
-				
+						
+					
+				} 
 				
 			}
 
-			if (count($periodos) > 0) {
-				$asignatura->periodos = $periodos;
-			}else{
-				unset($asignaturas[$keyAsig]);
-			}
-
-			$hasPeriodosConPerdidas = false;
-
-			foreach ($periodos as $keyPer => $periodo) {
-				if (count($periodo->unidades) > 0) {
-					$hasPeriodosConPerdidas = true;
-				}
-			}
-
-			if (!$hasPeriodosConPerdidas) {
-				unset($asignaturas[$keyAsig]);
-			}
-
+			
 		}
-
-		return $asignaturas;
-
+		
+		return $alumno;
 	}
+	
 
 	public function periodosPerdidosDeAlumno($alumno, $grupo_id, $year_id, $periodos)
 	{

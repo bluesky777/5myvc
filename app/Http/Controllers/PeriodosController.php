@@ -31,12 +31,14 @@ class PeriodosController extends Controller {
 	public function postStore($year_id)
 	{
 		$periodo = new Periodo;
-		$periodo->numero			=	Request::input('numero');
-		$periodo->fecha_inicio		=	Request::input('fecha_inicio');
-		$periodo->fecha_fin			=	Request::input('fecha_fin');
-		$periodo->actual			=	false;
-		$periodo->year_id			=	$year_id;
-		$periodo->fecha_plazo		=	Request::input('fecha_plazo');
+		$periodo->numero						=	Request::input('numero');
+		$periodo->fecha_inicio					=	Request::input('fecha_inicio');
+		$periodo->fecha_fin						=	Request::input('fecha_fin');
+		$periodo->actual						=	false;
+		$periodo->year_id						=	$year_id;
+		$periodo->profes_pueden_editar_notas	=	1;
+		$periodo->profes_pueden_nivelar			=	1;
+		$periodo->fecha_plazo					=	Request::input('fecha_plazo');
 
 		$periodo->save();
 
