@@ -33,15 +33,24 @@ class HistorialesController extends Controller {
         $bita = DB::select($consulta, [$nota_id, $nota_id] );
         
         
-		$consulta 	= 'SELECT *, concat(p.nombres, " ", p.apellidos) as creado_por, u2.username as modificado_por
-                        FROM notas n 
-                        inner join users u on u.id=n.created_by
-                        inner join profesores p on p.user_id=u.id
-                        left join users u2 on u2.id=n.updated_by
-                        where n.id=?';
+		$consulta 	= '(SELECT n.*, concat(p.nombres, " ", p.apellidos) as creado_por, u2.username as modificado_por
+                            FROM notas n 
+                            inner join users u on u.id=n.created_by
+                            inner join profesores p on p.user_id=u.id
+                            left join users u2 on u2.id=n.updated_by
+                            where n.id=?)
+                        UNION
+                        (SELECT n.*, u.username as creado_por, u2.username as modificado_por
+                            FROM notas n 
+                            inner join users u on u.id=n.created_by
+                            left join users u2 on u2.id=n.updated_by
+                            where n.id=?)';
 		
 
-		$nota = DB::select($consulta, [$nota_id] )[0];
+        $nota = DB::select($consulta, [$nota_id, $nota_id] );
+        if(count($nota)>0){
+            $nota = $nota[0];
+        }
 
 
 		$res['cambios'] 	= $bita;
