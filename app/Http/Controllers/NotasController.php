@@ -265,10 +265,10 @@ class NotasController extends Controller {
 	{
 		$user 	= User::fromToken();
 		User::pueden_editar_notas($user);
-		$nota 	= Nota::findOrFail($id);
-		$nota->delete();
+		$consulta 	= 'DELETE FROM notas WHERE id=?';
+		DB::delete($consulta, [$id]);
 
-		return $nota;
+		return 'Eliminada';
 	}
 
 }

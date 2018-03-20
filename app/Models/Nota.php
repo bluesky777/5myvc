@@ -58,8 +58,8 @@ class Nota extends Model {
 	// Verificar nota de un alumno si tiene o crearla
 	public static function verificarCrearNota($alumno_id, $subunidad)
 	{
-		$notVerif = Nota::where('subunidad_id', '=', $subunidad->id)
-						->where('alumno_id', '=', $alumno_id)->first();
+		$notVerif = Nota::where('subunidad_id', $subunidad->id)
+						->where('alumno_id', $alumno_id)->first();
 
 		if ($notVerif) {
 			$nota = $notVerif;

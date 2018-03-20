@@ -53,7 +53,7 @@ class Grupo extends Model {
 							a.foto_id, IFNULL(i2.nombre, IF(a.sexo="F","default_female.png", "default_male.png")) as foto_nombre,
 							m.fecha_retiro as fecha_retiro 
 						FROM alumnos a 
-						inner join matriculas m on a.id=m.alumno_id and m.grupo_id=?  
+						inner join matriculas m on a.id=m.alumno_id and m.grupo_id=? and m.deleted_at is null 
 						left join users u on a.user_id=u.id and u.deleted_at is null
 						left join images i on i.id=u.imagen_id and i.deleted_at is null
 						left join images i2 on i2.id=a.foto_id and i2.deleted_at is null
