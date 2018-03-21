@@ -40,22 +40,43 @@ class Unidad extends Model {
 	}
 
 
-	public static function deAsignatura2($alumno_id, $asignatura_id, $periodo_id)
+	public static function deAsignaturaCalculada($alumno_id, $asignatura_id, $periodo_id, $con_desempenio=false, $year_id=0)
 	{
-		$consulta = 'SELECT u.id as unidad_id, u.definicion as definicion_unidad, u.porcentaje as porcentaje_unidad, 
-						u.asignatura_id, u.orden as orden_unidad, u.periodo_id, ROUND(sum((n.nota*s.porcentaje/100))) as nota_unidad
-					FROM unidades u
-					left join subunidades s ON s.unidad_id=u.id and s.deleted_at is null
-					left join notas n ON n.subunidad_id=s.id and n.deleted_at is null and alumno_id=:alumno_id
-					where u.asignatura_id=:asignatura_id and u.periodo_id=:periodo_id and u.deleted_at is null
-					group by u.id 
-					order by u.orden, u.id';
+		if ($con_desempenio) {
+			$consulta = 'SELECT * 
+						FROM
+						(SELECT u.id as unidad_id, u.definicion as definicion_unidad, u.porcentaje as porcentaje_unidad, 
+							u.asignatura_id, u.orden as orden_unidad, u.periodo_id, ROUND(sum((n.nota*s.porcentaje/100))) as nota_unidad
+						FROM unidades u
+						left join subunidades s ON s.unidad_id=u.id and s.deleted_at is null
+						left join notas n ON n.subunidad_id=s.id and n.deleted_at is null and alumno_id=:alumno_id
+						where u.asignatura_id=:asignatura_id and u.periodo_id=:periodo_id and u.deleted_at is null
+						group by u.id ) r1
+						left join escalas_de_valoracion e ON e.porc_inicial<=r1.nota_unidad and e.porc_final>=r1.nota_unidad and e.deleted_at is null and e.year_id=:year_id
+						order by r1.orden_unidad, r1.unidad_id';
 
-		$unidades = DB::select(DB::raw($consulta), array(
-			':alumno_id'		=> $alumno_id,
-			':asignatura_id'	=> $asignatura_id,
-			':periodo_id'		=> $periodo_id
-		));
+			$unidades = DB::select(DB::raw($consulta), array(
+				':alumno_id'		=> $alumno_id,
+				':asignatura_id'	=> $asignatura_id,
+				':periodo_id'		=> $periodo_id,
+				':year_id'			=> $year_id,
+			));
+		}else{
+			$consulta = 'SELECT u.id as unidad_id, u.definicion as definicion_unidad, u.porcentaje as porcentaje_unidad, 
+							u.asignatura_id, u.orden as orden_unidad, u.periodo_id, ROUND(sum((n.nota*s.porcentaje/100))) as nota_unidad
+						FROM unidades u
+						left join subunidades s ON s.unidad_id=u.id and s.deleted_at is null
+						left join notas n ON n.subunidad_id=s.id and n.deleted_at is null and alumno_id=:alumno_id
+						where u.asignatura_id=:asignatura_id and u.periodo_id=:periodo_id and u.deleted_at is null
+						group by u.id 
+						order by u.orden, u.id';
+
+			$unidades = DB::select(DB::raw($consulta), array(
+				':alumno_id'		=> $alumno_id,
+				':asignatura_id'	=> $asignatura_id,
+				':periodo_id'		=> $periodo_id
+			));
+		}
 
 		return $unidades;
 	}

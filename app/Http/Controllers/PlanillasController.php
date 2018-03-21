@@ -35,20 +35,46 @@ class PlanillasController extends Controller {
 
 		foreach ($asignaturas as $keyMat => $asignatura) {
 			
-			$alumnos	= Grupo::alumnos($grupo_id);
-			$asignatura->nombre_grupo = $grupo->nombre_grupo;
-
-			$asignatura->periodosProm = Periodo::delYear($user->year_id);
+			$alumnos						= Grupo::alumnos($grupo_id);
+			$asignatura->nombre_grupo 		= $grupo->nombre_grupo;
+			$asignatura->definitiva_per1	= 0;
+			$asignatura->definitiva_per2	= 0;
+			$asignatura->definitiva_per3	= 0;
+			$asignatura->definitiva_per4	= 0;
+			//$asignatura->periodosProm = Periodo::delYear($user->year_id);
 
 			// A cada alumno le daremos los periodos y la definitiva de cada periodo
 			foreach ($alumnos as $keyAl => $alumno) {
-
+				
+				$consulta = 'SELECT  nf1.nota as nota_final_per1, nf1.id as nf_id_1,
+								nf2.nota as nota_final_per2, nf2.id as nf_id_2,
+								nf3.nota as nota_final_per3, nf3.id as nf_id_3,
+								nf4.nota as nota_final_per4, nf4.id as nf_id_4
+							FROM notas_finales nf1 
+							left join notas_finales nf2 on nf2.alumno_id=:alu1 and nf2.asignatura_id=:asi1 and nf2.periodo=2
+							left join notas_finales nf3 on nf3.alumno_id=:alu2 and nf3.asignatura_id=:asi2 and nf3.periodo=3
+							left join notas_finales nf4 on nf4.alumno_id=:alu3 and nf4.asignatura_id=:asi3 and nf4.periodo=4
+							where nf1.alumno_id=:alu4 and nf1.asignatura_id=:asi4 and nf1.periodo=1';
+				
+				$definitivas = DB::select($consulta, [ ':alu1' => $alumno->alumno_id, ':asi1' => $asignatura->asignatura_id, ':alu2' => $alumno->alumno_id, ':asi2' => $asignatura->asignatura_id, ':alu3' => $alumno->alumno_id, ':asi3' => $asignatura->asignatura_id, ':alu4' => $alumno->alumno_id, ':asi4' => $asignatura->asignatura_id ]);
+				if (count($definitivas) > 0) {
+					$alumno->definitivas 			= $definitivas[0];
+					$asignatura->definitiva_per1	+= $alumno->definitivas->nota_final_per1;
+					$asignatura->definitiva_per2	+= $alumno->definitivas->nota_final_per2;
+					$asignatura->definitiva_per3	+= $alumno->definitivas->nota_final_per3;
+					$asignatura->definitiva_per4	+= $alumno->definitivas->nota_final_per4;
+				}else{
+					$alumno->definitivas = [];
+				}
+				
+				
+				/*
 				$periodosTemp = Periodo::delYear($user->year_id);
 
 				foreach ($periodosTemp as $keyPer => $periodo) {
 
 					// Unidades y subunidades de la asignatura en el periodo
-					$asignaturaTemp = Asignatura::find($asignatura->asignatura_id);
+					$asignaturaTemp = DB::select('SELECT * FROM asignaturas WHERE deleted_at is null and id=?', [ $asignatura->asignatura_id ])[0];
 					$asignaturaTemp->unidades = Unidad::deAsignatura($asignaturaTemp->id, $periodo->id);
 
 					foreach ($asignaturaTemp->unidades as $unidad) {
@@ -60,13 +86,9 @@ class PlanillasController extends Controller {
 					$periodo->nota_asignatura = $asignaturaTemp->nota_asignatura;
 					unset($asignaturaTemp);
 				}
-
 				$alumno->periodos = $periodosTemp;
 				unset($periodosTemp);
-
-
-
-
+				
 
 				foreach ($asignatura->periodosProm as $keyPer => $periodo) {
 					if (! isset($periodo->sumatoria)) {
@@ -80,12 +102,25 @@ class PlanillasController extends Controller {
 						}
 					}
 				}
-
+				*/
 
 			}
 
-			$asignatura->alumnos = $alumnos;
-
+			$asignatura->alumnos 	= $alumnos;
+			$cant 					= count($alumnos);
+			
+			if($cant>0){
+				$asignatura->definitiva_per1 	= round($asignatura->definitiva_per1 / $cant);
+				$asignatura->definitiva_per2 	= round($asignatura->definitiva_per2 / $cant);
+				$asignatura->definitiva_per3 	= round($asignatura->definitiva_per3 / $cant);
+				$asignatura->definitiva_per4 	= round($asignatura->definitiva_per4 / $cant);
+				
+				if ($asignatura->definitiva_per1==0){ $asignatura->definitiva_per1 = '<span class="invisible">.</span>'; }
+				if ($asignatura->definitiva_per2==0){ $asignatura->definitiva_per2 = '<span class="invisible">.</span>'; }
+				if ($asignatura->definitiva_per3==0){ $asignatura->definitiva_per3 = '<span class="invisible">.</span>'; }
+				if ($asignatura->definitiva_per4==0){ $asignatura->definitiva_per4 = '<span class="invisible">.</span>'; }
+			}
+			
 		}
 
 		return array($year, $asignaturas);

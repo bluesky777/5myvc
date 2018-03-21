@@ -13,11 +13,16 @@ use Hash;
 
 class ProfesoresController extends Controller {
 
+	public $user;
+
+	public function __construct()
+	{
+		$this->user = User::fromToken();
+	}
+
 
 	public function getIndex()
 	{
-		$user = User::fromToken();
-
 		$consulta = 'SELECT p.id, p.nombres, p.apellidos, p.sexo, p.foto_id, p.tipo_doc,
 					p.num_doc, p.ciudad_doc, p.fecha_nac, p.ciudad_nac, p.titulo,
 					p.estado_civil, p.barrio, p.direccion, p.telefono, p.celular,
@@ -32,7 +37,7 @@ class ProfesoresController extends Controller {
 				where p.deleted_at is null
 				order by p.nombres, p.apellidos';
 
-		$profesores = DB::select($consulta, array(':year_id'=>$user->year_id));
+		$profesores = DB::select($consulta, array(':year_id'=>$this->user->year_id));
 		return $profesores;
 	}
 
@@ -192,90 +197,90 @@ class ProfesoresController extends Controller {
 
 	public function putUpdate($id)
 	{
-		
-		$this->sanarInputUser();
-		$this->sanarInputProfesor();
+		if ($this->user->roles[0]->name == 'Admin') {
+			$this->sanarInputUser();
+			$this->sanarInputProfesor();
 
+			
+			$profesor = Profesor::findOrFail($id);
+			try {
+				$profesor->nombres		=	Request::input('nombres_profesor', Request::input('nombres'));
+				$profesor->apellidos	=	Request::input('apellidos_profesor', Request::input('apellidos'));
+				$profesor->sexo			=	Request::input('sexo');
+				$profesor->tipo_doc		=	Request::input('tipo_doc');
+				$profesor->num_doc		=	Request::input('num_doc');
+				$profesor->ciudad_doc	=	Request::input('ciudad_doc');
+				$profesor->fecha_nac	=	Request::input('fecha_nac');
+				$profesor->ciudad_nac	=	Request::input('ciudad_nac');
+				$profesor->titulo		=	Request::input('titulo');
+				$profesor->estado_civil	=	Request::input('estado_civil');
+				$profesor->barrio		=	Request::input('barrio');
+				$profesor->direccion	=	Request::input('direccion');
+				$profesor->telefono		=	Request::input('telefono');
+				$profesor->celular		=	Request::input('celular');
+				$profesor->facebook		=	Request::input('facebook');
+				$profesor->email		=	Request::input('email');
+				//$profesor->tipo_profesor	=>	Request::input('tipo_profesor')
 
-		$profesor = Profesor::findOrFail($id);
-		try {
-			$profesor->nombres		=	Request::input('nombres_profesor', Request::input('nombres'));
-			$profesor->apellidos	=	Request::input('apellidos_profesor', Request::input('apellidos'));
-			$profesor->sexo			=	Request::input('sexo');
-			$profesor->tipo_doc		=	Request::input('tipo_doc');
-			$profesor->num_doc		=	Request::input('num_doc');
-			$profesor->ciudad_doc	=	Request::input('ciudad_doc');
-			$profesor->fecha_nac	=	Request::input('fecha_nac');
-			$profesor->ciudad_nac	=	Request::input('ciudad_nac');
-			$profesor->titulo		=	Request::input('titulo');
-			$profesor->estado_civil	=	Request::input('estado_civil');
-			$profesor->barrio		=	Request::input('barrio');
-			$profesor->direccion	=	Request::input('direccion');
-			$profesor->telefono		=	Request::input('telefono');
-			$profesor->celular		=	Request::input('celular');
-			$profesor->facebook		=	Request::input('facebook');
-			$profesor->email		=	Request::input('email');
-			//$profesor->tipo_profesor	=>	Request::input('tipo_profesor')
+				$profesor->save();
 
+				if ($profesor->user_id and Request::input('username')) {
+					
+					$this->sanarInputUser();
+					
+					$this->checkOrChangeUsername($profesor->user_id);
 
-			$profesor->save();
+					$usuario = User::find($profesor->user_id);
+					$usuario->username		=	Request::input('username');
+					$usuario->email			=	Request::input('email2');
+					$usuario->is_superuser	=	Request::input('is_superuser', false);
+					$usuario->is_active		=	Request::input('is_active', true);
 
-			if ($profesor->user_id and Request::input('username')) {
-				
-				$this->sanarInputUser();
-				
-				$this->checkOrChangeUsername($profesor->user_id);
-
-				$usuario = User::find($profesor->user_id);
-				$usuario->username		=	Request::input('username');
-				$usuario->email			=	Request::input('email2');
-				$usuario->is_superuser	=	Request::input('is_superuser', false);
-				$usuario->is_active		=	Request::input('is_active', true);
-
-				if (Request::input('password')){
-					if (Request::input('password') != "") {
-						$usuario->password = Hash::make(Request::input('password'));
+					if (Request::input('password')){
+						if (Request::input('password') != "") {
+							$usuario->password = Hash::make(Request::input('password'));
+						}
 					}
+
+					$usuario->save();
+
+					$profesor->user_id = $usuario->id;
+					
+					$profesor->save();
+
+					$profesor->user = $usuario;
+				} else if (!$profesor->user_id and Request::input('username')) {
+					
+					$this->sanarInputUser();
+					$this->checkOrChangeUsername($profesor->user_id);
+
+					$usuario = new User;
+					$usuario->username		=	Request::input('username');
+					$usuario->password		=	Hash::make(Request::input('password', '123456'));
+					$usuario->email			=	Request::input('email2');
+					$usuario->is_superuser	=	Request::input('is_superuser', false);
+					$usuario->is_active		=	Request::input('is_active', true);
+					$usuario->save();
+
+
+					$profesor->user_id = $usuario->id;
+					
+					$profesor->save();
+
+					$profesor->user = $usuario;
 				}
 
-				$usuario->save();
-
-				$profesor->user_id = $usuario->id;
-				
-				$profesor->save();
-
-				$profesor->user = $usuario;
-			} else if (!$profesor->user_id and Request::input('username')) {
-				
-				$this->sanarInputUser();
-				$this->checkOrChangeUsername($profesor->user_id);
-
-				$usuario = new User;
-				$usuario->username		=	Request::input('username');
-				$usuario->password		=	Hash::make(Request::input('password', '123456'));
-				$usuario->email			=	Request::input('email2');
-				$usuario->is_superuser	=	Request::input('is_superuser', false);
-				$usuario->is_active		=	Request::input('is_active', true);
-				$usuario->save();
-
-
-				$profesor->user_id = $usuario->id;
-				
-				$profesor->save();
-
-				$profesor->user = $usuario;
+				return $profesor;
+			} catch (Exception $e) {
+				return abort(400, $e);
 			}
-
-			return $profesor;
-		} catch (Exception $e) {
-			return abort(400, $e);
 		}
 	}
 
 
 	public function checkOrChangeUsername($user_id){
 
-		$user = User::where('username', '=', Request::input('username'))->first();
+		$user = User::where('username', Request::input('username'))->first();
 		//mientras el user exista iteramos y aumentamos i
 		if ($user) {
 
@@ -285,7 +290,7 @@ class ProfesoresController extends Controller {
 			
 			$username = $user->username;
 			$i = 0;
-			while(sizeof(User::where('username', '=', $username)->first()) > 0 ){
+			while(sizeof(User::where('username', $username)->first()) > 0 ){
 				$i++;
 				$username = $user->username.$i;
 			}
@@ -296,29 +301,21 @@ class ProfesoresController extends Controller {
 
 
 
-	public function getConyears(){
+	public function getConyears()
+	{
 
-		$user = User::fromToken();
-
-		$profesores = Profesor::fromyear($user->year_id);
+		$profesores = Profesor::fromyear($this->user->year_id);
 
 		foreach ($profesores as $profesor) {
 			$profesor->years = Year::de_un_profesor($profesor->id);
 		}
-		
 		return $profesores;
-		
 	}
 
 
 	public function deleteDestroy($id)
 	{
-		$user = User::fromToken();
 		$profesor = Profesor::find($id);
-		//$queries = DB::getQueryLog();
-		//$last_query = end($queries);
-		//return $last_query;
-
 		if ($profesor) {
 			$profesor->delete();
 		}else{
@@ -330,7 +327,6 @@ class ProfesoresController extends Controller {
 
 	public function deleteForcedelete($id)
 	{
-		$user = User::fromToken();
 		$profesor = Profesor::onlyTrashed()->findOrFail($id);
 		
 		if ($profesor) {
@@ -344,7 +340,6 @@ class ProfesoresController extends Controller {
 
 	public function putRestore($id)
 	{
-		$user = User::fromToken();
 		$profesor = Profesor::onlyTrashed()->findOrFail($id);
 
 		if ($profesor) {
@@ -358,7 +353,6 @@ class ProfesoresController extends Controller {
 
 	public function getTrashed()
 	{
-		$user = User::fromToken();
 		$consulta = 'SELECT m2.matricula_id, a.id as alumno_id, a.no_matricula, a.nombres, a.apellidos, a.sexo, a.user_id, 
 				a.fecha_nac, a.ciudad_nac, a.celular, a.direccion, a.religion,
 				m2.year_id, m2.grupo_id, m2.nombregrupo, m2.abrevgrupo, IFNULL(m2.actual, -1) as currentyear,

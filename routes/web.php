@@ -70,6 +70,7 @@ AdvancedRoute::controller('planillas-ausencias', 'Informes\PlanillasAusenciasCon
 AdvancedRoute::controller('notas-perdidas', 'Informes\NotasPerdidasController');
 AdvancedRoute::controller('boletines', 'Informes\BoletinesController');
 AdvancedRoute::controller('boletines2', 'Informes\Boletines2Controller');
+AdvancedRoute::controller('boletines3', 'Informes\Boletines3Controller');
 AdvancedRoute::controller('simat', 'Informes\SimatController');
 AdvancedRoute::controller('observador', 'Informes\ObservadorController');
 

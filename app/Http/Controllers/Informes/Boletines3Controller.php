@@ -30,7 +30,7 @@ use App\Models\Debugging;
 use Carbon\Carbon;
 
 
-class Boletines2Controller extends Controller {
+class Boletines3Controller extends Controller {
 	
 	public $user;
 	public $escalas_val;

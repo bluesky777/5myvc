@@ -153,7 +153,7 @@ class BoletinesController extends Controller {
 		$alumno->ausencias_total = $ausencias_total;
 
 		foreach ($asignaturas as $asignatura) {
-			$asignatura->unidades = Unidad::deAsignatura2($alumno->alumno_id, $asignatura->asignatura_id, $periodo_id);
+			$asignatura->unidades = Unidad::deAsignaturaCalculada($alumno->alumno_id, $asignatura->asignatura_id, $periodo_id);
 
 			foreach ($asignatura->unidades as $unidad) {
 				$unidad->subunidades = Subunidad::deUnidadCalculada($alumno->alumno_id, $unidad->unidad_id, $this->user->year_id);
@@ -384,77 +384,6 @@ class BoletinesController extends Controller {
 	}
 
 
-	public function deleteDestroy($id)
-	{
-		$alumno = Alumno::find($id);
-		
-		if ($alumno) {
-			$alumno->delete();
-		}else{
-			return abort(400, 'Alumno no existe o está en Papelera.');
-		}
-		return $alumno;
-	
-	}	
-
-	public function deleteForcedelete($id)
-	{
-		$alumno = Alumno::onlyTrashed()->findOrFail($id);
-		
-		if ($alumno) {
-			$alumno->forceDelete();
-		}else{
-			return abort(400, 'Alumno no encontrado en la Papelera.');
-		}
-		return $alumno;
-	
-	}
-
-	public function putRestore($id)
-	{
-		$alumno = Alumno::onlyTrashed()->findOrFail($id);
-
-		if ($alumno) {
-			$alumno->restore();
-		}else{
-			return abort(400, 'Alumno no encontrado en la Papelera.');
-		}
-		return $alumno;
-	}
-
-
-	public function getTrashed()
-	{
-		$previous_year = $this->user->year - 1;
-		$id_previous_year = 0;
-		$previous_year = Year::where('year', '=', $previous_year)->first();
-
-
-		$consulta = 'SELECT m2.matricula_id, a.id as alumno_id, a.no_matricula, a.nombres, a.apellidos, a.sexo, a.user_id, 
-				a.fecha_nac, a.ciudad_nac, a.celular, a.direccion, a.religion,
-				m2.year_id, m2.grupo_id, m2.nombregrupo, m2.abrevgrupo, IFNULL(m2.actual, -1) as currentyear,
-				u.username, u.is_superuser, u.is_active
-			FROM alumnos a left join 
-				(select m.id as matricula_id, g.year_id, m.grupo_id, m.alumno_id, g.nombre as nombregrupo, g.abrev as abrevgrupo, 0 as actual
-				from matriculas m INNER JOIN grupos g ON m.grupo_id=g.id and g.year_id=:id_previous_year
-				and m.alumno_id NOT IN 
-					(select m.alumno_id
-					from matriculas m INNER JOIN grupos g ON m.grupo_id=g.id and g.year_id=:year_id)
-					union
-					select m.id as matricula_id, g.year_id, m.grupo_id, m.alumno_id, g.nombre as nombregrupo, g.abrev as abrevgrupo, 1 AS actual
-					from matriculas m INNER JOIN grupos g ON m.grupo_id=g.id and g.year_id=:year2_id
-				)m2 on a.id=m2.alumno_id
-			left join users u on u.id=a.user_id where a.deleted_at is not null';
-
-		return DB::select($consulta, [
-						':id_previous_year'	=>$id_previous_year, 
-						':year_id'			=>$this->user->year_id,
-						':year2_id'			=>$this->user->year_id
-			]);
-	}
-	
-	
-	
 	
 	
 	private function encabezado_comportamiento_boletin($nota, $nota_minima_aceptada, $mostrar_nota_comport, $sexo){
