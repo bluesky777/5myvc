@@ -203,6 +203,7 @@ class CalcPerdidasDefinitivas {
 	
 	public function hastaPeriodoConDefinitivas($alumno_id, $asignatura_id, $grupo_id, $periodo_a_calcular=4)
 	{
+		$periodos = [];
 		if ($periodo_a_calcular == 1) {
 			$consulta = $this->consulta_per1;
 					

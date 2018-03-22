@@ -19,7 +19,7 @@ class CreateAcudientesTable extends Migration {
 			$table->increments('id');
 			$table->string('nombres');
 			$table->string('apellidos')->nullable();
-			$table->string('sexo');
+			$table->string('sexo')->default('M');
 			$table->integer('user_id')->unsigned()->nullable();
 			$table->boolean('is_acudiente')->default(false);
 			$table->date('fecha_nac')->nullable();

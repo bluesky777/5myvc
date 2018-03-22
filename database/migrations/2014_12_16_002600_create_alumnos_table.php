@@ -19,7 +19,7 @@ class CreateAlumnosTable extends Migration {
 			$table->string('no_matricula')->nullable();
 			$table->string('nombres');
 			$table->string('apellidos')->nullable();
-			$table->string('sexo', 1);
+			$table->string('sexo', 1)->default('M');
 			$table->integer('user_id')->unsigned()->index()->nullable();
 			$table->date('fecha_nac')->nullable();
 			$table->integer('ciudad_nac')->unsigned()->index()->nullable();

@@ -34,6 +34,8 @@ class ImporterFixer {
 		$cons = '';
 		$consA1 = '';
 		$consA2 = '';
+		$ciudad_id_A1 = null;
+		$ciudad_id_A2 = null;
 
 		//if ($alumno->tipo_de_documento == 'fecha_nac')
 		//	$valor = Carbon::parse($valor);
@@ -66,11 +68,12 @@ class ImporterFixer {
 				$cons .= ', ciudad_resid='.$this->ciudades[$i]->id;
             }
 			if(strtolower($this->ciudades[$i]->ciudad) == strtolower($alumno->ciudad_docu_acud1) || $this->ciudades[$i]->id == $alumno->ciudad_docu_acud1){
-				$consA1 .= ', ciudad_doc='.$this->ciudades[$i]->id;
-				Debugging::pin('ciudad_docu_acud1 ', $this->ciudades[$i]->id);
+				$consA1 		.= ', ciudad_doc='.$this->ciudades[$i]->id;
+				$ciudad_id_A1 	= $this->ciudades[$i]->id;
             }
 			if(strtolower($this->ciudades[$i]->ciudad) == strtolower($alumno->ciudad_docu_acud2) || $this->ciudades[$i]->id == $alumno->ciudad_docu_acud2){
-				$consA2 .= ', ciudad_doc='.$this->ciudades[$i]->id;
+				$consA2 		.= ', ciudad_doc='.$this->ciudades[$i]->id;
+				$ciudad_id_A2 	= $this->ciudades[$i]->id;
             }
 		}
 		
@@ -131,7 +134,7 @@ class ImporterFixer {
 		
 		
 		
-		return ['consulta' => $cons, 'consultaA1' => $consA1, 'consultaA2' => $consA2];
+		return ['consulta' => $cons, 'consultaA1' => $consA1, 'consultaA2' => $consA2, 'ciudad_id_A1' => $ciudad_id_A1, 'ciudad_id_A2' => $ciudad_id_A2];
 
 	}
 

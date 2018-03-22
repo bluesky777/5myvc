@@ -115,8 +115,10 @@ class ImportarController extends Controller {
 				
 				for ($f=0; $f < count($results[$i]); $f++) { 
 					
-					$alumno = $results[$i][$f];
-					$res = $fixer->verificar($alumno, $year);
+					$alumno 	= $results[$i][$f];
+					$res 		= $fixer->verificar($alumno, $year);
+					$alumno->ciudad_docu_acud1 = $res['ciudad_id_A1'];
+					$alumno->ciudad_docu_acud2 = $res['ciudad_id_A2'];
 					
 					if ($alumno->id) {
 						$consulta 	= 'UPDATE alumnos SET no_matricula=?, nombres=?, apellidos=?, sexo=?, fecha_nac=?, 
@@ -155,7 +157,11 @@ class ImportarController extends Controller {
 	
 	
 	private function modificar_acudiente1(&$alumno, $now, $consulta){
-		if($alumno->id_acud1 > 0 && $alumno->nombres_acud1 != ''){
+		
+		$alumno->sexo_acud1 = ((is_null($alumno->sexo_acud1) || $alumno->sexo_acud1 == '') ? 'M' : $alumno->sexo_acud1);
+		
+		
+		if($alumno->id_acud1 > 0 && (!(is_null($alumno->nombres_acud1) || $alumno->nombres_acud1 != ''))){
 							
 			// Si tiene código y tiene nombre escrito, sólo quiere modificarlo
 			DB::update('UPDATE acudientes SET nombres=?, apellidos=?, sexo=?, tipo_doc=?, documento=?, is_acudiente=?, telefono=?, celular=?, ocupacion=?, direccion=?, email=?, updated_at=?'.$consulta.' WHERE id=?', 
@@ -163,7 +169,7 @@ class ImportarController extends Controller {
 				$alumno->telefono_acud1, $alumno->celular_acud1, $alumno->ocupacion_acud1, $alumno->direccion_acud1, $alumno->email_acud1, $now, $alumno->id_acud1 ]);
 				
 			DB::update('UPDATE parentescos p INNER JOIN acudientes a ON a.id=p.acudiente_id and p.alumno_id=? and p.acudiente_id=? and p.deleted_at is null and a.deleted_at is null 
-				SET p.parentesco=?, p.observaciones=?, p.updated_at=?', [ $alumno->id, $alumno->id_acud2, $alumno->parentesco_acud1, $alumno->observaciones_acud1, $now ]);
+				SET p.parentesco=?, p.observaciones=?, p.updated_at=?', [ $alumno->id, $alumno->id_acud1, $alumno->parentesco_acud1, $alumno->observaciones_acud1, $now ]);
 				
 		
 		}else if($alumno->id_acud1 > 0 && (is_null($alumno->nombres_acud1) || $alumno->nombres_acud1 == '')){
@@ -185,6 +191,9 @@ class ImportarController extends Controller {
 
 
 	private function modificar_acudiente2(&$alumno, $now, $consulta){
+		
+		$alumno->sexo_acud2 = ((is_null($alumno->sexo_acud2) || $alumno->sexo_acud2 == '') ? 'M' : $alumno->sexo_acud2);
+		
 		if($alumno->id_acud2 > 0 && $alumno->nombres_acud2 != ''){
 							
 			// Si tiene código y tiene nombre escrito, sólo quiere modificarlo
@@ -205,10 +214,10 @@ class ImportarController extends Controller {
 			if (!(is_null($alumno->nombres_acud2) || $alumno->nombres_acud2 == '')) {
 				DB::insert('INSERT INTO acudientes(nombres, apellidos, sexo, tipo_doc, documento, is_acudiente, telefono, celular, ocupacion, direccion, email, created_at, updated_at, ciudad_doc) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', 
 					[$alumno->nombres_acud2, $alumno->apellidos_acud2, $alumno->sexo_acud2, $alumno->tipo_docu_acud2_id, $alumno->documento_acud2, $alumno->is_acudiente2, 
-					$alumno->telefono_acud2, $alumno->celular_acud2, $alumno->ocupacion_acud2, $alumno->direccion_acud2, $alumno->email_acud2, $now, $now, $alumno->ciudad_docu_acud1]);
+					$alumno->telefono_acud2, $alumno->celular_acud2, $alumno->ocupacion_acud2, $alumno->direccion_acud2, $alumno->email_acud2, $now, $now, $alumno->ciudad_docu_acud2]);
 				
 				$last_id = DB::getPdo()->lastInsertId();
-				DB::insert('INSERT INTO parentescos(acudiente_id, alumno_id, parentesco, observaciones, created_at, updated_at) VALUES(?, ?, ?, ?, ?, ?)', [$alumno->nombres_acud2, $alumno->apellidos_acud2, $alumno->sexo_acud2, $alumno->documento_acud2, $now]);
+				DB::insert('INSERT INTO parentescos(acudiente_id, alumno_id, parentesco, observaciones, created_at, updated_at) VALUES(?, ?, ?, ?, ?, ?)', [$last_id, $alumno->id, $alumno->parentesco_acud2, $alumno->observaciones_acud2, $now, $now ]);
 			}
 		}
 	}
