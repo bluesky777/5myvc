@@ -127,17 +127,7 @@ class PerfilesController extends Controller {
 					left join images i on i.id=u.imagen_id
 					left join images i2 on i2.id=a.foto_id
 					where a.deleted_at is null
-				union
-				SELECT ac.id as persona_id, ac.nombres, ac.apellidos, ac.user_id, u.username, "" as pazysalvo, "" as deuda, ac.tipo_doc, ac.documento, 
-					("Pr") as tipo, ac.sexo, u.email as email_restore, ac.email as email_persona, ac.fecha_nac, ac.ciudad_nac, 
-					u.imagen_id, IFNULL(i.nombre, IF(ac.sexo="F","default_female.png", "default_male.png")) as imagen_nombre, 
-					ac.foto_id, IFNULL(i2.nombre, IF(ac.sexo="F","default_female.png", "default_male.png")) as foto_nombre, 
-					"N/A" as grupo_id, ("N/A") as nombre_grupo, ("N/A") as abrev_grupo, "N/A" as year_id
-					from acudientes ac 
-					inner join users u on ac.user_id=u.id
-					left join images i on i.id=u.imagen_id
-					left join images i2 on i2.id=ac.foto_id
-					where ac.deleted_at is null
+				
 				union
 				SELECT u.id as persona_id, "" as nombres, "" as apellidos, u.id as user_id, u.username, "" as pazysalvo, "" as deuda, "" as tipo_doc, "" as documento,
 					("Us") as tipo, u.sexo, u.email as email_restore, "N/A" as email_persona, "N/A" as fecha_nac, "N/A" as ciudad_nac, 
@@ -164,6 +154,22 @@ class PerfilesController extends Controller {
 		$user = DB::select($consulta, array(':username'=>$username));
 		if ($user) {
 			return $user;
+		}else{
+			$consulta = 'SELECT ac.id as persona_id, ac.nombres, ac.apellidos, ac.user_id, u.username, "" as pazysalvo, "" as deuda, ac.tipo_doc, ac.documento, 
+					("Pr") as tipo, ac.sexo, u.email as email_restore, ac.email as email_persona, ac.fecha_nac, ac.ciudad_nac, 
+					u.imagen_id, IFNULL(i.nombre, IF(ac.sexo="F","default_female.png", "default_male.png")) as imagen_nombre, 
+					ac.foto_id, IFNULL(i2.nombre, IF(ac.sexo="F","default_female.png", "default_male.png")) as foto_nombre, 
+					"N/A" as grupo_id, ("N/A") as nombre_grupo, ("N/A") as abrev_grupo, "N/A" as year_id
+				from acudientes ac 
+				inner join users u on ac.user_id=u.id
+				left join images i on i.id=u.imagen_id
+				left join images i2 on i2.id=ac.foto_id
+				where ac.deleted_at is null';
+				
+			$user = DB::select($consulta, array(':username'=>$username));
+			if ($user) {
+				return $user;
+			}
 		}
 
 		return abort(400, 'Usuario no encontrado.');
@@ -467,9 +473,12 @@ class PerfilesController extends Controller {
 		return $grupos;
 	}
 
+	
+	
 	public function getUsuariosall()
 	{
 		$year_id = Request::input('year_id');
+		
 		$consulta = 'SELECT * FROM (
 				SELECT p.id as persona_id, p.nombres, p.apellidos, p.user_id, u.username, u.tipo, 
 					p.sexo, u.email, p.fecha_nac, p.ciudad_nac, 
@@ -495,17 +504,6 @@ class PerfilesController extends Controller {
 					left join images i2 on i2.id=a.foto_id
 					where a.deleted_at is null and g.year_id=:year_id
 				union
-				SELECT ac.id as persona_id, ac.nombres, ac.apellidos, ac.user_id, u.username, u.tipo, 
-					ac.sexo, u.email, ac.fecha_nac, ac.ciudad_nac, 
-					u.imagen_id, IFNULL(i.nombre, IF(ac.sexo="F","default_female.png", "default_male.png")) as imagen_nombre, 
-					ac.foto_id, IFNULL(i2.nombre, IF(ac.sexo="F","default_female.png", "default_male.png")) as foto_nombre, 
-					"N/A" as grupo_id, ("N/A") as nombre_grupo, ("N/A") as abrev_grupo, "N/A" as year_id
-					from acudientes ac 
-					inner join users u on ac.user_id=u.id
-					left join images i on i.id=u.imagen_id
-					left join images i2 on i2.id=ac.foto_id
-					where ac.deleted_at is null
-				union
 				SELECT u.id as persona_id, "" as nombres, "" as apellidos, u.id as user_id, u.username, u.tipo, 
 					u.sexo, u.email, "N/A" as fecha_nac, "N/A" as ciudad_nac, 
 					u.imagen_id, IFNULL(i.nombre, IF(u.sexo="F","default_female.png", "default_male.png")) as imagen_nombre, 
@@ -528,33 +526,34 @@ class PerfilesController extends Controller {
 					and u.deleted_at is null ) usus';
 
 		$users = DB::select($consulta, [':year_id' => $year_id]);
+		
+		$cons = 'SELECT ac.id as persona_id, ac.nombres, ac.apellidos, ac.user_id, u.username, u.tipo, 
+						ac.sexo, u.email, ac.fecha_nac, ac.ciudad_nac, 
+						u.imagen_id, IFNULL(i.nombre, IF(ac.sexo="F","default_female.png", "default_male.png")) as imagen_nombre, 
+						ac.foto_id, IFNULL(i2.nombre, IF(ac.sexo="F","default_female.png", "default_male.png")) as foto_nombre, 
+						"N/A" as grupo_id, ("N/A") as nombre_grupo, ("N/A") as abrev_grupo, "N/A" as year_id
+				from acudientes ac 
+				left join users u on ac.user_id=u.id
+				left join images i on i.id=u.imagen_id
+				left join images i2 on i2.id=ac.foto_id
+				where ac.deleted_at is null';
+				
+		$users_acuds = DB::select($cons);
+		
+		$users = array_merge($users, $users_acuds);/**/
 
 		foreach ($users as $usuario) {
 
 			//$usuario = get_object_vars($usuario);
 			$userTemp = User::find($usuario->user_id);
-
-
-			$roles = $userTemp->roles()->get();
 			
-			/* se eliminará si funciona
-			$perms = [];
-			foreach( $roles as $role )
-			{
-				$consulta = 'SELECT pm.name, pm.display_name, pm.description from permission_role pmr
-						inner join permissions pm on pm.id = pmr.permission_id 
-							and pmr.role_id = :role_id';
+			if ($userTemp) {
 				
-				$permisos = DB::select(DB::raw($consulta), array(':role_id' => $role->id));
-				
-				foreach ($permisos as $permiso) {
-					array_push($perms, $permiso->name);
-				}
+				$roles 			= $userTemp->roles()->get();
+				$usuario->roles = $roles;
+				$usuario->perms = $userTemp->permissions();
 			}
-			*/
 
-			$usuario->roles = $roles;
-			$usuario->perms = $userTemp->permissions();
 		}
 		
 

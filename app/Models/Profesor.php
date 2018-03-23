@@ -74,7 +74,7 @@ class Profesor extends Model {
 	public static function contratos($year_id)
 	{
 		
-		$consulta = 'SELECT p.id as profesor_id, p.nombres, p.apellidos, p.sexo, p.foto_id, p.tipo_doc,
+		$consulta = 'SELECT p.id as profesor_id, p.nombres, p.apellidos, concat(p.nombres, " ", p.apellidos) as nombre_completo, p.sexo, p.foto_id, p.tipo_doc,
 					p.num_doc, p.ciudad_doc, p.fecha_nac, p.ciudad_nac, p.titulo,
 					p.estado_civil, p.barrio, p.direccion, p.telefono, p.celular,
 					p.facebook, p.email, p.tipo_profesor, p.user_id, u.username,

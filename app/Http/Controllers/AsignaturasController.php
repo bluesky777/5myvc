@@ -241,7 +241,7 @@ class AsignaturasController extends Controller {
 		return $asignaturas;
 	}
 
-	public function getListasignaturasyear($profesor_id, $periodo_id)
+	public function getListAsignaturasYear($profesor_id, $periodo_id)
 	{
 		$user = User::fromToken();
 

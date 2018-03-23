@@ -22,7 +22,7 @@ class ImporterFixer {
 	
 	public function __construct()
 	{
-        $this->tipos_doc    = DB::select('SELECT id, tipo FROM tipos_documentos WHERE deleted_at is null');
+        $this->tipos_doc    = DB::select('SELECT id, tipo, abrev FROM tipos_documentos WHERE deleted_at is null');
         $this->cant_td      = count($this->tipos_doc);
         $this->ciudades    	= DB::select('SELECT id, ciudad FROM ciudades WHERE deleted_at is null');
         $this->cant_ciud    = count($this->ciudades);
@@ -42,13 +42,20 @@ class ImporterFixer {
 
 		// Tipo doc
 		for ($i=0; $i < $this->cant_td; $i++) { 
-            if(strtolower($this->tipos_doc[$i]->tipo) == strtolower($alumno->tipo_de_documento)){
+			
+			$tipo_low 		= strtolower($this->tipos_doc[$i]->tipo);
+			$abrev_low 		= strtolower($this->tipos_doc[$i]->tipo);
+			$altipo_low 	= strtolower($alumno->tipo_de_documento);
+			$A1tipo_low 	= strtolower($alumno->tipo_docu_acud1);
+			$A2tipo_low 	= strtolower($alumno->tipo_docu_acud2);
+			
+            if( $tipo_low == $altipo_low || $abrev_low == $altipo_low ){
                 $alumno->tipo_doc = $this->tipos_doc[$i]->id;
             }
-            if(strtolower($this->tipos_doc[$i]->tipo) == strtolower($alumno->tipo_docu_acud1)){
+            if( $tipo_low == $A1tipo_low || $abrev_low == $A1tipo_low ){
                 $alumno->tipo_docu_acud1_id = $this->tipos_doc[$i]->id;
             }
-            if(strtolower($this->tipos_doc[$i]->tipo) == strtolower($alumno->tipo_docu_acud2)){
+            if( $tipo_low == $A2tipo_low || $abrev_low == $A2tipo_low ){
                 $alumno->tipo_docu_acud2_id = $this->tipos_doc[$i]->id;
             }
         } 

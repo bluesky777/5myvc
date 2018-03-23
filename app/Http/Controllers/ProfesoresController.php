@@ -303,8 +303,14 @@ class ProfesoresController extends Controller {
 
 	public function getConyears()
 	{
+		$consulta = 'SELECT p.id, p.nombres, p.apellidos, p.sexo,
+						p.foto_id, p.titulo, p.facebook, p.email, p.tipo_profesor, p.user_id,
+						p.foto_id, IFNULL(i.nombre, IF(p.sexo="F","default_female.png", "default_male.png")) as foto_nombre
+					from profesores p
+					LEFT JOIN images i on i.id=p.foto_id and i.deleted_at is null
+					where p.deleted_at is null';
 
-		$profesores = Profesor::fromyear($this->user->year_id);
+		$profesores = DB::select($consulta);
 
 		foreach ($profesores as $profesor) {
 			$profesor->years = Year::de_un_profesor($profesor->id);
