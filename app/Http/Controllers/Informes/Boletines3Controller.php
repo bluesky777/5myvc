@@ -145,7 +145,7 @@ class Boletines3Controller extends Controller {
 
 
 		//$asignaturas			= Grupo::detailed_materias($grupo_id);
-		$asignaturas			= Grupo::detailed_materias_notafinal($alumno->alumno_id, $grupo_id, $periodo_id, $this->user->year_id);
+		$asignaturas			= Grupo::detailed_materias_notas_finales($alumno->alumno_id, $grupo_id, $this->user->year_id);
 		$ausencias_total		= Ausencia::totalDeAlumno($alumno->alumno_id, $periodo_id);
 		$asignaturas_perdidas 	= [];
 	
@@ -153,16 +153,14 @@ class Boletines3Controller extends Controller {
 		$alumno->ausencias_total = $ausencias_total;
 
 		foreach ($asignaturas as $asignatura) {
-			$asignatura->unidades = Unidad::deAsignaturaCalculada($alumno->alumno_id, $asignatura->asignatura_id, $periodo_id, true, $this->user->year_id);
+			
+			$asignatura->prom_year 	= ($asignatura->nota_final_per1 + $asignatura->nota_final_per2 + $asignatura->nota_final_per3 + $asignatura->nota_final_per4) / 4;
+			$sumatoria_asignaturas += $asignatura->prom_year; // Para sacar promedio del periodo
 			
 			if ($comport_and_frases) {
 				$asignatura->ausencias	= Ausencia::deAlumno($asignatura->asignatura_id, $alumno->alumno_id, $periodo_id);
 				$asignatura->frases		= FraseAsignatura::deAlumno($asignatura->asignatura_id, $alumno->alumno_id, $periodo_id);
 			}
-			
-
-			$sumatoria_asignaturas += $asignatura->nota_asignatura; // Para sacar promedio del periodo
-
 
 			// SUMAR AUSENCIAS Y TARDANZAS
 			if ($comport_and_frases) {

@@ -305,7 +305,7 @@ class ProfesoresController extends Controller {
 	{
 		$consulta = 'SELECT p.id, p.nombres, p.apellidos, p.sexo,
 						p.foto_id, p.titulo, p.facebook, p.email, p.tipo_profesor, p.user_id,
-						p.foto_id, IFNULL(i.nombre, IF(p.sexo="F","default_female.png", "default_male.png")) as foto_nombre
+						IFNULL(i.nombre, IF(p.sexo="F","default_female.png", "default_male.png")) as foto_nombre
 					from profesores p
 					LEFT JOIN images i on i.id=p.foto_id and i.deleted_at is null
 					where p.deleted_at is null';

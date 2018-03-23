@@ -25,11 +25,13 @@ class PlanillasAusenciasController extends Controller {
 		
 
 		$consulta = 'SELECT g.id, g.nombre, g.abrev, g.orden, gra.orden as orden_grado, g.grado_id, g.year_id, g.titular_id,
-			p.nombres as nombres_titular, p.apellidos as apellidos_titular, p.titulo,
-			g.created_at, g.updated_at, gra.nombre as nombre_grado 
+				p.nombres as nombres_titular, p.apellidos as apellidos_titular, p.titulo,
+				g.created_at, g.updated_at, gra.nombre as nombre_grado,
+				p.foto_id, IFNULL(i.nombre, IF(p.sexo="F","default_female.png", "default_male.png")) as foto_nombre 
 			from grupos g
 			inner join grados gra on gra.id=g.grado_id and g.year_id=:year_id 
 			left join profesores p on p.id=g.titular_id
+			LEFT JOIN images i on i.id=p.foto_id and i.deleted_at is null
 			where g.deleted_at is null
 			order by g.orden';
 

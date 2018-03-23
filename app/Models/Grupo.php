@@ -103,7 +103,7 @@ class Grupo extends Model {
 	{
 		$consulta = 'SELECT a.id as asignatura_id, a.grupo_id, a.profesor_id, a.creditos, a.orden,
 				m.materia, m.alias as alias_materia, ar.nombre as area_nombre, ar.alias as area_alias,
-				p.id as profesor_id, p.nombres as nombres_profesor, p.apellidos as apellidos_profesor,
+				p.nombres as nombres_profesor, p.apellidos as apellidos_profesor,
 				p.foto_id, IFNULL(i.nombre, IF(p.sexo="F","default_female.png", "default_male.png")) as foto_nombre, 
 				n.nota as nota_asignatura, n.recuperada, n.manual, e.desempenio, n.id as nf_id
 			FROM asignaturas a 
@@ -124,22 +124,42 @@ class Grupo extends Model {
 	
 	public static function detailed_materias_notas_finales($alumno_id, $grupo_id, $year_id)
 	{
-		$consulta = 'SELECT a.id as asignatura_id, a.grupo_id, a.profesor_id, a.creditos, a.orden,
-				m.materia, m.alias as alias_materia, ar.nombre as area_nombre, ar.alias as area_alias,
-				p.id as profesor_id, p.nombres as nombres_profesor, p.apellidos as apellidos_profesor,
-				p.foto_id, IFNULL(i.nombre, IF(p.sexo="F","default_female.png", "default_male.png")) as foto_nombre, 
-				n.nota as nota_asignatura, n.recuperada, n.manual, e.desempenio, n.id as nf_id
-			FROM asignaturas a 
-			inner join materias m on m.id=a.materia_id and m.deleted_at is null
-			left join areas ar on ar.id=m.area_id and ar.deleted_at is null
-			left join notas_finales n on n.asignatura_id=a.id and n.alumno_id=:alumno_id
-			inner join profesores p on p.id=a.profesor_id and p.deleted_at is null 
-			left join images i on p.foto_id=i.id and i.deleted_at is null
-			left join escalas_de_valoracion e ON e.porc_inicial<=n.nota and e.porc_final>=n.nota and e.deleted_at is null and e.year_id=:year_id
-			where a.grupo_id=:grupo_id and a.deleted_at is null
-			order by ar.orden, m.orden, a.orden';
+		$consulta = 'SELECT 
+						r1.*, r2.nota_final_per2, r2.nf_id_2, r2.nf_updated_at2,
+						r3.nota_final_per3, r3.nf_id_3, r3.nf_updated_at3,
+						r4.nota_final_per4, r4.nf_id_4, r4.nf_updated_at4
+					FROM 
+						(SELECT a.grupo_id, a.profesor_id, a.creditos, a.orden,
+							m.materia, m.alias as alias_materia, ar.nombre as area_nombre, ar.alias as area_alias,
+							p.nombres as nombres_profesor, p.apellidos as apellidos_profesor,
+							p.foto_id, IFNULL(i.nombre, IF(p.sexo="F","default_female.png", "default_male.png")) as foto_nombre,
+							nf.nota as nota_final_per1, nf.id as nf_id_1, nf.updated_at as nf_updated_at1, nf.asignatura_id 
+						FROM periodos pe 
+						inner join notas_finales nf on nf.alumno_id=:al1 and pe.numero=1 and pe.id=nf.periodo_id and pe.year_id=:year_id1 and pe.deleted_at is null
+						right join asignaturas a on a.id=nf.asignatura_id and a.deleted_at is null
+						inner join materias m on m.id=a.materia_id and m.deleted_at is null
+						inner join areas ar on ar.id=m.area_id and ar.deleted_at is null
+						inner join grupos g on g.id=a.grupo_id and g.deleted_at is null and g.id=:grupo_id
+						inner join profesores p on p.id=a.profesor_id and p.deleted_at is null 
+						left join images i on p.foto_id=i.id and i.deleted_at is null
+						where a.deleted_at is null
+						order by ar.orden, m.orden, a.orden
+						)r1 
+					left join 
+						(SELECT nf.nota as nota_final_per2, nf.id as nf_id_2, nf.updated_at as nf_updated_at2, nf.asignatura_id FROM periodos p 
+						inner join notas_finales nf on nf.alumno_id=:al2 and p.numero=2 and p.id=nf.periodo_id and p.year_id=:year_id2 and p.deleted_at is null
+						)r2 on r1.asignatura_id=r2.asignatura_id
+					left join 
+						(SELECT nf.nota as nota_final_per3, nf.id as nf_id_3, nf.updated_at as nf_updated_at3, nf.asignatura_id FROM periodos p 
+						inner join notas_finales nf on nf.alumno_id=:al3 and p.numero=3 and p.id=nf.periodo_id and p.year_id=:year_id3 and p.deleted_at is null
+						)r3 on r2.asignatura_id=r3.asignatura_id
+					left join 
+						(SELECT nf.nota as nota_final_per4, nf.id as nf_id_4, nf.updated_at as nf_updated_at4, nf.asignatura_id FROM periodos p 
+						inner join notas_finales nf on nf.alumno_id=:al4 and p.numero=3 and p.id=nf.periodo_id and p.year_id=:year_id4 and p.deleted_at is null
+						)r4 on r3.asignatura_id=r4.asignatura_id';
 
-		$asignaturas = DB::select($consulta, [ ':alumno_id' => $alumno_id, ':periodo_id' => $periodo_id, ':year_id' => $year_id, ':grupo_id' => $grupo_id ]);
+		$asignaturas = DB::select($consulta, [ ':al1' => $alumno_id, ':year_id1' => $year_id, ':grupo_id' => $grupo_id, 
+									':al2' => $alumno_id, ':year_id2' => $year_id, ':al3' => $alumno_id, ':year_id3' => $year_id, ':al4' => $alumno_id, ':year_id4' => $year_id ]);
 
 		return $asignaturas;
 	}
