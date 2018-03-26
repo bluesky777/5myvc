@@ -104,7 +104,7 @@ class Boletines3Controller extends Controller {
 		foreach ($alumnos as $alumno) {
 
 			// Todas las materias con sus unidades y subunides
-			$this->allNotasAlumno($alumno, $grupo_id, $user->periodo_id, true);
+			$this->allNotasAlumno($alumno, $grupo_id, $user->periodo_id, true, $periodo_a_calcular);
 
 			$alumno->userData = Alumno::userData($alumno->alumno_id);
 			
@@ -140,12 +140,12 @@ class Boletines3Controller extends Controller {
 		return array($grupo, $year, $response_alumnos);
 	}
 
-	public function allNotasAlumno(&$alumno, $grupo_id, $periodo_id, $comport_and_frases=false)
+	public function allNotasAlumno(&$alumno, $grupo_id, $periodo_id, $comport_and_frases=false, $num_periodo=4)
 	{
 
 
 		//$asignaturas			= Grupo::detailed_materias($grupo_id);
-		$asignaturas			= Grupo::detailed_materias_notas_finales($alumno->alumno_id, $grupo_id, $this->user->year_id);
+		$asignaturas			= Grupo::detailed_materias_notas_finales($alumno->alumno_id, $grupo_id, $this->user->year_id, $num_periodo);
 		$ausencias_total		= Ausencia::totalDeAlumno($alumno->alumno_id, $periodo_id);
 		$asignaturas_perdidas 	= [];
 	
@@ -154,7 +154,17 @@ class Boletines3Controller extends Controller {
 
 		foreach ($asignaturas as $asignatura) {
 			
-			$asignatura->prom_year 	= ($asignatura->nota_final_per1 + $asignatura->nota_final_per2 + $asignatura->nota_final_per3 + $asignatura->nota_final_per4) / 4;
+			
+			if ($num_periodo == 1) {
+				$asignatura->prom_year 	= $asignatura->nota_final_per1;
+			}elseif ($num_periodo == 2) {
+				$asignatura->prom_year 	= ($asignatura->nota_final_per1 + $asignatura->nota_final_per2) / 2;
+			}elseif ($num_periodo == 3) {
+				$asignatura->prom_year 	= ($asignatura->nota_final_per1 + $asignatura->nota_final_per2 + $asignatura->nota_final_per3) / 3;
+			}elseif ($num_periodo == 4) {
+				$asignatura->prom_year 	= ($asignatura->nota_final_per1 + $asignatura->nota_final_per2 + $asignatura->nota_final_per3 + $asignatura->nota_final_per4) / 4;
+			}
+			
 			$sumatoria_asignaturas += $asignatura->prom_year; // Para sacar promedio del periodo
 			
 			if ($comport_and_frases) {
@@ -209,6 +219,34 @@ class Boletines3Controller extends Controller {
 
 
 		}
+		
+		
+		// Agrupamos por áreas
+		$consulta 	= 'SELECT ar.id as area_id, ar.orden, ar.nombre as area_nombre, ar.alias as area_alias
+					FROM asignaturas a
+					inner join materias m on m.id=a.materia_id and m.deleted_at is null
+					inner join areas ar on ar.id=m.area_id and ar.deleted_at is null
+					where a.deleted_at is null and a.grupo_id=? and a.profesor_id is not null
+					group by ar.id order by ar.orden';
+					
+		$areas 		= DB::select($consulta, [ $grupo_id ]);
+		$cantAr 	= count($areas);
+		$cantAs 	= count($asignaturas);
+		
+		for ($i=0; $i < $cantAr; $i++) { 
+			$found = 0;
+			$areas[$i]->asignaturas = [];
+			
+			for ($j=0; $j < $cantAs; $j++) { 
+				if ($areas[$i]->area_id == $asignaturas[$j]->area_id) {
+					$found += 1;
+					array_push($areas[$i]->asignaturas, $asignaturas[$j]);
+				}
+			}
+			
+			$areas[$i]->cant = $found;
+		}
+		$alumno->areas = $areas;
 		
 
 		return $alumno;
