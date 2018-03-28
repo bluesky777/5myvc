@@ -69,17 +69,17 @@ class NotasController extends Controller {
 
 			// Ausencias
 			$cons_aus = "SELECT  a.id, a.asignatura_id, a.alumno_id, a.periodo_id, a.cantidad_ausencia, a.cantidad_tardanza, a.entrada, a.fecha_hora, a.uploaded, a.created_by FROM ausencias a
-						inner join periodos p on p.id=a.periodo_id and p.year_id=:year_id
+						inner join periodos p on p.id=a.periodo_id and p.id=:per_id
 						WHERE a.tipo='ausencia' and a.asignatura_id=:asignatura_id and a.alumno_id=:alumno_id and a.deleted_at is null;";
-			$ausencias = DB::select($cons_aus, [":year_id" => $user->year_id, ':asignatura_id' => $asignatura->asignatura_id, ':alumno_id' => $alumno->alumno_id ]);
+			$ausencias = DB::select($cons_aus, [":per_id" => $user->periodo_id, ':asignatura_id' => $asignatura->asignatura_id, ':alumno_id' => $alumno->alumno_id ]);
 			$alumno->ausencias 			= $ausencias;
 			$alumno->ausencias_count 	= count($ausencias);
 
 			// Tardanzas
 			$cons_tar = "SELECT  a.id, a.asignatura_id, a.alumno_id, a.periodo_id, a.cantidad_ausencia, a.cantidad_tardanza, a.entrada, a.fecha_hora, a.uploaded, a.created_by FROM ausencias a
-						inner join periodos p on p.id=a.periodo_id and p.year_id=:year_id
+						inner join periodos p on p.id=a.periodo_id and p.id=:per_id
 						WHERE a.tipo='tardanza' and a.asignatura_id=:asignatura_id and a.alumno_id=:alumno_id and a.deleted_at is null;";
-			$tardanzas = DB::select($cons_tar, [":year_id" => $user->year_id, ':asignatura_id' => $asignatura->asignatura_id, ':alumno_id' => $alumno->alumno_id ]);
+			$tardanzas = DB::select($cons_tar, [":per_id" => $user->periodo_id, ':asignatura_id' => $asignatura->asignatura_id, ':alumno_id' => $alumno->alumno_id ]);
 			
 			// Notas
 			$cons = "SELECT n.id, n.nota, n.subunidad_id, n.alumno_id, n.created_by, n.updated_by, n.deleted_by, n.deleted_at, n.created_at, n.updated_at, u.asignatura_id,

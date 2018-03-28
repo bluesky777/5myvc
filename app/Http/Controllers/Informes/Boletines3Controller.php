@@ -113,6 +113,8 @@ class Boletines3Controller extends Controller {
 			if ($this->user->year_pasado_en_bol) {
 				$this->datosYearPasado($alumno, $grupo_id, $user->year_id);
 			}
+			
+			unset($alumno->asignaturas);
 		}
 
 
@@ -247,7 +249,6 @@ class Boletines3Controller extends Controller {
 			$areas[$i]->cant = $found;
 		}
 		$alumno->areas = $areas;
-		
 
 		return $alumno;
 	}
