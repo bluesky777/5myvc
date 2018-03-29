@@ -260,6 +260,36 @@ class AsignaturasController extends Controller {
 	}
 
 
+
+	public function getPapelera()
+	{
+		$user = User::fromToken();
+		
+		$consulta = 'SELECT a.id as asignatura_id, a.*, m.materia, m.area_id, p.nombres, p.apellidos, g.nombre as nombre_grupo, g.abrev as abrev_grupo FROM asignaturas a
+					LEFT JOIN materias m ON m.id=a.materia_id and m.deleted_at is null
+					LEFT JOIN profesores p ON p.id=a.profesor_id and p.deleted_at is null
+					LEFT JOIN grupos g ON g.id=a.grupo_id and g.deleted_at is null
+					WHERE a.deleted_at is not null and g.year_id=?';
+					
+		$asignaturas = DB::select($consulta, [$user->year_id]);
+
+		return $asignaturas;
+	}
+
+
+	public function putRestaurar()
+	{
+		$user 				= User::fromToken();
+		$asignatura_id 		= Request::input('asignatura_id');
+		
+		$consulta = 'UPDATE asignaturas SET deleted_at=NULL WHERE id=?';
+					
+		DB::update($consulta, [$asignatura_id]);
+
+		return 'Retaurada';
+	}
+
+
 	public function deleteDestroy($id)
 	{
 		$asignatura = Asignatura::findOrFail($id);

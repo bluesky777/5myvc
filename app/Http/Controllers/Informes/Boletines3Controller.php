@@ -87,7 +87,7 @@ class Boletines3Controller extends Controller {
 
 	}
 
-	public function detailedNotasGrupo($grupo_id, &$user, $requested_alumnos='', $periodo_a_calcular=10)
+	public function detailedNotasGrupo($grupo_id, &$user, $requested_alumnos='', $periodo_a_calcular=4)
 	{
 		
 		$grupo			= Grupo::datos($grupo_id);
@@ -106,7 +106,7 @@ class Boletines3Controller extends Controller {
 			// Todas las materias con sus unidades y subunides
 			$this->allNotasAlumno($alumno, $grupo_id, $user->periodo_id, true, $periodo_a_calcular);
 
-			$alumno->userData = Alumno::userData($alumno->alumno_id);
+			//$alumno->userData = Alumno::userData($alumno->alumno_id);
 			
 			$this->asignaturasPerdidasDeAlumno($alumno, $grupo_id, $user->year_id, $periodo_a_calcular);
 			
@@ -433,6 +433,9 @@ class Boletines3Controller extends Controller {
 	
 	
 	private function encabezado_comportamiento_boletin($nota, $nota_minima_aceptada, $mostrar_nota_comport, $sexo){
+		
+		$icono 		= '';
+		
 		if ($sexo == 'F') {
 			$icono = 'fa-male';
 		}else{
@@ -442,7 +445,6 @@ class Boletines3Controller extends Controller {
 		if ($nota) {
 			$clase 		= '';
 			$la_nota 	= '';
-			$icono 		= '';
 			$escala = '';
 			
 			if ( $mostrar_nota_comport ) {

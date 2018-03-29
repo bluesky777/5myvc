@@ -106,7 +106,7 @@ class Boletines2Controller extends Controller {
 			// Todas las materias con sus unidades y subunides
 			$this->allNotasAlumno($alumno, $grupo_id, $user->periodo_id, true);
 
-			$alumno->userData = Alumno::userData($alumno->alumno_id);
+			//$alumno->userData = Alumno::userData($alumno->alumno_id);
 			
 			$this->asignaturasPerdidasDeAlumno($alumno, $grupo_id, $user->year_id, $periodo_a_calcular);
 			
@@ -396,6 +396,9 @@ class Boletines2Controller extends Controller {
 	
 	
 	private function encabezado_comportamiento_boletin($nota, $nota_minima_aceptada, $mostrar_nota_comport, $sexo){
+		
+		$icono 		= '';
+		
 		if ($sexo == 'F') {
 			$icono = 'fa-male';
 		}else{
@@ -405,7 +408,6 @@ class Boletines2Controller extends Controller {
 		if ($nota) {
 			$clase 		= '';
 			$la_nota 	= '';
-			$icono 		= '';
 			$escala = '';
 			
 			if ( $mostrar_nota_comport ) {

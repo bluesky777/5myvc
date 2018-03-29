@@ -96,11 +96,13 @@ class Nota extends Model {
 	public static function alumnoPeriodosDetailed($alumno_id, $year_id, $profesor_id='')
 	{
 		$alumno 	= Alumno::alumnoData($alumno_id, $year_id);
-		$periodos 	= DB::select('SELECT * FROM periodos WHERE year_id=? and deleted_at is null', [ $year_id ]); 
-
+		
 		if (!$alumno) {
 			return false;
 		}
+		
+		$periodos 	= DB::select('SELECT * FROM periodos WHERE year_id=? and deleted_at is null', [ $year_id ]); 
+
 
 		foreach ($periodos as $keyPer => $periodo) {
 			
@@ -122,7 +124,27 @@ class Nota extends Model {
 					Asignatura::calculoAlumnoNotas($asignatura, $alumno->alumno_id);
 					$sumatoria_asignaturas_per += $asignatura->nota_asignatura; // Para sacar promedio del periodo
 					
+					$asignatura->ausencias	= Ausencia::deAlumno($asignatura->asignatura_id, $alumno->alumno_id, $periodo->id);
+					$asignatura->frases		= FraseAsignatura::deAlumno($asignatura->asignatura_id, $alumno->alumno_id, $periodo->id);
+				
+				
+					$cantAus = 0;
+					$cantTar = 0;
+					foreach ($asignatura->ausencias as $ausencia) {
+						if ($ausencia->tipo == "tardanza") {
+							$cantTar += (int)$ausencia->cantidad_tardanza;
+						}elseif ($ausencia->tipo == "ausencia") {
+							$cantAus += (int)$ausencia->cantidad_ausencia;
+						}
+						
+					}
+	
+					$asignatura->total_ausencias = $cantAus;
+					$asignatura->total_tardanzas = $cantTar;
+					
 				}
+				
+				
 
 			}
 			try {

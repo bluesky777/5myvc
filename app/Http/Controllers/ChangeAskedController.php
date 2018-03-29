@@ -13,6 +13,7 @@ use App\Models\Acudiente;
 use App\Models\Year;
 use App\Models\Debugging;
 use App\Models\ImageModel;
+use App\Models\Ausencia;
 
 use App\Http\Controllers\Alumnos\Solicitudes;
 
@@ -77,6 +78,15 @@ class ChangeAskedController extends Controller {
 			$cambios_alum = DB::select($consulta, [$user->year_id, $user->persona_id]);
 			
 			return [ 'alumnos'=>$cambios_alum, 'profesores'=>[] ];
+		
+		
+		}elseif ($user->tipo == 'Alumno') {
+
+			$ausencias = Ausencia::totalDeAlumno($user->persona_id, $user->periodo_id);
+
+			//$comportamiento = DB::select($consulta, [$user->year_id, $user->persona_id]);
+			
+			return [ 'ausencias_periodo'=>$ausencias ];
 		}
 		
 		return ['msg'=> 'No puedes ver pedidos'];
