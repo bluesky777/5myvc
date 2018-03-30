@@ -119,7 +119,8 @@ class Unidad extends Model {
 			foreach ($unidad->subunidades as $subunidad) {
 				$porc_subunidades += $subunidad->porcentaje;
 
-				$notas = Nota::where('subunidad_id', $subunidad->id)->get();
+				#$notas = Nota::where('subunidad_id', $subunidad->id)->get();
+				$notas = DB::select('SELECT * FROM notas WHERE deleted_at is null and subunidad_id=?', [$subunidad->id]);
 
 				$subunidad->cantNotas = count($notas);
 

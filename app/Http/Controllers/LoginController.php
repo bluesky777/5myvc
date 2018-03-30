@@ -99,11 +99,11 @@ class LoginController extends Controller {
 			'password' => (string)$request->input('password')
 		];
 
-
+		$this->datos_entorno_direccion();
 		try {
 			// attempt to verify the credentials and create a token for the user
 			if (! $token = app('auth')->attempt($credentials)) {
-				$this->datos_entorno_direccion();
+				
 				$maquina = 'Intento login>> Entorno: '.$this->entorno.', Dirección: '.$this->direccion.', plataforma: '.Browser::browserEngine().', platfamilia: '.Browser::platformFamily().', device_fami: '.Browser::deviceFamily().', device_model: '.Browser::deviceModel();
 				$consulta 	= 'INSERT INTO bitacoras (descripcion, affected_person_name, affected_element_type, created_at) 
 					VALUES (?, ?, "intento_login", ?)';

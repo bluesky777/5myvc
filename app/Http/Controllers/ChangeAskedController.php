@@ -72,7 +72,12 @@ class ChangeAskedController extends Controller {
 							order by created_at desc limit 50', 
 							[ $user->username ]);
 
-			return [ 'alumnos'=>$cambios_alum, 'profesores'=> $pedidos, 'historial'=> $historial, 'intentos_fallidos'=> $intentos_fallidos ];
+			
+			# Datos de los docentes de este año
+			$profes_actuales = $this->datos_de_docentes_este_anio($user);
+
+			
+			return [ 'alumnos'=>$cambios_alum, 'profesores'=> $pedidos, 'historial'=> $historial, 'intentos_fallidos'=> $intentos_fallidos, 'profes_actuales' => $profes_actuales ];
 
 			
 		}elseif ($user->tipo == 'Profesor') {
@@ -111,23 +116,110 @@ class ChangeAskedController extends Controller {
 							order by created_at desc limit 50', 
 							[ $user->username ]);
 
+			# Datos de los docentes de este año
+			$profes_actuales = $this->datos_de_docentes_este_anio($user);
 			
-			return [ 'alumnos'=>$cambios_alum, 'profesores'=>[], 'historial'=> $historial, 'intentos_fallidos'=> $intentos_fallidos ];
+			return [ 'alumnos'=>$cambios_alum, 'profesores'=>[], 'historial'=> $historial, 'intentos_fallidos'=> $intentos_fallidos, 'profes_actuales' => $profes_actuales ];
 		
 		
 		}elseif ($user->tipo == 'Alumno') {
 
 			$ausencias 			= Ausencia::totalDeAlumno($user->persona_id, $user->periodo_id);
-
+			
+			# Datos de los docentes de este año
+			$profes_actuales = $this->datos_de_docentes_este_anio($user, false);
+			
 			$comportamiento 	= NotaComportamiento::nota_comportamiento($user->persona_id, $user->periodo_id);
 			if ($comportamiento) {
 				$comportamiento->definiciones = DefinicionComportamiento::frases($comportamiento->id);
 			}
 			
-			return [ 'ausencias_periodo'=>$ausencias, 'comportamiento'=>$comportamiento ];
+			return [ 'ausencias_periodo'=>$ausencias, 'comportamiento'=>$comportamiento, 'profes_actuales' => $profes_actuales ];
 		}
 		
 		return ['msg'=> 'No puedes ver pedidos'];
+	}
+
+
+	
+	private function datos_de_docentes_este_anio($user, $con_historial=true){
+		
+		# Datos de los docentes de este año
+		if ($con_historial) {
+			$profes_actuales = DB::select('SELECT p.id as profesor_id, p.nombres, p.apellidos, p.sexo, p.foto_id, r.fecha_ingreso, h.id, h.entorno, h.device_family, h.platform_family, h.browser_family, h.ip, 
+										u.username, p.telefono, p.celular, p.email, p.fecha_nac, r2.cant_asignaturas,
+										u.imagen_id, IFNULL(i.nombre, IF(p.sexo="F","default_female.png", "default_male.png")) as imagen_nombre, 
+										p.foto_id, IFNULL(i2.nombre, IF(p.sexo="F","default_female.png", "default_male.png")) as foto_nombre
+									FROM contratos c
+									inner join profesores p on p.id=c.profesor_id and p.deleted_at is null and c.deleted_at is null
+									left join (
+										select max(h.created_at) fecha_ingreso, h.user_id from historiales h WHERE h.deleted_at is null group by h.user_id
+									)r ON r.user_id=p.user_id
+									left join historiales h on h.user_id=r.user_id and r.fecha_ingreso=h.created_at and h.deleted_at is null
+									left join users u on p.user_id=u.id and u.deleted_at is null
+									left join images i on i.id=u.imagen_id and i.deleted_at is null
+									left join images i2 on i2.id=p.foto_id and i2.deleted_at is null
+									left join (
+										SELECT COUNT(*) as cant_asignaturas, a.profesor_id FROM asignaturas a 
+										INNER JOIN grupos g ON g.id=a.grupo_id and g.deleted_at is null and g.year_id=?
+										WHERE a.deleted_at is null 
+										group by a.profesor_id
+									)r2 on r2.profesor_id=p.id
+									where  c.year_id=?', 
+									[ $user->year_id, $user->year_id ]);
+		
+		}else{
+			$profes_actuales = DB::select('SELECT p.id as profesor_id, p.nombres, p.apellidos, p.sexo, p.foto_id, r2.cant_asignaturas,
+											p.foto_id, IFNULL(i2.nombre, IF(p.sexo="F","default_female.png", "default_male.png")) as foto_nombre
+										FROM contratos c
+										inner join profesores p on p.id=c.profesor_id and p.deleted_at is null and c.deleted_at is null
+										left join images i2 on i2.id=p.foto_id and i2.deleted_at is null
+										left join (
+											SELECT COUNT(*) as cant_asignaturas, a.profesor_id FROM asignaturas a 
+											INNER JOIN grupos g ON g.id=a.grupo_id and g.deleted_at is null and g.year_id=?
+											WHERE a.deleted_at is null 
+											group by a.profesor_id
+										)r2 on r2.profesor_id=p.id
+										where  c.year_id=?', 
+									[ $user->year_id, $user->year_id ]);
+		
+		}
+		
+		$cant = count($profes_actuales);			
+		
+		for ($i=0; $i < $cant; $i++) { 
+			
+			if ($profes_actuales[$i]->cant_asignaturas) {
+				$porcentaje = DB::select('SELECT sum(if( r2.porc_uni=100, 1, 0)) uni_correctas, SUM(r2.sub_correctas) sub_correctas
+										FROM (
+											SELECT  sum(u.porcentaje) porc_uni, u.asignatura_id, IF(count(r.porc_unidad)>0, 0, 1) sub_correctas, a.profesor_id
+											FROM unidades u
+											inner join asignaturas a ON a.id=u.asignatura_id and a.deleted_at is null
+											inner join grupos g ON g.id=a.grupo_id and g.deleted_at is null and g.year_id=?
+											left join (
+												SELECT sum(s.porcentaje) as porc_unidad, s.unidad_id
+												FROM subunidades s
+												inner join unidades u ON u.id=s.unidad_id and s.deleted_at is null and u.deleted_at is null
+												group by s.unidad_id having sum(s.porcentaje) < 100 or sum(s.porcentaje) > 100 
+											)r on r.unidad_id=u.id
+											where u.periodo_id=? and u.deleted_at is null and a.profesor_id=?
+											group by u.asignatura_id
+										)r2', 
+									[ $user->year_id, $user->periodo_id, $profes_actuales[$i]->profesor_id ]);
+									
+				if (count($porcentaje) > 0) {
+					$profes_actuales[$i]->porcentaje = ($porcentaje[0]->uni_correctas*100 / $profes_actuales[$i]->cant_asignaturas)/2 + ($porcentaje[0]->sub_correctas*100 / $profes_actuales[$i]->cant_asignaturas)/2;
+				}else{
+					$profes_actuales[$i]->porcentaje = 0;
+				}
+				
+			}else{
+				$profes_actuales[$i]->porcentaje = 100;
+			}
+			
+			
+		}
+		return $profes_actuales;
 	}
 
 
