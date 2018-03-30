@@ -172,20 +172,32 @@ class SubunidadesController extends Controller {
 	
 	}
 
+	
+	public function putEliminadas($asignatura_id)
+	{
+		$user = User::fromToken();
+		
+		$consulta 	= 'SELECT s.id, s.definicion as definicion_subunidad, s.porcentaje, u.definicion as definicion_unidad  FROM subunidades s INNER JOIN unidades u ON u.id=s.unidad_id and s.deleted_at is not null WHERE u.asignatura_id=? and u.periodo_id=?';
+
+		$unidades = DB::select($consulta, [$asignatura_id, $user->periodo_id]);
+
+		$res = ['subunidades' => $unidades];
+		
+		return $res;
+	}
+
+
+
 	public function putRestore($id)
 	{
 		$user = User::fromToken();
-		$subunidad = Subunidad::onlyTrashed()->findOrFail($id);
+		$consulta = 'UPDATE subunidades SET deleted_at=NULL WHERE id=?';
+					
+		DB::update($consulta, [$id]);
 
-		if ($subunidad) {
-			$subunidad->updated_by = $user->user_id;
-			$subunidad->save();
-			$subunidad->restore();
-		}else{
-			return App::abort(400, 'Subunidad no encontrada en la Papelera.');
-		}
-		return $subunidad;
+		return 'Retaurada';
 	}
+
 
 
 	public function getTrashed()

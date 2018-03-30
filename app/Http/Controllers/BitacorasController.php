@@ -2,6 +2,7 @@
 
 use App\Models\User;
 use DB;
+use Carbon\Carbon;
 
 class BitacorasController extends Controller {
 
@@ -25,11 +26,6 @@ class BitacorasController extends Controller {
 	}
 
 
-	public function getShow($id)
-	{
-		//
-	}
-
 
 	public function putUpdate($id)
 	{
@@ -39,7 +35,12 @@ class BitacorasController extends Controller {
 
 	public function deleteDestroy($id)
 	{
-		//
+		$user 	= User::fromToken();
+		$now 	= Carbon::now('America/Bogota');
+		
+		DB::update('UPDATE bitacoras SET deleted_at=? WHERE id=?', [$now, $id]);
+		
+		return 'Bitácora eliminada'; 
 	}
 
 }

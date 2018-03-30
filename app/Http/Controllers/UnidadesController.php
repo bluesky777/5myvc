@@ -25,8 +25,7 @@ class UnidadesController extends Controller {
 
 		$unidades = DB::select($this->cons_unidades, [$asignatura_id, $periodo_id]);
 
-		//$unidades = Unidad::where('asignatura_id', $asignatura_id)->where('periodo_id', $periodo_id)->get();
-
+		
 		if (count($unidades) == 0) {
 			$consulta = 'SELECT * FROM unidades_por_defecto WHERE year_id=? and deleted_at is null';
 			$unidades_default = DB::select($consulta, [$user->year_id]);
@@ -158,18 +157,39 @@ class UnidadesController extends Controller {
 		return $unidad;
 	
 	}
+	
+	
+	
+	public function putEliminadas($asignatura_id)
+	{
+		$user = User::fromToken();
+		
+		$cons_unidades 		= 'SELECT * FROM unidades WHERE asignatura_id=? and periodo_id=? and deleted_at is not null';
+		$cons_subunidades 	= 'SELECT * FROM subunidades WHERE unidad_id=? and deleted_at is null';
+
+		$unidades = DB::select($cons_unidades, [$asignatura_id, $user->periodo_id]);
+
+		foreach ($unidades as $unidad) {
+
+			$subunidades 			= DB::select($cons_subunidades, [$unidad->id]);
+			$unidad->subunidades 	= $subunidades;
+
+		}
+		$res = ['unidades_eliminadas' => $unidades];
+		
+		return $res;
+	}
+
+
 
 	public function putRestore($id)
 	{
 		$user = User::fromToken();
-		$unidad = Unidad::onlyTrashed()->findOrFail($id);
+		$consulta = 'UPDATE unidades SET deleted_at=NULL WHERE id=?';
+					
+		DB::update($consulta, [$id]);
 
-		if ($unidad) {
-			$unidad->restore();
-		}else{
-			return App::abort(400, 'Unidad no encontrada en la Papelera.');
-		}
-		return $unidad;
+		return 'Retaurada';
 	}
 
 

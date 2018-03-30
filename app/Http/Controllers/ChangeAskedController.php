@@ -14,6 +14,8 @@ use App\Models\Year;
 use App\Models\Debugging;
 use App\Models\ImageModel;
 use App\Models\Ausencia;
+use App\Models\NotaComportamiento;
+use App\Models\DefinicionComportamiento;
 
 use App\Http\Controllers\Alumnos\Solicitudes;
 
@@ -53,8 +55,24 @@ class ChangeAskedController extends Controller {
 			# Solicitudes de asignaturas de Profesores
 			$solicitudes 	= new Solicitudes();
 			$pedidos 		= $solicitudes->todas_solicitudes_de_profesores($user->year_id);
+			
+			
+			# Historial de sesiones
+			$historial = DB::select('SELECT h.*, count(b.id) as cant_cambios FROM historiales h  
+								left join bitacoras b  on b.historial_id=h.id 
+								WHERE h.user_id=? 
+								group by h.id
+								order by h.created_at desc 
+								limit 50', [ $user->user_id ]);
 
-			return [ 'alumnos'=>$cambios_alum, 'profesores'=> $pedidos ];
+			
+			# Intentos de Logueo Fallidos
+			$intentos_fallidos = DB::select('SELECT * FROM bitacoras 
+							WHERE affected_element_type="intento_login" and affected_person_name=? and deleted_at is null 
+							order by created_at desc limit 50', 
+							[ $user->username ]);
+
+			return [ 'alumnos'=>$cambios_alum, 'profesores'=> $pedidos, 'historial'=> $historial, 'intentos_fallidos'=> $intentos_fallidos ];
 
 			
 		}elseif ($user->tipo == 'Profesor') {
@@ -77,16 +95,36 @@ class ChangeAskedController extends Controller {
 
 			$cambios_alum = DB::select($consulta, [$user->year_id, $user->persona_id]);
 			
-			return [ 'alumnos'=>$cambios_alum, 'profesores'=>[] ];
+			
+			# Historial de sesiones
+			$historial = DB::select('SELECT h.*, count(b.id) as cant_cambios FROM historiales h  
+								left join bitacoras b  on b.historial_id=h.id 
+								WHERE h.user_id=? 
+								group by h.id
+								order by h.created_at desc 
+								limit 50', [ $user->user_id ]);
+
+			
+			# Intentos de Logueo Fallidos
+			$intentos_fallidos = DB::select('SELECT * FROM bitacoras 
+							WHERE affected_element_type="intento_login" and affected_person_name=? and deleted_at is null 
+							order by created_at desc limit 50', 
+							[ $user->username ]);
+
+			
+			return [ 'alumnos'=>$cambios_alum, 'profesores'=>[], 'historial'=> $historial, 'intentos_fallidos'=> $intentos_fallidos ];
 		
 		
 		}elseif ($user->tipo == 'Alumno') {
 
-			$ausencias = Ausencia::totalDeAlumno($user->persona_id, $user->periodo_id);
+			$ausencias 			= Ausencia::totalDeAlumno($user->persona_id, $user->periodo_id);
 
-			//$comportamiento = DB::select($consulta, [$user->year_id, $user->persona_id]);
+			$comportamiento 	= NotaComportamiento::nota_comportamiento($user->persona_id, $user->periodo_id);
+			if ($comportamiento) {
+				$comportamiento->definiciones = DefinicionComportamiento::frases($comportamiento->id);
+			}
 			
-			return [ 'ausencias_periodo'=>$ausencias ];
+			return [ 'ausencias_periodo'=>$ausencias, 'comportamiento'=>$comportamiento ];
 		}
 		
 		return ['msg'=> 'No puedes ver pedidos'];
