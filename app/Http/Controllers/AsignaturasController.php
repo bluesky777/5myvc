@@ -208,15 +208,23 @@ class AsignaturasController extends Controller {
 
 		
 		$consulta = 'SELECT g.id, g.nombre, g.abrev, g.orden, g.grado_id, g.year_id, g.titular_id,
-			p.nombres as nombres_titular, p.apellidos as apellidos_titular, p.titulo,
-			g.created_at, g.updated_at, gra.nombre as nombre_grado 
-			from grupos g
-			inner join grados gra on gra.id=g.grado_id and g.year_id=:year_id 
-			inner join profesores p on p.id=g.titular_id and g.titular_id = :profesor_id
-			where g.deleted_at is null
-			order by g.orden';
+						p.nombres as nombres_titular, p.apellidos as apellidos_titular, p.titulo,
+						g.created_at, g.updated_at, gra.nombre as nombre_grado, r.con_notas 
+					from grupos g
+					inner join grados gra on gra.id=g.grado_id and g.year_id=:year_id 
+					inner join profesores p on p.id=g.titular_id and g.titular_id = :profe_id
+					left join (
+						select IF(count(n.id)>0, 1, 0) as con_notas, g.id as grupo_id 
+						from nota_comportamiento n
+						inner join matriculas m ON m.alumno_id=n.alumno_id and (m.estado="MATR" or m.estado="ASIS") and m.deleted_at is null
+						inner join grupos g ON g.id=m.grupo_id and g.deleted_at is null and titular_id=:profe_id2 and g.year_id=:year_id2
+						where n.periodo_id=:periodo_id
+						group by g.id
+					)r on r.grupo_id=g.id
+					where g.deleted_at is null
+					order by g.orden';
 
-		$grados = DB::select($consulta, array(':year_id'=>$user->year_id, ':profesor_id' => $persona_id));
+		$grados = DB::select($consulta, [':year_id'=>$user->year_id, ':profe_id' => $persona_id, ':profe_id2' => $persona_id, ':year_id2'=>$user->year_id, ':periodo_id'=>$user->periodo_id ] );
 
 		$res['grados_comp'] = $grados;
 

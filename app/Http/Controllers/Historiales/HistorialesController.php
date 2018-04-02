@@ -9,6 +9,8 @@ use App\Models\User;
 use App\Models\Year;
 use App\Models\Grupo;
 
+use App\Http\Controllers\Historiales\HistorialCalc;
+
 
 class HistorialesController extends Controller {
 
@@ -90,6 +92,22 @@ class HistorialesController extends Controller {
 		
 		
 		return ['historial'=>$historial];
+	}
+	
+
+
+	
+	public function putDeUsuario()
+	{
+		$user           	= User::fromToken();
+		$user_id   			= Request::input('user_id');
+
+		$historialCalc 		= new HistorialCalc();
+		
+		$historial 			= $historialCalc->historial_sesiones_de_usuario($user_id);
+		$intentos_fallidos 	= $historialCalc->intentos_fallidos_de_usuario($user_id);
+		
+		return ['historial'=>$historial, 'intentos_fallidos'=>$intentos_fallidos];
 	}
 	
 

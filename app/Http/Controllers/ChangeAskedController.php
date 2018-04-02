@@ -146,7 +146,7 @@ class ChangeAskedController extends Controller {
 		
 		# Datos de los docentes de este año
 		if ($con_historial) {
-			$profes_actuales = DB::select('SELECT p.id as profesor_id, p.nombres, p.apellidos, p.sexo, p.foto_id, r.fecha_ingreso, h.id, h.entorno, h.device_family, h.platform_family, h.browser_family, h.ip, 
+			$profes_actuales = DB::select('SELECT p.id as profesor_id, p.nombres, p.apellidos, p.sexo, p.foto_id, p.user_id, r.fecha_ingreso, h.id, h.entorno, h.device_family, h.platform_family, h.browser_family, h.ip, 
 										u.username, p.telefono, p.celular, p.email, p.fecha_nac, r2.cant_asignaturas,
 										u.imagen_id, IFNULL(i.nombre, IF(p.sexo="F","default_female.png", "default_male.png")) as imagen_nombre, 
 										p.foto_id, IFNULL(i2.nombre, IF(p.sexo="F","default_female.png", "default_male.png")) as foto_nombre
@@ -165,7 +165,7 @@ class ChangeAskedController extends Controller {
 										WHERE a.deleted_at is null 
 										group by a.profesor_id
 									)r2 on r2.profesor_id=p.id
-									where  c.year_id=?', 
+									where  c.year_id=? order by p.nombres, p.apellidos', 
 									[ $user->year_id, $user->year_id ]);
 		
 		}else{
