@@ -117,7 +117,7 @@ class ChangeAskedController extends Controller {
 							[ $user->username ]);
 
 			# Datos de los docentes de este año
-			$profes_actuales = $this->datos_de_docentes_este_anio($user);
+			$profes_actuales = $this->datos_de_docentes_este_anio($user, true);
 			
 			return [ 'alumnos'=>$cambios_alum, 'profesores'=>[], 'historial'=> $historial, 'intentos_fallidos'=> $intentos_fallidos, 'profes_actuales' => $profes_actuales ];
 		
@@ -206,9 +206,37 @@ class ChangeAskedController extends Controller {
 											group by u.asignatura_id
 										)r2', 
 									[ $user->year_id, $user->periodo_id, $profes_actuales[$i]->profesor_id ]);
+								
+				$avance_comport = DB::select('SELECT COUNT(*) as cant_grupos_comport, sum(r2.con_notas) as cant_grupos_con_notas
+											from (SELECT g.id as grupo_id, g.nombre, r.con_notas 
+																from grupos g
+																inner join grados gra on gra.id=g.grado_id and g.year_id=?
+																inner join profesores p on p.id=g.titular_id and g.titular_id = ?
+																left join (
+																	select IF(count(n.id)>0, 1, 0) as con_notas, g.id as grupo_id 
+																	from nota_comportamiento n
+																	inner join matriculas m ON m.alumno_id=n.alumno_id and (m.estado="MATR" or m.estado="ASIS") and m.deleted_at is null
+																	inner join grupos g ON g.id=m.grupo_id and g.deleted_at is null and titular_id=? and g.year_id=?
+																	where n.periodo_id=?
+																	group by g.id
+																)r on r.grupo_id=g.id
+																where g.deleted_at is null
+											)r2', [ $user->year_id, $profes_actuales[$i]->profesor_id, $profes_actuales[$i]->profesor_id, $user->year_id, $user->periodo_id ]);					
 									
 				if (count($porcentaje) > 0) {
+					
 					$profes_actuales[$i]->porcentaje = ($porcentaje[0]->uni_correctas*100 / $profes_actuales[$i]->cant_asignaturas)/2 + ($porcentaje[0]->sub_correctas*100 / $profes_actuales[$i]->cant_asignaturas)/2;
+					
+					if (count($avance_comport) > 0) {
+						$avance_comport = $avance_comport[0];
+						$diffe = ($avance_comport->cant_grupos_comport - $avance_comport->cant_grupos_con_notas) * 5;
+						$profes_actuales[$i]->porcentaje = $profes_actuales[$i]->porcentaje - $diffe;
+						
+						if ($profes_actuales[$i]->porcentaje < 0) {
+							$profes_actuales[$i]->porcentaje = 0;
+						}
+					}
+					
 				}else{
 					$profes_actuales[$i]->porcentaje = 0;
 				}

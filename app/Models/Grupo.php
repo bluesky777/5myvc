@@ -291,11 +291,12 @@ class Grupo extends Model {
 	public static function datos($grupo_id)
 	{
 		$consulta = 'SELECT g.id as grupo_id, g.titular_id, g.nombre as nombre_grupo, g.abrev as abrev_grupo,
-						g.caritas,
+						g.caritas, g.grado_id, 
 						p.nombres as nombres_profesor, p.apellidos as apellidos_profesor,
 						p.foto_id, IFNULL(i.nombre, IF(p.sexo="F","default_female.png", "default_male.png")) as foto_nombre,
 						p.firma_id, i2.nombre as firma_titular_nombre
 					FROM grupos g 
+					left join grados gr on gr.id=g.grado_id and gr.deleted_at is null
 					left join profesores p on p.id=g.titular_id and p.deleted_at is null
 					left join images i on p.foto_id=i.id and i.deleted_at is null
 					left join images i2 on p.firma_id=i2.id and i.deleted_at is null

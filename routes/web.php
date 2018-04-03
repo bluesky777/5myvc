@@ -68,6 +68,7 @@ AdvancedRoute::controller('bolfinales', 'Informes\BolfinalesController');
 AdvancedRoute::controller('puestos', 'Informes\PuestosAnualesController');
 AdvancedRoute::controller('planillas-ausencias', 'Informes\PlanillasAusenciasController');
 AdvancedRoute::controller('notas-perdidas', 'Informes\NotasPerdidasController');
+AdvancedRoute::controller('notas-actuales-alumnos', 'Informes\NotasActualesAlumnosController');
 AdvancedRoute::controller('boletines', 'Informes\BoletinesController');
 AdvancedRoute::controller('boletines2', 'Informes\Boletines2Controller');
 AdvancedRoute::controller('boletines3', 'Informes\Boletines3Controller');

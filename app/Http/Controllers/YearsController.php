@@ -335,6 +335,22 @@ class YearsController extends Controller {
 	}
 
 
+	public function putToggleMostrarAnioPasadoEnBoletin(){
+		$user = User::fromToken();
+
+		$year_id 	= 	Request::input('year_id');
+		$can 		= 	(boolean) Request::input('can');
+
+		$year = Year::findOrFail($year_id);
+		$year->year_pasado_en_bol = $can;
+		$year->save();
+
+		if ($can) { return 'Ahora se mostrarán las deudas del año pasado en el boletín.';
+		}else{ return 'Ahora NO se mostrarán las deudas del año pasado en el boletín';}
+		
+	}
+
+
 	public function putToggleIgnorarNotasPerdidas(){
 		$user = User::fromToken();
 
