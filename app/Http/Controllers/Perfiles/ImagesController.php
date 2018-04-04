@@ -86,12 +86,11 @@ class ImagesController extends Controller {
 	}
 
 
-	public function getDatosImagen()
+	public function putDatosImagen()
 	{
 		//$user = User::fromToken();
-		$user_id = Request::input('user_id');
-		$imagen_id = Request::input('imagen_id');
-		
+		$user_id 	= Request::input('user_id');
+		$imagen_id 	= Request::input('imagen_id');
 
 		$datos_imagen = ImageModel::DatosImagen($imagen_id, $user_id);
 

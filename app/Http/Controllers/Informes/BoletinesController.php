@@ -44,14 +44,10 @@ class BoletinesController extends Controller {
 
 	public function putDetailedNotasGroup($grupo_id)
 	{
-		
-
 		$periodo_a_calcular = Request::input('periodo_a_calcular', 10);
-
 		$boletines = $this->detailedNotasGrupo($grupo_id, $this->user, '', $periodo_a_calcular);
 
 		return $boletines;
-
 
 	}
 

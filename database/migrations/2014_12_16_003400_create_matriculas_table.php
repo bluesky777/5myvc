@@ -28,7 +28,8 @@ class CreateMatriculasTable extends Migration {
 			$table->string('efectuar_una')->default('')->nullable(); // 'MATR CONDICIONAL', 'COMPR ACADEM' 
 			$table->string('descripcion_efectuada')->nullable(); 
 			$table->boolean('profes_editar_notas')->nullable(); // Si true, los profes pueden editar sus notas
-			$table->boolean('nuevo')->nullable(); // Si true, fue creado este año   
+			$table->boolean('nuevo')->nullable(); // Si true, fue creado este año
+			$table->boolean('repitente')->default(0); // Si true, es porque perdió el año pasado aquí en la institución   
 			$table->integer('created_by')->nullable();
 			$table->integer('updated_by')->nullable();
 			$table->integer('deleted_by')->nullable();

@@ -30,7 +30,7 @@ use \stdClass;
 
 class PuestosAnualesController extends Controller {
 
-
+	# Los usaba para los puestos anuales, pero no trae de la tabla notas_finales
 	public function putDetailedNotasYear()
 	{
 		$user = User::fromToken();
