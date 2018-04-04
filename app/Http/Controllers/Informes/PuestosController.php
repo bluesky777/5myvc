@@ -128,7 +128,7 @@ class PuestosController extends Controller {
 
 
 
-    public $consulta_notas_finales_periodo = 'SELECT a.id as asignatura_id, m.materia, m.alias, p.cant_perdidas, r.nota_asignatura
+    public $consulta_notas_finales_periodo = 'SELECT a.id as asignatura_id, m.materia, m.alias, p.cant_perdidas, r.nota_asignatura, ar.orden as orden_area, m.orden as orden_materia, a.orden as orden_asignatura
             FROM asignaturas a
             inner join materias m on m.id=a.materia_id and m.deleted_at is null and a.deleted_at is null and a.grupo_id=:gr_id
             inner join areas ar on ar.id=m.area_id and ar.deleted_at is null
@@ -243,12 +243,9 @@ class PuestosController extends Controller {
 
     
 	// PUESTOS POR PERIODO
-	public function putDetailedNotasPeriodo()
+	public function putDetailedNotasPeriodo($grupo_id)
 	{
 		$user = User::fromToken();
-
-		$grupo_id = Request::input('grupo_id');
-
 
 		$alumnos_response = [];
 
@@ -260,29 +257,29 @@ class PuestosController extends Controller {
             
             $consulta   = $this->consulta_notas_finales_periodo;
             
-			$alumno->asignaturas = DB::select($consulta, [ ':gr_id' => $grupo_id, ':alu_id' => $alumno_id, ':year_id' => $user->year_id, ':min' => $user->nota_minima_aceptada, ':alu_id2' => $alumno_id, ':num_periodo' => $user->numero_periodo, ':year_id2' => $user->year_id ]);
+			$alumno->asignaturas = DB::select($consulta, [ ':gr_id' => $grupo_id, ':alu_id' => $alumno->alumno_id, ':year_id' => $user->year_id, ':min' => $user->nota_minima_aceptada, ':alu_id2' => $alumno->alumno_id, ':num_periodo' => $user->numero_periodo, ':year_id2' => $user->year_id ]);
 
-			$sumatoria_asignaturas_year = 0;
+			$sumatoria_asignaturas = 0;
 			$perdidos_year = 0;
 
-			foreach ($alumno->notas_asig as $keyAsig => $asignatura) {
+			foreach ($alumno->asignaturas as $keyAsig => $asignatura) {
                 
-                $sumatoria_asignaturas_year += $asignatura->nota_final_year;
-                $asignatura->nota_final_year = round($asignatura->nota_final_year);
+                $sumatoria_asignaturas += $asignatura->nota_asignatura;
+                $asignatura->nota_asignatura = round($asignatura->nota_asignatura);
 
 			}
 
 			try {
-				$cant = count($alumno->notas_asig);
+				$cant = count($alumno->asignaturas);
 				if ($cant == 0) {
-					$alumno->promedio_year = 0;
+					$alumno->promedio = 0;
 				}else{
-					$alumno->promedio_year = ($sumatoria_asignaturas_year / $cant);
+					$alumno->promedio = ($sumatoria_asignaturas / $cant);
 					//$alumno->perdidos_year = $perdidos_year;
 				}
 				
 			} catch (Exception $e) {
-				$alumno->promedio_year = 0;
+				$alumno->promedio = 0;
 			}
 
 			array_push($alumnos_response, $alumno);
