@@ -260,6 +260,15 @@ class YearsController extends Controller {
 			$year->celular			=	Request::input('celular');
 			$year->website			=	Request::input('website');
 			$year->website_myvc		=	Request::input('website_myvc');
+			
+			$year->unidad_displayname		=	Request::input('unidad_displayname');
+			$year->unidades_displayname		=	Request::input('unidades_displayname');
+			$year->genero_unidad			=	Request::input('genero_unidad');
+			
+			$year->subunidad_displayname	=	Request::input('subunidad_displayname');
+			$year->subunidades_displayname	=	Request::input('subunidades_displayname');
+			$year->genero_subunidad			=	Request::input('genero_subunidad');
+			
 			$year->alumnos_can_see_notas	=	Request::input('alumnos_can_see_notas');
 
 			$year->save();
