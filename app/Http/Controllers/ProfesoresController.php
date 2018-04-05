@@ -139,6 +139,14 @@ class ProfesoresController extends Controller {
 			Request::merge(array('is_superuser' => false));
 			
 		}
+
+		if (Request::input('password')) {
+			if (Request::input('password') == Request::input('password2')) {
+				Request::merge(array('nuevo_password' => Request::input('password')));
+			}
+			
+			
+		}
 	}
 
 
@@ -220,13 +228,11 @@ class ProfesoresController extends Controller {
 				$profesor->celular		=	Request::input('celular');
 				$profesor->facebook		=	Request::input('facebook');
 				$profesor->email		=	Request::input('email');
-				//$profesor->tipo_profesor	=>	Request::input('tipo_profesor')
+				$profesor->tipo_profesor	=	Request::input('tipo_profesor');
 
 				$profesor->save();
 
 				if ($profesor->user_id and Request::input('username')) {
-					
-					$this->sanarInputUser();
 					
 					$this->checkOrChangeUsername($profesor->user_id);
 
@@ -236,10 +242,8 @@ class ProfesoresController extends Controller {
 					$usuario->is_superuser	=	Request::input('is_superuser', false);
 					$usuario->is_active		=	Request::input('is_active', true);
 
-					if (Request::input('password')){
-						if (Request::input('password') != "") {
-							$usuario->password = Hash::make(Request::input('password'));
-						}
+					if (Request::input('nuevo_password')){
+						$usuario->password = Hash::make(Request::input('nuevo_password'));
 					}
 
 					$usuario->save();

@@ -21,7 +21,9 @@ class NotaComportamientoController extends Controller {
 	public function getDetailed($grupo_id)
 	{
 		$user = User::fromToken();
-
+		$nota_max = DB::select('SELECT id, desempenio, porc_inicial, porc_final FROM escalas_de_valoracion 
+					where deleted_at is null and year_id=? order by orden desc limit 1', [$user->year_id])[0];
+		$nota_max = $nota_max->porc_final;
 		$alumnos = Grupo::alumnos($grupo_id);
 
 		foreach ($alumnos as $alumno) {
@@ -29,7 +31,7 @@ class NotaComportamientoController extends Controller {
 			$userData = Alumno::userData($alumno->alumno_id);
 			$alumno->userData = $userData;
 
-			$nota = NotaComportamiento::crearVerifNota($alumno->alumno_id, $user->periodo_id);
+			$nota = NotaComportamiento::crearVerifNota($alumno->alumno_id, $user->periodo_id, $nota_max);
 
 			$consulta = 'SELECT * FROM (
 							SELECT d.id as definicion_id, d.comportamiento_id, d.frase_id, 

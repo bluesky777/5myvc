@@ -14,12 +14,12 @@ class NotaComportamiento extends Model {
 	protected $softDelete = true;
 
 
-	public static function crearVerifNota($alumno_id, $periodo_id)
+	public static function crearVerifNota($alumno_id, $periodo_id, $nota_max)
 	{
 
 		$nota = NotaComportamiento::firstOrNew(['alumno_id' => $alumno_id, 'periodo_id' => $periodo_id]);
 		if (!$nota->id) {
-			$nota->nota = 100;
+			$nota->nota = $nota_max;
 			$nota->save();
 		}
 
