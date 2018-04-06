@@ -30,7 +30,18 @@ class GuardarAlumno {
 			case 'username':
 				$consulta 	= 'UPDATE users SET username=:valor, updated_by=:modificador, updated_at=:fecha WHERE id=:user_id';
 				$datos 		= [ ':valor' => $valor, ':modificador' => $user_id, ':fecha' => $now, ':user_id' => $alumno->user_id ];
-				break;
+			break;
+			
+			case 'nuevo':
+			case 'repitente':
+				$consulta = 'UPDATE matriculas SET '.$propiedad.'=:valor, updated_by=:modificador, updated_at=:fecha WHERE id=:alumno_id';
+				$datos 		= [
+					':valor'		=> $valor, 
+					':modificador'	=> $user_id, 
+					':fecha' 		=> $now,
+					':alumno_id'	=> $alumno->id
+				];
+			break;
 			
 			default:
 				$consulta = 'UPDATE alumnos SET '.$propiedad.'=:valor, updated_by=:modificador, updated_at=:fecha WHERE id=:alumno_id';
@@ -40,7 +51,7 @@ class GuardarAlumno {
 					':fecha' 		=> $now,
 					':alumno_id'	=> $alumno->id
 				];
-				break;
+			break;
 		}
 		
 		
