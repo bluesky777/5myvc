@@ -100,6 +100,20 @@ class ConfigCertificadosController extends Controller {
 	}
 
 
+
+	public function putEncabezado()
+	{
+		$user = User::fromToken();
+
+		$year = Year::find(Request::input('year_id'));
+
+		$year->encabezado_certificado = Request::input('encabezado_certificado');
+		$year->save();
+
+		return 'Cambiado';
+	}
+
+
 	public function deleteDestroy($id)
 	{
 		$user = User::fromToken();

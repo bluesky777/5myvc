@@ -77,7 +77,7 @@ class YearsController extends Controller {
 		$year->nota_minima_aceptada		=	Request::input('nota_minima_aceptada');
 		$year->resolucion				=	Request::input('resolucion');
 		$year->codigo_dane				=	Request::input('codigo_dane');
-		//$year->encabezado_certificado	=	Request::input('encabezado_certificado');
+		$year->encabezado_certificado	=	Request::input('encabezado_certificado');
 		//$year->frase_final_certificado	=	Request::input('frase_final_certificado');
 		$year->actual					=	Request::input('actual');
 		$year->telefono					=	Request::input('telefono');
