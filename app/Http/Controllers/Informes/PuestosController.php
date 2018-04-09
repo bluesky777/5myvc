@@ -182,6 +182,7 @@ class PuestosController extends Controller {
                 
                 $sumatoria_asignaturas_year += $asignatura->nota_final_year;
                 $asignatura->nota_final_year = round($asignatura->nota_final_year);
+                $perdidos_year += $asignatura->cant_perdidas;
 
 			}
 
@@ -191,7 +192,7 @@ class PuestosController extends Controller {
 					$alumno->promedio_year = 0;
 				}else{
 					$alumno->promedio_year = ($sumatoria_asignaturas_year / $cant);
-					//$alumno->perdidos_year = $perdidos_year;
+					$alumno->perdidos_year = $perdidos_year;
 				}
 				
 			} catch (Exception $e) {
@@ -266,7 +267,7 @@ class PuestosController extends Controller {
                 
                 $sumatoria_asignaturas += $asignatura->nota_asignatura;
                 $asignatura->nota_asignatura = round($asignatura->nota_asignatura);
-
+                $perdidos_year += $asignatura->cant_perdidas;
 			}
 
 			try {
@@ -275,7 +276,7 @@ class PuestosController extends Controller {
 					$alumno->promedio = 0;
 				}else{
 					$alumno->promedio = ($sumatoria_asignaturas / $cant);
-					//$alumno->perdidos_year = $perdidos_year;
+					$alumno->perdidos_year = $perdidos_year;
 				}
 				
 			} catch (Exception $e) {
