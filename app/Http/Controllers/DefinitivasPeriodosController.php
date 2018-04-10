@@ -131,9 +131,11 @@ class DefinitivasPeriodosController extends Controller {
 	{
 		$user 			= User::fromToken();
 
-		if ($user->roles[0]->name == 'Profesor' && $user->profes_pueden_nivelar) {
+		if ($user->roles[0]->name == 'Profesor' && $user->profes_pueden_nivelar==0) {
 			return abort(400, 'No tienes permiso');
 		}else if($user->roles[0]->name == 'Admin' && $user->is_superuser){
+			// todo bien
+		}else if($user->roles[0]->name == 'Profesor' && $user->profes_pueden_nivelar==1){
 			// todo bien
 		}else{
 			return abort(400, 'No tienes permiso.');
