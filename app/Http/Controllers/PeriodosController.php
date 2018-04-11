@@ -24,7 +24,7 @@ class PeriodosController extends Controller {
 
 	public function getIndex()
 	{
-		$consulta = 'SELECT * FROM periodos WHERE deleted_at is null and year_id=?';
+		$consulta = 'SELECT * FROM periodos WHERE deleted_at is null and year_id=? order by numero';
 		return DB::select($consulta, [ $this->user->year_id ]);
 	}
 

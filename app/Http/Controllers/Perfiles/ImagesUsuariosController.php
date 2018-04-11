@@ -43,7 +43,7 @@ class ImagesUsuariosController extends Controller {
 		$imagen = ImageModel::findOrFail($imagen_id);
 
 		$folderName = $imagen->nombre;
-		$img_dir = $folderName;
+		$img_dir = 'images/perfil/'.$folderName;
 		//return $img_dir;
 		$img = Image::make($img_dir);
 

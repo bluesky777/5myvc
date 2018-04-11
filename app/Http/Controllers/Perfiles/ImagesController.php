@@ -124,7 +124,7 @@ class ImagesController extends Controller {
 			//});
 			$img->save();
 		} catch (Exception $e) {
-			
+			return 'Error en el make y fit';
 		}
 
 		return $newImg;
