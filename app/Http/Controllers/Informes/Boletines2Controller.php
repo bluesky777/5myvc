@@ -25,6 +25,7 @@ use App\Models\NotaComportamiento;
 use App\Models\DefinicionComportamiento;
 use App\Models\ImageModel;
 use App\Models\EscalaDeValoracion;
+use App\Models\Area;
 use App\Models\Debugging;
 
 use Carbon\Carbon;
@@ -34,11 +35,17 @@ class Boletines2Controller extends Controller {
 	
 	public $user;
 	public $escalas_val;
+	public $nota_max;
 	
 	public function __construct()
 	{
 		$this->user = User::fromToken();
 		$this->escalas_val = DB::select('SELECT * FROM escalas_de_valoracion WHERE year_id=? AND deleted_at is null', [$this->user->year_id]);
+		/*
+		$this->nota_max = DB::select('SELECT id, desempenio, porc_inicial, porc_final FROM escalas_de_valoracion 
+					where deleted_at is null and year_id=? order by orden desc limit 1', [$this->user->year_id])[0];
+		$this->nota_max = $this->nota_max->porc_final;
+		*/
 	}
 	
 
@@ -190,7 +197,9 @@ class Boletines2Controller extends Controller {
 		} else {
 			$alumno->promedio = $sumatoria_asignaturas / count($alumno->asignaturas);
 		}
-			
+		
+		$alumno->promedio_desempenio = EscalaDeValoracion::valoracion($alumno->promedio, $this->escalas_val)->desempenio;
+		//$alumno->promedio = ($alumno->promedio * 100) / $this->nota_max;
 
 
 		// COMPORTAMIENTO Y SUS FRASES
@@ -211,6 +220,10 @@ class Boletines2Controller extends Controller {
 
 
 		}
+		
+		
+		// Agrupamos por áreas
+		$alumno->areas = Area::agrupar_asignaturas($grupo_id, $asignaturas, $this->escalas_val);
 		
 
 		return $alumno;

@@ -25,6 +25,7 @@ use App\Models\NotaComportamiento;
 use App\Models\DefinicionComportamiento;
 use App\Models\ImageModel;
 use App\Models\EscalaDeValoracion;
+use App\Models\Area;
 use App\Models\Debugging;
 
 use Carbon\Carbon;
@@ -144,8 +145,6 @@ class Boletines3Controller extends Controller {
 	public function allNotasAlumno(&$alumno, $grupo_id, $periodo_id, $comport_and_frases=false, $num_periodo=4)
 	{
 
-
-		//$asignaturas			= Grupo::detailed_materias($grupo_id);
 		$asignaturas			= Grupo::detailed_materias_notas_finales($alumno->alumno_id, $grupo_id, $this->user->year_id, $num_periodo);
 		$ausencias_total		= Ausencia::totalDeAlumno($alumno->alumno_id, $periodo_id);
 		$asignaturas_perdidas 	= [];
@@ -203,6 +202,8 @@ class Boletines3Controller extends Controller {
 		} else {
 			$alumno->promedio = $sumatoria_asignaturas / count($alumno->asignaturas);
 		}
+		
+		$alumno->promedio_desempenio = EscalaDeValoracion::valoracion($alumno->promedio, $this->escalas_val)->desempenio;
 			
 
 
@@ -227,31 +228,7 @@ class Boletines3Controller extends Controller {
 		
 		
 		// Agrupamos por áreas
-		$consulta 	= 'SELECT ar.id as area_id, ar.orden, ar.nombre as area_nombre, ar.alias as area_alias
-					FROM asignaturas a
-					inner join materias m on m.id=a.materia_id and m.deleted_at is null
-					inner join areas ar on ar.id=m.area_id and ar.deleted_at is null
-					where a.deleted_at is null and a.grupo_id=? and a.profesor_id is not null
-					group by ar.id order by ar.orden';
-					
-		$areas 		= DB::select($consulta, [ $grupo_id ]);
-		$cantAr 	= count($areas);
-		$cantAs 	= count($asignaturas);
-		
-		for ($i=0; $i < $cantAr; $i++) { 
-			$found = 0;
-			$areas[$i]->asignaturas = [];
-			
-			for ($j=0; $j < $cantAs; $j++) { 
-				if ($areas[$i]->area_id == $asignaturas[$j]->area_id) {
-					$found += 1;
-					array_push($areas[$i]->asignaturas, $asignaturas[$j]);
-				}
-			}
-			
-			$areas[$i]->cant = $found;
-		}
-		$alumno->areas = $areas;
+		$alumno->areas = Area::agrupar_asignaturas_periodos($grupo_id, $asignaturas, $this->escalas_val, $num_periodo);
 
 		return $alumno;
 	}

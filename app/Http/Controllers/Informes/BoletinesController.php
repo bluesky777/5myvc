@@ -25,6 +25,7 @@ use App\Models\NotaComportamiento;
 use App\Models\DefinicionComportamiento;
 use App\Models\ImageModel;
 use App\Models\EscalaDeValoracion;
+use App\Models\Area;
 use App\Models\Debugging;
 
 use Carbon\Carbon;
@@ -190,6 +191,8 @@ class BoletinesController extends Controller {
 		} else {
 			$alumno->promedio = $sumatoria_asignaturas / count($alumno->asignaturas);
 		}
+		
+		$alumno->promedio_desempenio = EscalaDeValoracion::valoracion($alumno->promedio, $this->escalas_val)->desempenio;
 			
 
 
@@ -213,6 +216,10 @@ class BoletinesController extends Controller {
 		}
 		
 
+		// Agrupamos por áreas
+		//$alumno->areas = Area::agrupar_asignaturas($grupo_id, $asignaturas);
+		
+		
 		return $alumno;
 	}
 

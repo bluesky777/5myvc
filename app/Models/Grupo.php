@@ -102,7 +102,7 @@ class Grupo extends Model {
 	public static function detailed_materias_notafinal($alumno_id, $grupo_id, $periodo_id, $year_id)
 	{
 		$consulta = 'SELECT a.id as asignatura_id, a.grupo_id, a.profesor_id, a.creditos, ar.orden as orden_area, m.orden as orden_materia, a.orden,
-				m.materia, m.alias as alias_materia, ar.nombre as area_nombre, ar.alias as area_alias,
+				m.materia, m.alias as alias_materia, m.area_id, ar.nombre as area_nombre, ar.alias as area_alias,
 				p.nombres as nombres_profesor, p.apellidos as apellidos_profesor,
 				p.foto_id, IFNULL(i.nombre, IF(p.sexo="F","default_female.png", "default_male.png")) as foto_nombre, 
 				n.nota as nota_asignatura, n.recuperada, n.manual, e.desempenio, n.id as nf_id
@@ -121,6 +121,9 @@ class Grupo extends Model {
 		return $asignaturas;
 	}
 
+	
+	
+	
 	
 	public static function detailed_materias_notas_finales($alumno_id, $grupo_id, $year_id, $num_periodo=4)
 	{
