@@ -130,16 +130,7 @@ class DefinitivasPeriodosController extends Controller {
 	public function putUpdate()
 	{
 		$user 			= User::fromToken();
-
-		if ($user->roles[0]->name == 'Profesor' && $user->profes_pueden_nivelar==0) {
-			return abort(400, 'No tienes permiso');
-		}else if($user->roles[0]->name == 'Admin' && $user->is_superuser){
-			// todo bien
-		}else if($user->roles[0]->name == 'Profesor' && $user->profes_pueden_nivelar==1){
-			// todo bien
-		}else{
-			return abort(400, 'No tienes permiso.');
-		}
+		User::pueden_modificar_definitivas($user);
 		
 		$now 		= Carbon::now('America/Bogota');
 		
@@ -150,7 +141,7 @@ class DefinitivasPeriodosController extends Controller {
 			return 'Cambiada';
 		}else{
 
-			$num_periodo 	= Request::input('periodo');
+			$num_periodo 	= Request::input('num_periodo');
 			$periodos 		= DB::select('SELECT * FROM periodos WHERE deleted_at is null and numero=? and year_id=?', [$num_periodo, $user->year_id]);
 			
 			if (count($periodos) > 0) {
@@ -176,14 +167,7 @@ class DefinitivasPeriodosController extends Controller {
 	public function putToggleRecuperada()
 	{
 		$user 			= User::fromToken();
-
-		if ($user->roles[0]->name == 'Profesor' && $user->profes_pueden_nivelar) {
-			return abort(400, 'No tienes permiso');
-		}else if($user->roles[0]->name == 'Admin' && $user->is_superuser){
-			// todo bien
-		}else{
-			return App::abort(400, 'No tienes permiso.');
-		}
+		User::pueden_modificar_definitivas($user);
 		
 		if ($user->roles[0]->name == 'Profesor' || ($user->roles[0]->name == 'Admin' && $user->is_superuser)) {
 			// No pasa nada
@@ -209,14 +193,7 @@ class DefinitivasPeriodosController extends Controller {
 	public function putToggleManual()
 	{
 		$user 			= User::fromToken();
-
-		if ($user->roles[0]->name == 'Profesor' && $user->profes_pueden_nivelar) {
-			return abort(400, 'No tienes permiso');
-		}else if($user->roles[0]->name == 'Admin' && $user->is_superuser){
-			// todo bien
-		}else{
-			return App::abort(400, 'No tienes permiso.');
-		}
+		User::pueden_modificar_definitivas($user);
 		
 		if ($user->roles[0]->name == 'Profesor' || ($user->roles[0]->name == 'Admin' && $user->is_superuser)) {
 			// No pasa nada
@@ -230,7 +207,7 @@ class DefinitivasPeriodosController extends Controller {
 			DB::update($consulta, [ $manual, $user->user_id, $now, Request::input('nf_id') ]);
 		}else{
 			$consulta 	= 'UPDATE notas_finales SET manual=?, recuperada=?, updated_by=?, updated_at=? WHERE id=?';
-			DB::update($consulta, [ $manual, true, $user->user_id, $now, Request::input('nf_id') ]);
+			DB::update($consulta, [ $manual, false, $user->user_id, $now, Request::input('nf_id') ]);
 		}
 		
 		return 'Cambiada';

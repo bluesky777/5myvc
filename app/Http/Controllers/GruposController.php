@@ -151,7 +151,7 @@ class GruposController extends Controller {
 	public function getListado($grupo_id)
 	{
 		$user = User::fromToken();
-		$consulta = 'SELECT m.alumno_id, a.user_id, u.username, a.nombres, a.apellidos, a.sexo, a.fecha_nac,
+		$consulta = 'SELECT m.alumno_id, a.user_id, u.username, a.nombres, a.apellidos, a.sexo, a.fecha_nac, m.estado,
 						u.imagen_id, IFNULL(i.nombre, IF(a.sexo="F","default_female.png", "default_male.png")) as imagen_nombre, 
 						a.foto_id, IFNULL(i2.nombre, IF(a.sexo="F","default_female.png", "default_male.png")) as foto_nombre,
 						(a.direccion + " - " + a.barrio) as direccion, a.facebook, a.pazysalvo, a.deuda

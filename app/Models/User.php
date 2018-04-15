@@ -332,7 +332,26 @@ class User extends Authenticatable implements AuthenticatableUserContract
 	}
 	
 	
-	public static function pueden_editar_notas($user){
+	public static function pueden_editar_notas($user)
+	{
+		$periodos = DB::select('SELECT * FROM periodos p WHERE p.deleted_at is null and p.year_id=?', [$user->year_id]);
+		
+		$num_periodo = (int)Request::input('num_periodo');
+		
+		if ($num_periodo) {
+			# Todo bien
+		}else{
+			$num_periodo = (int)$user->numero_periodo;
+		}
+		
+		$cant_p = count($periodos);
+		
+		for ($i=0; $i < $cant_p; $i++) { 
+			if ($periodos[$i]->numero == $num_periodo){
+				$user->profes_pueden_nivelar 		= $periodos[$i]->profes_pueden_nivelar;
+				$user->profes_pueden_editar_notas 	= $periodos[$i]->profes_pueden_editar_notas;
+			}
+		}
 		
 		if ($user->roles[0]->name == 'Profesor' && $user->profes_pueden_editar_notas==0) {
 			return abort(400, 'No tienes permiso');
@@ -340,6 +359,41 @@ class User extends Authenticatable implements AuthenticatableUserContract
 			// todo bien
 		}else{
 			return App::abort(400, 'No tienes permiso.');
+		}
+
+	}
+
+	
+	public static function pueden_modificar_definitivas($user)
+	{
+		$periodos = DB::select('SELECT * FROM periodos p WHERE p.deleted_at is null and p.year_id=?', [$user->year_id]);
+		
+		$num_periodo = (int)Request::input('num_periodo');
+		
+		if ($num_periodo) {
+			# Todo bien
+		}else{
+			$num_periodo = (int)$user->numero_periodo;
+		}
+		
+		$cant_p = count($periodos);
+		
+		for ($i=0; $i < $cant_p; $i++) { 
+			if ($periodos[$i]->numero == $num_periodo){
+				$user->profes_pueden_nivelar 		= $periodos[$i]->profes_pueden_nivelar;
+				$user->profes_pueden_editar_notas 	= $periodos[$i]->profes_pueden_editar_notas;
+			}
+		}
+		
+		
+		if ($user->roles[0]->name == 'Profesor' && $user->profes_pueden_nivelar==0) {
+			return abort(400, 'No tienes permiso');
+		}else if($user->roles[0]->name == 'Admin' && $user->is_superuser){
+			// todo bien
+		}else if($user->roles[0]->name == 'Profesor' && $user->profes_pueden_nivelar==1){
+			// todo bien
+		}else{
+			return abort(400, 'No tienes permiso.');
 		}
 
 	}

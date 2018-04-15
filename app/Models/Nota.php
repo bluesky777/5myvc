@@ -147,10 +147,12 @@ class Nota extends Model {
 				
 
 			}
-			try {
-				//$periodo->promedio = $sumatoria_asignaturas_per / count($alumno->asignaturas);
+			
+			$cant_asi = count($asignaturas);
+			
+			if($cant_asi > 0){
 				$periodo->promedio = $sumatoria_asignaturas_per / count($asignaturas);
-			} catch (Exception $e) {
+			} else {
 				$periodo->promedio = 0;
 			}
 
