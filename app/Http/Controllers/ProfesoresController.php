@@ -42,10 +42,34 @@ class ProfesoresController extends Controller {
 	}
 
 
+	public function putListado()
+	{	
+		$year 			= Year::datos_basicos($this->user->year_id);
+		
+		$consulta = 'SELECT p.*, c.id as contrato_id, ci.ciudad as ciudad_nac_nombre, ci.departamento as depart_nac_nombre, 
+				ci2.ciudad as ciudad_doc_nombre, ci2.departamento as depart_doc_nombre, t.tipo as tipo_doc_nombre, t.abrev, u.username 
+			FROM profesores p 
+			INNER JOIN contratos c ON c.profesor_id=p.id and c.deleted_at is null 
+			LEFT JOIN ciudades ci ON ci.id=p.ciudad_nac and ci.deleted_at is null 
+			LEFT JOIN ciudades ci2 ON ci2.id=p.ciudad_doc and ci2.deleted_at is null 
+			LEFT JOIN tipos_documentos t ON t.id=p.tipo_doc and t.deleted_at is null 
+			LEFT JOIN users u ON u.id=p.user_id and u.deleted_at is null 
+			WHERE p.deleted_at is null and c.year_id=?';
+			
+		$profesores = DB::select($consulta, [$this->user->year_id]);
+		
+		for ($i=0; $i < count($profesores); $i++) { 
+			$profesores[$i]->grupos = DB::select('SELECT g.abrev, g.id FROM grupos g WHERE g.deleted_at is null and g.titular_id=? and year_id=?', [$profesores[$i]->id, $this->user->year_id]);
+		}
+			
+		return [ 'year'=>$year, 'profesores'=>$profesores];
+		
+	}
+
 	public function postStore()
 	{
 
-
+	
 		$this->sanarInputProfesor();
 
 		$profesor = new Profesor;

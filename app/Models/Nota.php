@@ -121,7 +121,6 @@ class Nota extends Model {
 						$unidad->subunidades = Subunidad::deUnidad($unidad->unidad_id);
 					}
 
-					Asignatura::calculoAlumnoNotas($asignatura, $alumno->alumno_id);
 					$sumatoria_asignaturas_per += $asignatura->nota_asignatura; // Para sacar promedio del periodo
 					
 					$asignatura->ausencias	= Ausencia::deAlumno($asignatura->asignatura_id, $alumno->alumno_id, $periodo->id);

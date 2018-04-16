@@ -45,9 +45,9 @@ class EscalasDeValoracionController extends Controller {
 		$user 	= User::fromToken();
 		$now 	= Carbon::now('America/Bogota');
 
-		$consulta 	= 'UPDATE escalas_de_valoracion SET desempenio=:desemp, descripcion=:descripcion, icono_adolescente=:adolesc, icono_infantil=:infantil, orden=:orden, perdido=:perdido, valoracion=:valoracion, updated_at=:updated_at
+		$consulta 	= 'UPDATE escalas_de_valoracion SET porc_inicial=:ini, porc_final=:fin, desempenio=:desemp, descripcion=:descripcion, icono_adolescente=:adolesc, icono_infantil=:infantil, orden=:orden, perdido=:perdido, valoracion=:valoracion, updated_at=:updated_at
 						WHERE id=:id';
-		$escalas 	= DB::select($consulta, [ ':desemp' => $request->desempenio, ':descripcion' => $request->descripcion, ':adolesc' => $request->icono_adolescente, ':infantil' => $request->icono_infantil, ':orden' => $request->orden, ':perdido' => $request->perdido, ':valoracion' => $request->valoracion, 'updated_at' => $now, ':id' => $request->id ]);
+		$escalas 	= DB::update($consulta, [ ':ini' => $request->porc_inicial, ':fin' => $request->porc_final, ':desemp' => $request->desempenio, ':descripcion' => $request->descripcion, ':adolesc' => $request->icono_adolescente, ':infantil' => $request->icono_infantil, ':orden' => $request->orden, ':perdido' => $request->perdido, ':valoracion' => $request->valoracion, 'updated_at' => $now, ':id' => $request->id ]);
 
 		return 'Guardado';
 

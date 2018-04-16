@@ -67,42 +67,6 @@ class PlanillasController extends Controller {
 					$alumno->definitivas = [];
 				}
 				
-				
-				/*
-				$periodosTemp = Periodo::delYear($user->year_id);
-
-				foreach ($periodosTemp as $keyPer => $periodo) {
-
-					// Unidades y subunidades de la asignatura en el periodo
-					$asignaturaTemp = DB::select('SELECT * FROM asignaturas WHERE deleted_at is null and id=?', [ $asignatura->asignatura_id ])[0];
-					$asignaturaTemp->unidades = Unidad::deAsignatura($asignaturaTemp->id, $periodo->id);
-
-					foreach ($asignaturaTemp->unidades as $unidad) {
-						$unidad->subunidades = Subunidad::deUnidad($unidad->unidad_id);
-					}
-
-					// Traemos las notas de esta asignatura segun las unidades y subunidades calculadas arriba
-					Asignatura::calculoAlumnoNotas($asignaturaTemp, $alumno->alumno_id);
-					$periodo->nota_asignatura = $asignaturaTemp->nota_asignatura;
-					unset($asignaturaTemp);
-				}
-				$alumno->periodos = $periodosTemp;
-				unset($periodosTemp);
-				
-
-				foreach ($asignatura->periodosProm as $keyPer => $periodo) {
-					if (! isset($periodo->sumatoria)) {
-						$periodo->sumatoria = 0;
-					}
-
-					foreach ($alumno->periodos as $keyPerAl => $periodo_alum) {
-
-						if ($periodo_alum->id == $periodo->id) {
-							$periodo->sumatoria += $periodo_alum->nota_asignatura;
-						}
-					}
-				}
-				*/
 
 			}
 
