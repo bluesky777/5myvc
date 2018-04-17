@@ -135,18 +135,23 @@ class ImagesUsuariosController extends Controller {
 
 		// Solo puede cambiarle a alguien si es profesor o superuser
 		if ($user->tipo == 'Profesor' or $user->is_superuser) {
+			
+			$img_id 			= Request::input('imagen_id');
+			$img 				= ImageModel::find($img_id);
+
 
 			$profesor 				= Profesor::findOrFail($profe_id);
 			$img_id 				= Request::input('imagen_id');
-			$profesor->firma_id 	= $img_id;
+			$profesor->firma_id 	= $img_id ? $img_id : null;
 			$profesor->updated_by 	= $user->user_id;
 			$profesor->save();
-
-			$img 				= ImageModel::findOrFail($img_id);
-			$img->user_id 		= $profesor->user_id;
-			$img->updated_by 	= $user->user_id;
-			$img->publica 		= false;
-			$img->save();
+			
+			if ($img){
+				$img->user_id 		= $profesor->user_id;
+				$img->updated_by 	= $user->user_id;
+				$img->publica 		= false;
+				$img->save();
+			}
 
 		}else{
 			return 'No tienes permiso';
