@@ -23,7 +23,7 @@ class ExcelListadoDocentesController extends Controller {
     }
 
 
-	public function getDocentes()
+	public function getDocentes($year, $year_id)
 	{
         $user = User::fromToken();
         
@@ -34,69 +34,52 @@ class ExcelListadoDocentesController extends Controller {
             $extension = 'xlsx';
         }
 
-		Excel::create('Alumnos con acudientes '.$user->year, function($excel) {
+		Excel::create('Listado de docentes '.$year, function($excel) use($year_id) {
 
-            $consulta = 'SELECT g.id, g.nombre, g.abrev, g.orden, gra.orden as orden_grado, g.grado_id, g.year_id, g.titular_id,
-                p.nombres as nombres_titular, p.apellidos as apellidos_titular, p.titulo,
-                g.created_at, g.updated_at, gra.nombre as nombre_grado 
-                from grupos g
-                inner join grados gra on gra.id=g.grado_id and g.year_id=:year_id 
-                left join profesores p on p.id=g.titular_id
-                where g.deleted_at is null
-                order by g.orden';
+            $consulta = 'SELECT p.*, c.id as contrato_id, ci.ciudad as ciudad_nac_nombre, ci.departamento as depart_nac_nombre, 
+                    ci2.ciudad as ciudad_doc_nombre, ci2.departamento as depart_doc_nombre, t.tipo as tipo_doc_nombre, t.abrev, u.username 
+                FROM profesores p 
+                INNER JOIN contratos c ON c.profesor_id=p.id and c.deleted_at is null 
+                LEFT JOIN ciudades ci ON ci.id=p.ciudad_nac and ci.deleted_at is null 
+                LEFT JOIN ciudades ci2 ON ci2.id=p.ciudad_doc and ci2.deleted_at is null 
+                LEFT JOIN tipos_documentos t ON t.id=p.tipo_doc and t.deleted_at is null 
+                LEFT JOIN users u ON u.id=p.user_id and u.deleted_at is null 
+                WHERE p.deleted_at is null and c.year_id=?';
 
-            $grupos = DB::select($consulta, [':year_id'=> Year::actual()->id] );
+            $profesores = DB::select($consulta, [$year_id] );
             
-            for ($i=0; $i < count($grupos); $i++) { 
-                $grupo = $grupos[$i];
-
-                $excel->sheet($grupos[$i]->abrev, function($sheet) use ($grupo) {
+            for ($i=0; $i < count($profesores); $i++) { 
+                $grupos = DB::select('SELECT g.abrev, g.id, g.orden FROM grupos g WHERE g.deleted_at is null and g.titular_id=? and year_id=?', [$profesores[$i]->id, $year_id]);
+                $profesores[$i]->grupos = '';
+                
+                $cant_g = count($grupos);
+                
+                for ($j=0; $j < $cant_g; $j++) { 
+                    $profesores[$i]->grupos .= $grupos[$j]->abrev;
                     
-                    $consulta   = Matricula::$consulta_asistentes_o_matriculados_simat;
-                    $alumnos    = DB::select($consulta, [ ':grupo_id' => $grupo->id ] );
-                    
-                    $sheet->setBorder('A3:BL'.(count($alumnos)+3), 'thin', "D8572C");
-                    $sheet->getStyle('A3:BL3')->getAlignment()->setWrapText(true); 
-                    $sheet->mergeCells('A2:E2');
-                    
-                    $this->Comentarios($sheet);
-                    
-                    $opera = new OperacionesAlumnos;
-                    $opera->recorrer_y_dividir_nombres($alumnos);
-                    
-                    // Traigo los acudientes de 
-		            $cantA = count($alumnos);
-                    for ($i=0; $i < $cantA; $i++) { 
-                        $consulta                   = Matricula::$consulta_parientes;
-                        $acudientes                 = DB::select($consulta, [ $alumnos[$i]->alumno_id ]);
-                        
-                        if (count($acudientes) == 0) {
-                            $acu1       = (object)Acudiente::$acudiente_vacio;
-                            //$acu1->id   = -1;
-                            array_push($acudientes, $acu1);
-                            
-                            $acu2       = (object)Acudiente::$acudiente_vacio;
-                            //$acu2->id   = 0;
-                            array_push($acudientes, $acu2);
-                        }else if (count($acudientes) == 1) {
-                            $acu1 = (object)Acudiente::$acudiente_vacio;
-                            //$acu1->id = -1;
-                            array_push($acudientes, $acu1);
-                        }
-                        $alumnos[$i]->acudientes    = $acudientes;
+                    if (! isset($profesores[$i]->orden_grupo)) {
+                        $profesores[$i]->orden_grupo = $grupos[$j]->orden;
                     }
                     
-                    $sheet->loadView('simat', compact('alumnos', 'grupo') )->mergeCells('A1:E1');
+                    if ($cant_g > 0 && $j < ($cant_g-1)) {
+                        $profesores[$i]->grupos .= ',';
+                    }
+                }
                     
-                    //$sheet->setAutoFilter();
-                    $sheet->setWidth(['A'=>5, 'B'=>5, 'C'=>10, 'D'=>11, 'E'=>10, 'F'=>16, 'P'=>13, 'Q'=>7, 'S'=>11, 'T'=>7, 'Y'=>14, 'Z'=>5, 'AA'=>7, 'X'=>10, 'AB'=>5, 'AD'=>10, 
-                                        'AF'=>12, 'AG'=>12, 'AH'=>6, 'AL'=>11, 'AN'=>14, 'AU'=>17,
-                                        'AW'=>12, 'AX'=>12, 'AY'=>6, 'BC'=>11, 'BE'=>14, 'BL'=>17,]);
-                    $sheet->setHeight(3, 30);
-                    
-                });
-
             }
+            
+            
+            $excel->sheet('Docentes', function($sheet) use ($profesores) {
+                
+                $sheet->setBorder('A1:Q'.(count($profesores)+3), 'thin', "D8572C");
+                $sheet->getStyle('A1:Q1')->getAlignment()->setWrapText(true);
+                
+                $sheet->loadView('listado-docentes', compact('profesores') );
+                
+                $sheet->setWidth(['A'=>5, 'B'=>8, 'C'=>30, 'D'=>5, 'E'=>14, 'F'=>6, 'G'=>11, 'P'=>13, 'Q'=>18, ]);
+                $sheet->setHeight(1, 30);
+                
+            });
 
             
         

@@ -55,7 +55,7 @@ class SimatController extends Controller {
                     $consulta   = Matricula::$consulta_asistentes_o_matriculados_simat;
                     $alumnos    = DB::select($consulta, [ ':grupo_id' => $grupo->id ] );
                     
-                    $sheet->setBorder('A3:BL'.(count($alumnos)+3), 'thin', "D8572C");
+                    $sheet->setBorder('A3:BL'.(count($alumnos)+5), 'thin', "D8572C");
                     $sheet->getStyle('A3:BL3')->getAlignment()->setWrapText(true); 
                     $sheet->mergeCells('A2:E2');
                     
