@@ -59,7 +59,23 @@ class ProfesoresController extends Controller {
 		$profesores = DB::select($consulta, [$this->user->year_id]);
 		
 		for ($i=0; $i < count($profesores); $i++) { 
-			$profesores[$i]->grupos = DB::select('SELECT g.abrev, g.id FROM grupos g WHERE g.deleted_at is null and g.titular_id=? and year_id=?', [$profesores[$i]->id, $this->user->year_id]);
+			$grupos = DB::select('SELECT g.abrev, g.id, g.orden FROM grupos g WHERE g.deleted_at is null and g.titular_id=? and year_id=?', [$profesores[$i]->id, $this->user->year_id]);
+			$profesores[$i]->grupos = '';
+			
+			$cant_g = count($grupos);
+			
+			for ($j=0; $j < $cant_g; $j++) { 
+				$profesores[$i]->grupos .= $grupos[$j]->abrev;
+				
+				if (! isset($profesores[$i]->orden_grupo)) {
+					$profesores[$i]->orden_grupo = $grupos[$j]->orden;
+				}
+				
+				if ($cant_g > 0 && $j < ($cant_g-1)) {
+					$profesores[$i]->grupos .= ',';
+				}
+			}
+				
 		}
 			
 		return [ 'year'=>$year, 'profesores'=>$profesores];

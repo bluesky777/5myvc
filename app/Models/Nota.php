@@ -119,6 +119,14 @@ class Nota extends Model {
 
 					foreach ($asignatura->unidades as $unidad) {
 						$unidad->subunidades = Subunidad::deUnidad($unidad->unidad_id);
+						
+						for ($j=0; $j < count($unidad->subunidades); $j++) { 
+							$nota = DB::select('SELECT * FROM notas n WHERE n.deleted_at is null and n.subunidad_id=? and n.alumno_id=?', [$unidad->subunidades[$j]->subunidad_id, $alumno_id]);
+							if (count($nota)>0) {
+								$unidad->subunidades[$j]->nota = $nota[0];
+							}
+							
+						}
 					}
 
 					$sumatoria_asignaturas_per += $asignatura->nota_asignatura; // Para sacar promedio del periodo

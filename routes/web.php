@@ -74,6 +74,7 @@ AdvancedRoute::controller('boletines', 'Informes\BoletinesController');
 AdvancedRoute::controller('boletines2', 'Informes\Boletines2Controller');
 AdvancedRoute::controller('boletines3', 'Informes\Boletines3Controller');
 AdvancedRoute::controller('simat', 'Informes\SimatController');
+AdvancedRoute::controller('excel-docentes', 'Informes\ExcelListadoDocentesController');
 AdvancedRoute::controller('observador', 'Informes\ObservadorController');
 
 # Pefiles
