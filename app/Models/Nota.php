@@ -11,6 +11,7 @@ use App\Models\Alumno;
 use App\Models\Unidad;
 use App\Models\Subunidad;
 use App\Models\Asignatura;
+use App\Models\Debugging;
 
 use \stdClass;
 use DB;
@@ -92,7 +93,8 @@ class Nota extends Model {
 		return $puesto;
 	}
 
-
+	
+	// Todos los periodos
 	public static function alumnoPeriodosDetailed($alumno_id, $year_id, $profesor_id='')
 	{
 		$alumno 	= Alumno::alumnoData($alumno_id, $year_id);
@@ -105,65 +107,7 @@ class Nota extends Model {
 
 
 		foreach ($periodos as $keyPer => $periodo) {
-			
-			$asignaturas = Grupo::detailed_materias_notafinal($alumno_id, $alumno->grupo_id, $periodo->id, $year_id);
-			$sumatoria_asignaturas_per = 0;
-
-			foreach ($asignaturas as $keyAsig => $asignatura) {
-				
-				if($profesor_id != $asignatura->profesor_id && $profesor_id != ''){
-					unset($asignaturas[$keyAsig]);
-				}else{
-
-					$asignatura->unidades = Unidad::deAsignatura($asignatura->asignatura_id, $periodo->id);
-
-					foreach ($asignatura->unidades as $unidad) {
-						$unidad->subunidades = Subunidad::deUnidad($unidad->unidad_id);
-						
-						for ($j=0; $j < count($unidad->subunidades); $j++) { 
-							$nota = DB::select('SELECT * FROM notas n WHERE n.deleted_at is null and n.subunidad_id=? and n.alumno_id=?', [$unidad->subunidades[$j]->subunidad_id, $alumno_id]);
-							if (count($nota)>0) {
-								$unidad->subunidades[$j]->nota = $nota[0];
-							}
-							
-						}
-					}
-
-					$sumatoria_asignaturas_per += $asignatura->nota_asignatura; // Para sacar promedio del periodo
-					
-					$asignatura->ausencias	= Ausencia::deAlumno($asignatura->asignatura_id, $alumno->alumno_id, $periodo->id);
-					$asignatura->frases		= FraseAsignatura::deAlumno($asignatura->asignatura_id, $alumno->alumno_id, $periodo->id);
-				
-				
-					$cantAus = 0;
-					$cantTar = 0;
-					foreach ($asignatura->ausencias as $ausencia) {
-						if ($ausencia->tipo == "tardanza") {
-							$cantTar += (int)$ausencia->cantidad_tardanza;
-						}elseif ($ausencia->tipo == "ausencia") {
-							$cantAus += (int)$ausencia->cantidad_ausencia;
-						}
-						
-					}
-	
-					$asignatura->total_ausencias = $cantAus;
-					$asignatura->total_tardanzas = $cantTar;
-					
-				}
-				
-				
-
-			}
-			
-			$cant_asi = count($asignaturas);
-			
-			if($cant_asi > 0){
-				$periodo->promedio = $sumatoria_asignaturas_per / count($asignaturas);
-			} else {
-				$periodo->promedio = 0;
-			}
-
-			$periodo->asignaturas = $asignaturas;
+			Nota::alumnoPeriodoDetalle($periodo, $alumno->grupo_id, $alumno_id, $year_id, $profesor_id);
 
 		}
 
@@ -171,6 +115,72 @@ class Nota extends Model {
 
 		return $alumno;
 
+	}
+	
+	
+	// Sólo un periodo
+	public static function alumnoPeriodoDetalle(&$periodo, $grupo_id, $alumno_id, $year_id, $profesor_id=''){
+		
+		$asignaturas = Grupo::detailed_materias_notafinal($alumno_id, $grupo_id, $periodo->id, $year_id);
+		$sumatoria_asignaturas_per = 0;
+		
+		//Debugging::pin( count($asignaturas));
+		
+		foreach ($asignaturas as $keyAsig => $asignatura) {
+			
+			if($profesor_id != $asignatura->profesor_id && $profesor_id != ''){
+				unset($asignaturas[$keyAsig]);
+			}else{
+
+				$asignatura->unidades = Unidad::deAsignatura($asignatura->asignatura_id, $periodo->id);
+
+				foreach ($asignatura->unidades as $unidad) {
+					$unidad->subunidades = Subunidad::deUnidad($unidad->unidad_id);
+					
+					for ($j=0; $j < count($unidad->subunidades); $j++) { 
+						$nota = DB::select('SELECT * FROM notas n WHERE n.deleted_at is null and n.subunidad_id=? and n.alumno_id=?', [$unidad->subunidades[$j]->subunidad_id, $alumno_id]);
+						if (count($nota)>0) {
+							$unidad->subunidades[$j]->nota = $nota[0];
+						}
+						
+					}
+				}
+
+				$sumatoria_asignaturas_per += $asignatura->nota_asignatura; // Para sacar promedio del periodo
+				
+				$asignatura->ausencias	= Ausencia::deAlumno($asignatura->asignatura_id, $alumno_id, $periodo->id);
+				$asignatura->frases		= FraseAsignatura::deAlumno($asignatura->asignatura_id, $alumno_id, $periodo->id);
+			
+			
+				$cantAus = 0;
+				$cantTar = 0;
+				foreach ($asignatura->ausencias as $ausencia) {
+					if ($ausencia->tipo == "tardanza") {
+						$cantTar += (int)$ausencia->cantidad_tardanza;
+					}elseif ($ausencia->tipo == "ausencia") {
+						$cantAus += (int)$ausencia->cantidad_ausencia;
+					}
+					
+				}
+
+				$asignatura->total_ausencias = $cantAus;
+				$asignatura->total_tardanzas = $cantTar;
+				
+			}
+			
+			
+
+		}
+		
+		$cant_asi = count($asignaturas);
+		
+		if($cant_asi > 0){
+			$periodo->promedio = $sumatoria_asignaturas_per / count($asignaturas);
+		} else {
+			$periodo->promedio = 0;
+		}
+
+		$periodo->asignaturas = $asignaturas;
 	}
 
 

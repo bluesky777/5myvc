@@ -88,11 +88,77 @@ class AlumnosController extends Controller {
 	}
 
 
-	public function getAlumnosbasico($grupo_id)
+	public function putDeGrupo($grupo_id)
 	{
-		$alumnos = Grupo::find($grupo_id)->alumnos;
+		$alumnos = DB::select('SELECT a.id, a.nombres, a.apellidos, a.sexo, m.estado,
+						a.foto_id, IFNULL(i.nombre, IF(a.sexo="F","default_female.png", "default_male.png")) as foto_nombre, 
+						m.estado  
+					FROM alumnos a
+					INNER JOIN matriculas m ON m.alumno_id=a.id and m.deleted_at is null and (m.estado="ASIS" or m.estado="MATR")
+					LEFT JOIN images i on i.id=a.foto_id and i.deleted_at is null
+					WHERE a.deleted_at is null and m.grupo_id=?'
+					, [$grupo_id]);
 
-		return $alumnos;
+		return ['alumnos' => $alumnos];
+	}
+
+
+
+	public function putYearsConNotas()
+	{
+		$alumno_id 	= Request::input('alumno_id');
+		$res 		= [];
+		
+		$years 		= DB::select('SELECT distinct(y.id) as year_id, y.year FROM years y 
+						INNER JOIN periodos p ON p.year_id=y.id and p.deleted_at is null
+						INNER JOIN unidades u ON u.periodo_id=p.id and u.deleted_at is null
+						INNER JOIN subunidades s ON s.unidad_id=u.id and s.deleted_at is null
+						INNER JOIN notas n ON n.alumno_id=? and n.subunidad_id=s.id and n.deleted_at is null
+						WHERE y.deleted_at is null', [$alumno_id]);
+		
+		for ($i=0; $i < count($years); $i++) { 
+			
+			$grupos 	= DB::select('SELECT distinct(g.id) as grupo_id, g.abrev, g.nombre, g.year_id FROM grupos g  
+							INNER JOIN asignaturas a ON a.grupo_id=g.id and a.deleted_at is null
+							INNER JOIN unidades u ON u.asignatura_id=a.id and u.deleted_at is null
+							INNER JOIN subunidades s ON s.unidad_id=u.id and s.deleted_at is null
+							INNER JOIN notas n ON n.alumno_id=? and n.subunidad_id=s.id and n.deleted_at is null
+							WHERE g.deleted_at is null and g.year_id=?', [ $alumno_id, $years[$i]->year_id ]);
+							
+			$years[$i]->grupos = $grupos;
+			
+				
+			for ($j=0; $j < count($years[$i]->grupos); $j++) { 
+				
+				$periodos 	= DB::select('SELECT distinct(p.id), p.numero FROM periodos p  
+								INNER JOIN unidades u ON u.periodo_id=p.id and u.deleted_at is null
+								INNER JOIN subunidades s ON s.unidad_id=u.id and s.deleted_at is null
+								INNER JOIN notas n ON n.alumno_id=? and n.subunidad_id=s.id and n.deleted_at is null
+								WHERE p.deleted_at is null and p.year_id=?', [ $alumno_id, $years[$i]->year_id ]);
+								
+				$years[$i]->grupos[$j]->periodos = $periodos;
+				array_push($res, $years[$i]);
+
+			}
+		}
+		
+		
+		# Años para el destino de las notas
+		$years_dest = DB::select('SELECT y.id as year_id, y.year, m.estado, m.created_at, m.updated_at, m.updated_by, g.id as grupo_id, g.abrev, g.nombre
+						FROM years y 
+						INNER JOIN grupos g ON g.year_id=y.id and g.deleted_at is null 
+						INNER JOIN matriculas m ON m.grupo_id=g.id and m.alumno_id=? and m.deleted_at is null 
+						WHERE y.deleted_at is null', [$alumno_id]);
+		
+		for ($i=0; $i < count($years_dest); $i++) { 
+			
+			$periodos 	= DB::select('SELECT p.id, p.numero FROM periodos p  
+							WHERE p.deleted_at is null and p.year_id=?', [ $years_dest[$i]->year_id ]);
+							
+			$years_dest[$i]->periodos = $periodos;
+		}
+		
+		return ['years' => $res, 'years_dest' => $years_dest];
 	}
 
 

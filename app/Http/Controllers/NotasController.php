@@ -202,6 +202,40 @@ class NotasController extends Controller {
 
 	
 	
+	public function putAlumnoPeriodoGrupo()
+	{
+		$user = User::fromToken();
+
+
+		if(($user->roles[0]->name == 'Admin' && $user->is_superuser) || $user->roles[0]->name == 'Profesor'){
+			// Todo bien
+		}else{
+			return App::abort(400, 'No tienes permiso.');
+		}
+
+		$alumno_id 	= Request::input('alumno_id');
+		$periodo_id = Request::input('periodo_id');
+		$grupo_id 	= Request::input('grupo_id');
+
+		$profesor_id = '';
+
+		if ($user->tipo == 'Profesor') {
+			$profesor_id = $user->persona_id;
+		}
+		
+		$periodo 	= DB::select('SELECT * FROM periodos WHERE id=? and deleted_at is null', [ $periodo_id ])[0]; 
+
+
+		Nota::alumnoPeriodoDetalle($periodo, $grupo_id, $alumno_id, $periodo->year_id, $profesor_id);
+
+
+		return ['notas' => $periodo];
+	}
+
+
+
+	
+	
 	public function getShow($nota_id)
 	{
 		$user 	= User::fromToken();
@@ -211,12 +245,6 @@ class NotasController extends Controller {
 
 	
 	
-
-	public function postStore()
-	{
-		return 'No se puede agregar nota';
-	}
-
 
 
 	
