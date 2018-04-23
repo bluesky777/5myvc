@@ -135,9 +135,29 @@ class DefinitivasPeriodosController extends Controller {
 		$now 		= Carbon::now('America/Bogota');
 		
 		if (Request::input('nf_id')) {
-			$consulta 	= 'UPDATE notas_finales SET nota=?, manual=true, updated_by=?, updated_at=? WHERE id=?';
-			DB::update($consulta, [ Request::input('nota'), $user->user_id, $now, Request::input('nf_id') ]);
+			$nf_id 		= Request::input('nf_id');
 			
+			$consulta 	= 'SELECT n.*, h.id as history_id FROM notas_finales n, 
+								(select * from historiales where user_id=? and deleted_at is null order by id desc limit 1 ) h 
+							WHERE n.id=? ';
+
+			$nota 		= DB::select($consulta, [$user->user_id, $nf_id])[0];
+
+			$bit_by 	= $user->user_id;
+			$bit_hist 	= $nota->history_id;
+			$bit_old 	= $nota->nota; 				// Guardo la nota antigua
+			$bit_new 	= Request::input('nota'); 	// Guardo la nota nueva
+			$bit_per 	= $user->periodo_id;
+
+			
+			$consulta 	= 'UPDATE notas_finales SET nota=?, manual=true, updated_by=?, updated_at=? WHERE id=?';
+			DB::update($consulta, [ Request::input('nota'), $user->user_id, $now, $nf_id ]);
+			
+			$consulta 	= 'INSERT INTO bitacoras (created_by, historial_id, affected_user_id, affected_person_type, affected_element_type, affected_element_id, affected_element_new_value_int, affected_element_old_value_int, created_at) 
+						VALUES (?, ?, ?, "Al", "NF_UPDATE", ?, ?, ?, ?)';
+
+			DB::insert($consulta, [$bit_by, $bit_hist, $nota->alumno_id, $nf_id, $bit_new, $bit_old, $now]);
+
 			return 'Cambiada';
 		}else{
 
@@ -211,6 +231,17 @@ class DefinitivasPeriodosController extends Controller {
 		}
 		
 		return 'Cambiada';
+	}
+
+
+	public function deleteDestroy($id)
+	{
+		$user 	= User::fromToken();
+		User::pueden_modificar_definitivas($user);
+		$consulta 	= 'DELETE FROM notas_finales WHERE id=?';
+		DB::delete($consulta, [$id]);
+
+		return 'Eliminada';
 	}
 
 

@@ -118,7 +118,7 @@ class Nota extends Model {
 	}
 	
 	
-	// Sólo un periodo
+	// Sólo UN periodo
 	public static function alumnoPeriodoDetalle(&$periodo, $grupo_id, $alumno_id, $year_id, $profesor_id=''){
 		
 		$asignaturas = Grupo::detailed_materias_notafinal($alumno_id, $grupo_id, $periodo->id, $year_id);

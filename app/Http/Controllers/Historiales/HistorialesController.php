@@ -64,6 +64,49 @@ class HistorialesController extends Controller {
 	
 	
 	
+
+	public function putNotaFinalDetalle()
+	{
+		$user 	    = User::fromToken();
+		$nf_id    	= Request::input('nf_id');
+		$res 	    = [];
+
+		$consulta 	= '(SELECT b.id as bit_id, b.created_by as created_by_user_id, b.historial_id, b.created_at, b.affected_element_new_value_int as new_value, b.affected_element_old_value_int as old_value, concat(p.nombres, " ", p.apellidos) as creado_por
+							FROM bitacoras b 
+							inner join users u on u.id=b.created_by
+							inner join profesores p on p.user_id=u.id
+							where b.affected_element_type="NF_UPDATE" and b.affected_element_id=?)
+						UNION 
+						(SELECT b.id as bit_id, b.created_by as created_by_user_id, b.historial_id, b.created_at, b.affected_element_new_value_int as new_value, b.affected_element_old_value_int as old_value, u.username as creado_por
+							FROM bitacoras b 
+							inner join users u on u.id=b.created_by AND u.tipo<>"Profesor"
+							where b.affected_element_type="NF_UPDATE" and b.affected_element_id=?)';
+		
+
+		$bita = DB::select($consulta, [$nf_id, $nf_id] );
+		
+		
+		$consulta 	= 'SELECT n.*, u2.username as modificado_por
+							FROM notas_finales n 
+							left join users u2 on u2.id=n.updated_by
+							where n.id=?';
+		
+
+		$nota = DB::select($consulta, [$nf_id, $nf_id] );
+		if(count($nota)>0){
+			$nota = $nota[0];
+		}
+
+
+		$res['cambios'] 	= $bita;
+		$res['nota'] 	    = $nota;
+		
+
+		return $res;
+	}
+	
+	
+	
 	
 	public function putSesion()
 	{
