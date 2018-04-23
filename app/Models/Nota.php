@@ -179,8 +179,31 @@ class Nota extends Model {
 		} else {
 			$periodo->promedio = 0;
 		}
+		
+		// Comportamiento
+		$consulta = 'SELECT n.*, p.nombres, p.apellidos, p.sexo, 
+						p.foto_id, IFNULL(i.nombre, IF(p.sexo="F","default_female.png", "default_male.png")) as foto_nombre
+					FROM nota_comportamiento n
+					inner join matriculas m on m.alumno_id=n.alumno_id and m.deleted_at is null
+					inner join grupos g on g.id=m.grupo_id and g.deleted_at is null and g.year_id=:year_id
+					inner join profesores p on p.id=g.titular_id and p.deleted_at is null 
+					left join images i on i.id=p.foto_id and i.deleted_at is null
+					where n.alumno_id=:alumno_id and n.periodo_id=:periodo_id and n.deleted_at is null';
+					
+		$nota_comportamiento = DB::select($consulta, [
+			':year_id'		=>$year_id, 
+			':alumno_id'	=>$alumno_id, 
+			':periodo_id'	=>$periodo->id
+		]);
+		
+		if(count($nota_comportamiento) > 0){
+			$nota_comportamiento = $nota_comportamiento[0];
+		}else{
+			$nota_comportamiento = [];
+		}
 
-		$periodo->asignaturas = $asignaturas;
+		$periodo->asignaturas 			= $asignaturas;
+		$periodo->nota_comportamiento 	= $nota_comportamiento;
 	}
 
 

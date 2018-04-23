@@ -130,7 +130,7 @@ class AlumnosController extends Controller {
 				
 			for ($j=0; $j < count($years[$i]->grupos); $j++) { 
 				
-				$periodos 	= DB::select('SELECT distinct(p.id), p.numero FROM periodos p  
+				$periodos 	= DB::select('SELECT distinct(p.id), p.numero, p.year_id FROM periodos p  
 								INNER JOIN unidades u ON u.periodo_id=p.id and u.deleted_at is null
 								INNER JOIN subunidades s ON s.unidad_id=u.id and s.deleted_at is null
 								INNER JOIN notas n ON n.alumno_id=? and n.subunidad_id=s.id and n.deleted_at is null
@@ -152,7 +152,7 @@ class AlumnosController extends Controller {
 		
 		for ($i=0; $i < count($years_dest); $i++) { 
 			
-			$periodos 	= DB::select('SELECT p.id, p.numero FROM periodos p  
+			$periodos 	= DB::select('SELECT p.id, p.numero, p.year_id FROM periodos p  
 							WHERE p.deleted_at is null and p.year_id=?', [ $years_dest[$i]->year_id ]);
 							
 			$years_dest[$i]->periodos = $periodos;
