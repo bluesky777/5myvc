@@ -117,10 +117,10 @@ class ImporterFixer {
 		// Es acudiente 1
 		if(strtolower($alumno->es_el_acudiente_acud1)=='no' || $alumno->es_el_acudiente_acud1=='' || is_null($alumno->es_el_acudiente_acud1)){
 			$alumno->is_acudiente1=0;
-			Debugging::pin('$alumno->es_el_acudiente_acud1=="no" ', $alumno->es_el_acudiente_acud1);
+			//Debugging::pin('$alumno->es_el_acudiente_acud1=="no" ', $alumno->es_el_acudiente_acud1);
 		}else if(strtolower($alumno->es_el_acudiente_acud1)=='si'){
 			$alumno->is_acudiente1=1;
-			Debugging::pin('$alumno->es_el_acudiente_acud1=="SI" ');
+			//Debugging::pin('$alumno->es_el_acudiente_acud1=="SI" ');
 		}
 		
 		// Es acudiente 2

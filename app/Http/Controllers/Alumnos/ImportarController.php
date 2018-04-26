@@ -23,6 +23,69 @@ use App\Http\Controllers\Alumnos\ImporterFixer;
 
 class ImportarController extends Controller {
 
+	public function postAlgo($year)
+	{
+		if(Request::hasFile('file')){
+			$path = Request::file('file')->getRealPath();
+			
+			$rr = Excel::load($path, function($reader) use ($year){
+				
+				$now 		= Carbon::now('America/Bogota');
+				$results 	= $reader->all();
+				$fixer 		= new ImporterFixer();
+				
+				for ($i=0; $i < count($results); $i++) { 
+					
+					
+					$abrev 		= $results[$i]->getTitle();
+					Debugging::pin('$abrev', $abrev);
+					$consulta 	= 'SELECT g.id, g.abrev, g.year_id FROM grupos g inner join years y on y.id=g.year_id WHERE g.abrev=? and g.deleted_At is null and y.deleted_at is null and y.year=?;';
+					$grupo 		= DB::select($consulta, [$abrev, $year])[0];
+					
+					for ($f=0; $f < count($results[$i]); $f++) { 
+						
+						$alumno 	= $results[$i][$f];
+						$res 		= $fixer->verificar($alumno, $year);
+						$alumno->ciudad_docu_acud1 = $res['ciudad_id_A1'];
+						$alumno->ciudad_docu_acud2 = $res['ciudad_id_A2'];
+						
+						if ($alumno->id) {
+							$consulta 	= 'UPDATE alumnos SET no_matricula=?, nombres=?, apellidos=?, sexo=?, fecha_nac=?, 
+								tipo_doc=?, documento=?, no_matricula=?, direccion=?, barrio=?, telefono=?, celular=?, estrato=?, 
+								tipo_sangre=?, eps=?, religion=?, updated_at=?'.$res['consulta'].' WHERE id=?';
+								
+		
+							DB::update($consulta, [$alumno->no_matricula, $alumno->primer_nombre.' '.$alumno->segundo_nombre, $alumno->primer_apellido.' '.$alumno->segundo_apellido, $alumno->sexo, $alumno->fecha_de_nacim, 
+									$alumno->tipo_doc, $alumno->nro_de_documento, $alumno->numero_matricula, $alumno->direccion_residencia, $alumno->barrio, $alumno->telefono, $alumno->celular, $alumno->estrato, 
+									$alumno->rh, $alumno->eps, $alumno->religion, $now, $alumno->id])[0];
+							
+									
+							DB::update('UPDATE matriculas m INNER JOIN grupos g ON g.id=m.grupo_id and g.year_id=? and g.deleted_at is null SET m.nuevo=?, m.estado=?, m.updated_at=? WHERE m.alumno_id=? and m.deleted_at is null', [$grupo->year_id, $alumno->es_nuevo, $alumno->estado_matricula, $now, $alumno->id]);
+							
+							//No eliminar!!
+							Debugging::pin('Alum_id: ' . $alumno->id, 'Grupo: ' . $abrev, 'Grupo_id: ' . $grupo->id) ;
+							
+							
+							// Acudiente 1
+							$this->modificar_acudiente1($alumno, $now, $res['consultaA1']);
+			
+							// Acudiente 2
+							$this->modificar_acudiente2($alumno, $now, $res['consultaA2']);
+			
+			
+						}
+						
+					}
+					
+				}
+				
+			});
+		}
+		return (array)$rr;
+	}
+
+	
+
 	public function getIndex()
 	{
 
@@ -178,13 +241,11 @@ class ImportarController extends Controller {
 			DB::insert('INSERT INTO parentescos(acudiente_id, alumno_id, parentesco, observaciones, created_at, updated_at) VALUES(?, ?, ?, ?, ?, ?)', [ $alumno->id_acud1, $alumno->id, $alumno->parentesco_acud1, $alumno->observaciones_acud1, $now, $now ]);
 		
 		}else{
-			Debugging::pin('Acu1 sin id: ', $alumno->nombres_acud1) ;
 			if (!(is_null($alumno->nombres_acud1) || $alumno->nombres_acud1 == '')) {
 				DB::insert('INSERT INTO acudientes(nombres, apellidos, sexo, tipo_doc, documento, is_acudiente, telefono, celular, ocupacion, direccion, email, created_at, updated_at, ciudad_doc) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', 
 					[$alumno->nombres_acud1, $alumno->apellidos_acud1, $alumno->sexo_acud1, $alumno->tipo_docu_acud1_id, $alumno->documento_acud1, $alumno->is_acudiente1, 
 					$alumno->telefono_acud1, $alumno->celular_acud1, $alumno->ocupacion_acud1, $alumno->direccion_acud1, $alumno->email_acud1, $now, $now, $alumno->ciudad_docu_acud1]);
 					
-				Debugging::pin('Acu1 sin id: ', 'SIIII') ;
 				$last_id = DB::getPdo()->lastInsertId();
 				DB::insert('INSERT INTO parentescos(acudiente_id, alumno_id, parentesco, observaciones, created_at, updated_at) VALUES(?, ?, ?, ?, ?, ?)', [ $last_id, $alumno->id, $alumno->parentesco_acud1, $alumno->observaciones_acud1, $now, $now ]);
 			}

@@ -22,7 +22,7 @@ class YearsController extends Controller {
 	{
 		$user = User::fromToken();
 
-		$consulta 	= 'SELECT * FROM years WHERE deleted_at is null';
+		$consulta 	= 'SELECT y.*, i.nombre as logo FROM years y inner join images i ON i.id=y.logo_id and i.deleted_at is null WHERE y.deleted_at is null';
 		$years 		= DB::select($consulta);
 
 		foreach ($years as $year) {
