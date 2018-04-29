@@ -202,7 +202,7 @@ class AlumnosController extends Controller {
 			$alumno = [];
 
 			try {
-				
+				$now 	= Carbon::parse(Request::input('fecha_matricula'));
 				$this->sanarInputAlumno();
 
 				$date = Carbon::createFromFormat('Y-m-d', Request::input('fecha_nac'));
@@ -277,6 +277,7 @@ class AlumnosController extends Controller {
 					$matricula->grupo_id		=	$grupo_id;
 					$matricula->estado			=	"MATR";
 					$matricula->created_by 		= 	$this->user->user_id;
+					$matricula->fecha_matricula = 	$now;
 					$matricula->save();
 
 					$grupo = Grupo::find($matricula->grupo_id);

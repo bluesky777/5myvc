@@ -91,7 +91,8 @@ class ImportarController extends Controller {
 
 		$rr = Excel::load('app/Http/Controllers/Alumnos/archivos/alumnos.xls', function($reader) {
 
-			$results = $reader->all();
+			$results 	= $reader->all();
+			$now 		= Carbon::parse(Request::input('fecha_matricula'));
 			
 			
 			for ($i=0; $i < count($results); $i++) { 
@@ -140,6 +141,7 @@ class ImportarController extends Controller {
 					$matricula->alumno_id		=	$alumno->id;
 					$matricula->grupo_id		=	$grupo->id;
 					$matricula->estado			=	"MATR";
+					$matricula->fecha_matricula = 	$now;
 					$matricula->save();
 
 				

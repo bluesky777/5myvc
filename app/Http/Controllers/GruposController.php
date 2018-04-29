@@ -11,6 +11,7 @@ use App\Models\Profesor;
 use App\Models\Grupo;
 use App\Models\Matricula;
 use App\Models\Acudiente;
+use App\Models\Periodo;
 use Carbon\Carbon;
 use App\Http\Controllers\Alumnos\Definitivas;
 
@@ -70,10 +71,28 @@ class GruposController extends Controller {
 		$user = User::fromToken();
 		$consulta = 'SELECT g.id, g.nombre, g.abrev, g.orden, gra.orden as orden_grado, g.grado_id, g.year_id, g.titular_id,
 						p.nombres as nombres_titular, p.apellidos as apellidos_titular, p.titulo, g.caritas, 
+						g.created_at, g.updated_at, gra.nombre as nombre_grado
+					from grupos g
+					inner join grados gra on gra.id=g.grado_id and g.year_id=:year_id
+					left join profesores p on p.id=g.titular_id
+					where g.deleted_at is null
+					order by g.orden';
+
+		$grados = DB::select($consulta, [':year_id'=>$user->year_id] );
+
+		return $grados;
+	}
+
+
+	public function getCantAlumnos()
+	{
+		$user = User::fromToken();
+		$consulta = 'SELECT g.id, g.nombre, g.abrev, g.orden, gra.orden as orden_grado, g.grado_id, g.year_id, g.titular_id,
+						p.nombres as nombres_titular, p.apellidos as apellidos_titular, p.titulo, g.caritas, 
 						g.created_at, g.updated_at, gra.nombre as nombre_grado, count(a.id) as cant_alumnos 
 					from grupos g
 					inner join grados gra on gra.id=g.grado_id and g.year_id=:year_id
-					INNER JOIN matriculas m ON m.grupo_id=g.id and m.deleted_at is null 
+					INNER JOIN matriculas m ON m.grupo_id=g.id and m.deleted_at is null and (m.estado="ASIS" or m.estado="MATR")
 					INNER JOIN alumnos a ON a.id=m.alumno_id and m.deleted_at is null and a.deleted_at is null
 					left join profesores p on p.id=g.titular_id
 					where g.deleted_at is null
@@ -83,6 +102,96 @@ class GruposController extends Controller {
 		$grados = DB::select($consulta, [':year_id'=>$user->year_id] );
 
 		return $grados;
+	}
+
+
+	public function putConCantidadAlumnos()
+	{
+		$user = User::fromToken();
+		$consulta = 'SELECT g.id, g.nombre, g.abrev, g.orden, g.grado_id, g.year_id, g.titular_id,
+						p.nombres as nombres_titular, p.apellidos as apellidos_titular, p.titulo, g.caritas, 
+						g.created_at, g.updated_at, count(m.id) as cant_alumnos,
+						p.foto_id, IFNULL(i.nombre, IF(p.sexo="F","default_female.png", "default_male.png")) as foto_nombre 
+					from grupos g
+					INNER JOIN matriculas m ON m.grupo_id=g.id and m.deleted_at is null and (m.estado="ASIS" or m.estado="MATR")
+					INNER JOIN alumnos a ON a.id=m.alumno_id and a.deleted_at is null
+					left join profesores p on p.id=g.titular_id
+					LEFT JOIN images i on i.id=p.foto_id and i.deleted_at is null
+					where g.deleted_at is null and g.year_id=:year_id
+					GROUP BY g.id 
+					order by g.orden';
+
+		$grupos 	= DB::select($consulta, [':year_id'=>$user->year_id] );
+		$periodos 	= Periodo::delYear($user->year_id);
+		
+		for ($j=0; $j < count($grupos); $j++) { 
+			
+			$grupos[$j]->periodos_ret	= [];
+			$grupos[$j]->periodos_matr	= [];
+			
+			for ($i=0; $i < count($periodos); $i++) { 
+				$peri 				= [];
+				$peri['Per'] 		= $i + 1;
+				
+				// Retirados y desertores del periodo
+				$consulta = 'SELECT count(m.id) as cant_alumnos, g.nombre, g.id
+							from grupos g
+							INNER JOIN matriculas m ON m.grupo_id=g.id and m.deleted_at is null and (m.estado="RETI" or m.estado="DESE")
+							INNER JOIN alumnos a ON a.id=m.alumno_id and a.deleted_at is null
+							where g.deleted_at is null and g.id=? and m.fecha_retiro>? and m.fecha_retiro<? 
+							order by g.orden';
+							
+				$cant_reti 			= DB::select($consulta, [$grupos[$j]->id, $periodos[$i]->fecha_inicio, $periodos[$i]->fecha_fin] )[0];
+				$peri['cant_reti'] 	= ($cant_reti->cant_alumnos==0 ? '' : $cant_reti->cant_alumnos);				
+				
+				array_push($grupos[$j]->periodos_ret, $peri);
+				
+				
+				$peri 				= [];
+				$peri['Per'] 		= $i + 1;
+				
+				// Matriculados del periodo
+				$consulta = 'SELECT count(m.id) as cant_alumnos, g.nombre, g.id
+							from grupos g
+							INNER JOIN matriculas m ON m.grupo_id=g.id and m.deleted_at is null 
+							INNER JOIN alumnos a ON a.id=m.alumno_id and a.deleted_at is null
+							where g.deleted_at is null and g.id=? and m.fecha_matricula>? and m.fecha_matricula<?
+							order by g.orden';
+							
+				$cant_matr 			= DB::select($consulta, [$grupos[$j]->id, $periodos[$i]->fecha_inicio, $periodos[$i]->fecha_fin] )[0];
+				$peri['cant_matr'] 	= ($cant_matr->cant_alumnos==0 ? '' : $cant_matr->cant_alumnos);
+				
+				array_push($grupos[$j]->periodos_matr, $peri);
+			}
+		}
+		
+		
+		// Totales por periodo
+		$periodos 	= Periodo::delYear($user->year_id);
+		
+		for ($i=0; $i < count($periodos); $i++) { 
+			
+			$consulta = 'SELECT count(m.id) as cant_alumnos, g.nombre, g.id
+						from grupos g
+						INNER JOIN matriculas m ON m.grupo_id=g.id and m.deleted_at is null and (m.estado="RETI" or m.estado="DESE")
+						INNER JOIN alumnos a ON a.id=m.alumno_id and a.deleted_at is null
+						where g.deleted_at is null and m.fecha_retiro>? and m.fecha_retiro<? 
+						order by g.orden';
+						
+			$periodos[$i]->total_reti = DB::select($consulta, [$periodos[$i]->fecha_inicio, $periodos[$i]->fecha_fin] )[0];
+			
+			$consulta = 'SELECT count(m.id) as cant_alumnos, g.nombre, g.id
+							from grupos g
+							INNER JOIN matriculas m ON m.grupo_id=g.id and m.deleted_at is null
+							INNER JOIN alumnos a ON a.id=m.alumno_id and a.deleted_at is null
+							where g.deleted_at is null and m.fecha_matricula>? and m.fecha_matricula<?
+							order by g.orden';
+					
+			$periodos[$i]->total_matr = DB::select($consulta, [$periodos[$i]->fecha_inicio, $periodos[$i]->fecha_fin] )[0];;
+		}
+		
+
+		return [ 'grupos'=>$grupos, 'periodos_total'=>$periodos ];
 	}
 
 

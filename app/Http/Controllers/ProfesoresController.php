@@ -131,7 +131,7 @@ class ProfesoresController extends Controller {
 		$profesor->save();
 
 		$profesor->user = $usuario;
-
+		/*
 		if (Request::input('grupo')['id']) {
 			$grupo_id = Request::input('grupo')['id'];
 
@@ -144,7 +144,7 @@ class ProfesoresController extends Controller {
 			$grupo = Grupo::find($matricula->grupo_id);
 			$profesor->grupo = $grupo;
 		}
-
+		*/
 
 		return $profesor;
 		
