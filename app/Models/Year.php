@@ -40,7 +40,7 @@ class Year extends Model {
 
 							y.rector_id, pRec.nombres as nombres_rector, pRec.apellidos as apellidos_rector, pRec.sexo as sexo_rector,
 							pRec.foto_id as rector_foto_id, IFNULL(iRec.nombre, IF(pRec.sexo="F","default_female.png", "default_male.png")) as rector_foto_nombre,
-							pRec.firma_id as rector_firma_id, iFS.nombre as rector_firma
+							pRec.firma_id as rector_firma_id, iFR.nombre as rector_firma
 
 						FROM years y
 						left join ciudades c on c.id=y.ciudad_id and c.deleted_at is null
@@ -51,9 +51,9 @@ class Year extends Model {
 						left join images iE on y.img_encabezado_id=iE.id and iE.deleted_at is null
 
 						left join images iFR on pRec.firma_id=iFR.id and iFR.deleted_at is null
-						left join images iFS on pRec.firma_id=iFS.id and iFS.deleted_at is null
+						left join images iFS on pSec.firma_id=iFS.id and iFS.deleted_at is null
 						left join images iRec on pRec.foto_id=iRec.id and iRec.deleted_at is null
-						left join images iSec on pRec.foto_id=iSec.id and iSec.deleted_at is null
+						left join images iSec on pSec.foto_id=iSec.id and iSec.deleted_at is null
 
 						where y.actual=true and y.deleted_at is null';
 
