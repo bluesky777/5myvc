@@ -73,8 +73,16 @@ class BolfinalesController extends Controller {
 
 		$this->escalas_val = DB::select('SELECT * FROM escalas_de_valoracion WHERE year_id=? AND deleted_at is null', [$user->year_id]);
 		
+		$year_actual = true;
+		if (Request::has('year_selected')) {
+			if (Request::input('year_selected') == true || Request::input('year_selected') == 'true') {
+				$year_actual = false;
+			}
+		}
+		
+		
 		$grupo			= Grupo::datos($grupo_id);
-		$year			= Year::datos($user->year_id);
+		$year			= Year::datos($user->year_id, $year_actual);
 		$alumnos		= Grupo::alumnos($grupo_id, $requested_alumnos);
 
 		$year->periodos = Periodo::where('year_id', $user->year_id)->get();
