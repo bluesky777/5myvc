@@ -135,6 +135,45 @@ class ChangeAskedController extends Controller {
 			}
 			
 			return [ 'ausencias_periodo'=>$ausencias, 'comportamiento'=>$comportamiento, 'profes_actuales' => $profes_actuales ];
+		
+		
+		}elseif ($user->tipo == 'Acudiente') {
+			
+			$consulta 		= 'SELECT a.id as alumno_id, a.no_matricula, a.nombres, a.apellidos, a.sexo, a.user_id, 
+								a.fecha_nac, a.tipo_doc, a.documento, a.tipo_sangre, a.eps, a.telefono, a.celular, 
+								a.direccion, a.barrio, a.estrato, a.religion, a.email, a.facebook, a.created_by, a.updated_by,
+								a.pazysalvo, a.deuda, 
+								u.username, u.is_superuser, u.is_active,
+								u.imagen_id, IFNULL(i.nombre, IF(a.sexo="F","default_female.png", "default_male.png")) as imagen_nombre, 
+								a.foto_id, IFNULL(i2.nombre, IF(a.sexo="F","default_female.png", "default_male.png")) as foto_nombre,
+								p.parentesco, p.observaciones, g.nombre as nombre_grupo
+							FROM alumnos a 
+							inner join parentescos p on p.alumno_id=a.id and p.acudiente_id=?
+							left join users u on a.user_id=u.id and u.deleted_at is null
+							left join images i on i.id=u.imagen_id and i.deleted_at is null
+							left join images i2 on i2.id=a.foto_id and i2.deleted_at is null
+							left join matriculas m on m.alumno_id=a.id and m.deleted_at is null and (m.estado="ASIS" or m.estado="MATR")
+							left join grupos g on g.id=m.grupo_id and g.deleted_at is null and g.year_id=?
+							where a.deleted_at is null and p.deleted_at is null
+							order by g.orden, a.apellidos, a.nombres';
+							
+			$alumnos 	= DB::select($consulta, [ $user->persona_id, $user->year_id ]);	
+			
+			for ($i=0; $i < count($alumnos); $i++) { 
+				
+				$ausencias 			= Ausencia::totalDeAlumno($alumnos[$i]->alumno_id, $user->periodo_id);
+				
+				$comportamiento 	= NotaComportamiento::nota_comportamiento($alumnos[$i]->alumno_id, $user->periodo_id);
+				if ($comportamiento) {
+					$comportamiento->definiciones = DefinicionComportamiento::frases($comportamiento->id);
+				}
+				
+				$alumnos[$i]->ausencias_periodo 	= $ausencias;
+				$alumnos[$i]->comportamiento 		= $comportamiento;
+				
+			}
+
+			return [ 'alumnos' => $alumnos ];
 		}
 		
 		return ['msg'=> 'No puedes ver pedidos'];

@@ -11,6 +11,11 @@ use App\Models\User;
 use App\Models\Acudiente;
 use App\Models\Parentesco;
 use App\Models\Role;
+use App\Models\Grupo;
+use App\Models\Ausencia;
+use App\Models\NotaComportamiento;
+use App\Models\DefinicionComportamiento;
+use App\Http\Controllers\Alumnos\OperacionesAlumnos;
 
 
 use App\Http\Controllers\Alumnos\GuardarAlumno; // para guardar datos de acudiente. No quiero crear otro archivo
@@ -34,40 +39,143 @@ class AcudientesController extends Controller {
 		$this->user = User::fromToken();
 	}
 	
+	
+
+	public function putMisAcudidos()
+	{
+		
+		$user = $this->user;
+		
+		$consulta 		= 'SELECT a.id as alumno_id, a.no_matricula, a.nombres, a.apellidos, a.sexo, a.user_id, 
+							a.fecha_nac, a.tipo_doc, a.documento, a.tipo_sangre, a.eps, a.telefono, a.celular, 
+							a.direccion, a.barrio, a.estrato, a.religion, a.email, a.facebook, a.created_by, a.updated_by,
+							a.pazysalvo, a.deuda, 
+							u.username, u.is_superuser, u.is_active,
+							u.imagen_id, IFNULL(i.nombre, IF(a.sexo="F","default_female.png", "default_male.png")) as imagen_nombre, 
+							a.foto_id, IFNULL(i2.nombre, IF(a.sexo="F","default_female.png", "default_male.png")) as foto_nombre,
+							p.parentesco, p.observaciones, g.nombre as nombre_grupo
+						FROM alumnos a 
+						inner join parentescos p on p.alumno_id=a.id and p.acudiente_id=?
+						left join users u on a.user_id=u.id and u.deleted_at is null
+						left join images i on i.id=u.imagen_id and i.deleted_at is null
+						left join images i2 on i2.id=a.foto_id and i2.deleted_at is null
+						left join matriculas m on m.alumno_id=a.id and m.deleted_at is null and (m.estado="ASIS" or m.estado="MATR")
+						left join grupos g on g.id=m.grupo_id and g.deleted_at is null and g.year_id=?
+						where a.deleted_at is null and p.deleted_at is null
+						order by g.orden, a.apellidos, a.nombres';
+			
+		$alumnos 	= DB::select($consulta, [ $user->persona_id, $user->year_id ]);	
+
+		for ($i=0; $i < count($alumnos); $i++) { 
+
+		$ausencias 			= Ausencia::totalDeAlumno($alumnos[$i]->alumno_id, $user->periodo_id);
+
+		$comportamiento 	= NotaComportamiento::nota_comportamiento($alumnos[$i]->alumno_id, $user->periodo_id);
+		if ($comportamiento) {
+		$comportamiento->definiciones = DefinicionComportamiento::frases($comportamiento->id);
+		}
+
+		$alumnos[$i]->ausencias_periodo 	= $ausencias;
+		$alumnos[$i]->comportamiento 		= $comportamiento;
+
+		}
+
+		return [ 'alumnos' => $alumnos ];
+	}
+	
 
 
 	public function putDatos()
 	{
 		
 		$grupo_actual 	= Request::input('grupo_actual');
-		return $grupo_actual;
+
 		if (!$grupo_actual) {
 			return;
 		}
 
-
-		// Alumnos asistentes o matriculados del grupo
-		$sql1 = 'SELECT m.id as matricula_id, m.alumno_id, a.no_matricula, a.nombres, a.apellidos, a.sexo, a.user_id, 
-							a.fecha_nac, a.ciudad_nac, a.celular, a.direccion, a.religion,
-							m.grupo_id, 
-							u.imagen_id, IFNULL(i.nombre, IF(a.sexo="F","default_female.png", "default_male.png")) as imagen_nombre, 
-							a.foto_id, IFNULL(i2.nombre, IF(a.sexo="F","default_female.png", "default_male.png")) as foto_nombre,
-							m.fecha_retiro as fecha_retiro, m.estado, m.fecha_matricula 
-						FROM alumnos a 
-						inner join matriculas m on a.id=m.alumno_id and m.grupo_id=:grupo_id and (m.estado="ASIS" or m.estado="MATR")
-						left join users u on a.user_id=u.id and u.deleted_at is null
-						left join images i on i.id=u.imagen_id and i.deleted_at is null
-						left join images i2 on i2.id=a.foto_id and i2.deleted_at is null
-						where a.deleted_at is null and m.deleted_at is null
-						order by a.apellidos, a.nombres';
+		$consulta = 'SELECT ac.id, ac.nombres, ac.apellidos, ac.sexo, ac.fecha_nac, ac.ciudad_nac, c1.ciudad as ciudad_nac_nombre, ac.ciudad_doc, c2.ciudad as ciudad_doc_nombre, c2.departamento as departamento_doc_nombre, ac.telefono, pa.parentesco, pa.observaciones, pa.id as parentesco_id, ac.user_id, 
+						ac.celular, ac.ocupacion, ac.email, ac.barrio, ac.direccion, ac.tipo_doc, t1.tipo as tipo_doc_nombre, ac.documento, ac.created_by, ac.updated_by, ac.created_at, ac.updated_at, 
+						ac.foto_id, IFNULL(i.nombre, IF(ac.sexo="F","default_female.png", "default_male.png")) as foto_nombre, 
+						u.username, u.is_active, ac.is_acudiente, IF(ac.is_acudiente, "SI", "NO") as es_acudiente
+					FROM parentescos pa
+					left join acudientes ac on ac.id=pa.acudiente_id and ac.deleted_at is null
+					left join users u on ac.user_id=u.id and u.deleted_at is null
+					left join images i on i.id=ac.foto_id and i.deleted_at is null
+					left join tipos_documentos t1 on t1.id=ac.tipo_doc and t1.deleted_at is null
+					left join ciudades c1 on c1.id=ac.ciudad_nac and c1.deleted_at is null
+					left join ciudades c2 on c2.id=ac.ciudad_doc and c2.deleted_at is null
+					INNER JOIN alumnos a ON pa.alumno_id=a.id and a.deleted_at is null
+					INNER JOIN matriculas m ON m.alumno_id=a.id and m.grupo_id=? and m.deleted_at is null and (m.estado="ASIS" or m.estado="MATR")
+					WHERE pa.deleted_at is null Order by ac.is_acudiente desc, ac.id';
 		
-		$res = DB::select($consulta, [ ':grupo_id'	=> $grupo_actual['id'], 
-									':grupo_id2'	=> $grupo_actual['id'], 
-									':year_id'		=> $year_ant_id, 
-									':grado_id'		=> $grado_ant_id, 
-									':grupo_id3'	=> $grupo_actual['id'] ]);
+		$acudientes = DB::select($consulta, [$grupo_actual['id']]);
+		
+		// Traigo los alumnos de cada acudiente
+		$cantA = count($acudientes);
 
-		return $res;
+		for ($i=0; $i < $cantA; $i++) { 
+			$consulta 		= 'SELECT a.no_matricula, a.nombres, a.apellidos, a.sexo, a.user_id, 
+								a.fecha_nac, a.tipo_doc, a.documento, a.tipo_sangre, a.eps, a.telefono, a.celular, 
+								a.direccion, a.barrio, a.estrato, a.religion, a.email, a.facebook, a.created_by, a.updated_by,
+								a.pazysalvo, a.deuda, 
+								u.username, u.is_superuser, u.is_active,
+								p.parentesco, p.observaciones, g.nombre as nombre_grupo
+							FROM alumnos a 
+							inner join parentescos p on p.alumno_id=a.id and p.acudiente_id=?
+							left join users u on a.user_id=u.id and u.deleted_at is null
+							left join matriculas m on m.alumno_id=a.id and m.deleted_at is null and (m.estado="ASIS" or m.estado="MATR")
+							left join grupos g on g.id=m.grupo_id and g.deleted_at is null and g.year_id=?
+							where a.deleted_at is null and p.deleted_at is null
+							order by g.orden, a.apellidos, a.nombres';
+							
+			$alumnos 	= DB::select($consulta, [ $acudientes[$i]->id, $this->user->year_id ]);	
+			
+			
+			$subGridOptions 	= [
+				'enableCellEditOnFocus' => false,
+				'columnDefs' 	=> [
+					['name' => "Grupo", 'field' => "nombre_grupo", 'maxWidth' => 60],
+					['name' => "Nombres", 'field' => "nombres", 'maxWidth' => 120 ],
+					['name' => "Apellidos", 'field' => "apellidos", 'maxWidth' => 110],
+					['name' => "Parentesco", 'field' => "parentesco", 'maxWidth' => 90],
+					['name' => "Usuario", 'field' => "username", 'maxWidth' => 135, 'cellTemplate' => "==directives/botonesResetPassword.tpl.html", 'editableCellTemplate' => "==alumnos/botonEditUsername.tpl.html" ], 
+					['name' => "Documento", 'field' => "documento", 'maxWidth' => 90],
+					['name' => "Teléfono", 'field' => "telefono", 'maxWidth' => 90],
+					['name' => "Celular", 'field' => "celular", 'maxWidth' => 90],
+				],
+				'data' 			=> $alumnos
+			];
+			$acudientes[$i]->subGridOptions = $subGridOptions;
+
+		}
+		return [ 'acudientes' => $acudientes ];
+	}
+
+
+	public function putNoAsignados()
+	{
+		
+
+		$consulta = 'SELECT ac.id, ac.nombres, ac.apellidos, ac.sexo, ac.fecha_nac, ac.ciudad_nac, c1.ciudad as ciudad_nac_nombre, ac.ciudad_doc, c2.ciudad as ciudad_doc_nombre, c2.departamento as departamento_doc_nombre, ac.telefono, ac.user_id, 
+						ac.celular, ac.ocupacion, ac.email, ac.barrio, ac.direccion, ac.tipo_doc, t1.tipo as tipo_doc_nombre, ac.documento, ac.created_by, ac.updated_by, ac.created_at, ac.updated_at, 
+						ac.foto_id, IFNULL(i.nombre, IF(ac.sexo="F","default_female.png", "default_male.png")) as foto_nombre, 
+						u.username, u.is_active, ac.is_acudiente, IF(ac.is_acudiente, "SI", "NO") as es_acudiente
+					FROM acudientes ac 
+					left join users u on ac.user_id=u.id and u.deleted_at is null
+					left join images i on i.id=ac.foto_id and i.deleted_at is null
+					left join tipos_documentos t1 on t1.id=ac.tipo_doc and t1.deleted_at is null
+					left join ciudades c1 on c1.id=ac.ciudad_nac and c1.deleted_at is null
+					left join ciudades c2 on c2.id=ac.ciudad_doc and c2.deleted_at is null
+					WHERE ac.deleted_at is null and ac.id NOT IN 
+						(SELECT p.acudiente_id FROM alumnos a 
+						INNER JOIN parentescos p ON p.alumno_id=a.id and p.deleted_at is null 
+						WHERE a.deleted_at is null)
+					Order by ac.id';
+		
+		$acudientes = DB::select($consulta, []);
+
+		return [ 'acudientes' => $acudientes ];
 	}
 
 	public function putUltimos()
@@ -178,29 +286,30 @@ class AcudientesController extends Controller {
 		}
 	}
 
-
-	public function update($id)
+	
+	
+	public function postCrearUsuario()
 	{
-		$acudiente = Acudiente::findOrFail($id);
-		try {
-			$acudiente->nombres		=	Request::input('nombres');
-			$acudiente->apellidos	=	Request::input('apellidos');
-			$acudiente->sexo		=	Request::input('sexo');
-			$acudiente->user_id		=	Request::input('user_id');
-			$acudiente->tipo_doc	=	Request::input('tipo_doc');
-			$acudiente->documento	=	Request::input('documento');
-			$acudiente->ciudad_doc	=	Request::input('ciudad_doc');
-			$acudiente->telefono	=	Request::input('telefono');
-			$acudiente->celular		=	Request::input('celular');
-			$acudiente->ciudad_doc	=	Request::input('ocupacion');
-			$acudiente->email		=	Request::input('email');
-
-
-			$acudiente->save();
-		} catch (Exception $e) {
-			return $e;
-		}
+		$acu 		= Request::input('acudiente');
+		
+		$opera 		= new OperacionesAlumnos();
+		$username 	= $opera->username_no_repetido($acu['nombres']);
+		
+		$usu 				= new User;
+		$usu->password 		= Hash::make('123456');
+		$usu->username 		= $username;
+		$usu->sexo 			= $acu['sexo'];
+		$usu->is_superuser 	= 0;
+		$usu->tipo 			= 'Acudiente';
+		$usu->periodo_id 	= 1;
+		$usu->created_by 	= $this->user->user_id;
+		$usu->save();
+		
+		DB::update('UPDATE acudientes SET user_id=? WHERE id=?', [$usu->id, $acu['id']]);
+		
+		return $usu;
 	}
+	
 
 
 

@@ -236,13 +236,12 @@ class MatriculasController extends Controller {
 		$consulta = Matricula::$consulta_asistentes_o_matriculados;
 		$result['AlumnosActuales'] = DB::select($consulta, [ ':grupo_id' => $grupo_actual['id'] ]);
 		
-		// Traigo los acudientes de 
+		// Traigo los acudientes de cada alumno
 		$cantA = count($result['AlumnosActuales']);
 
 		for ($i=0; $i < $cantA; $i++) { 
-			$consulta = Matricula::$consulta_parientes;
-			
-			$acudientes 		= DB::select($consulta, [ $result['AlumnosActuales'][$i]->alumno_id ]);	
+			$consulta 		= Matricula::$consulta_parientes;
+			$acudientes 	= DB::select($consulta, [ $result['AlumnosActuales'][$i]->alumno_id ]);	
 
 			// Para el botón agregar
 			array_push($acudientes, ['nombres' => null]);

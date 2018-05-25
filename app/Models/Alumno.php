@@ -38,7 +38,7 @@ class Alumno extends Model {
 	public static function alumnoData($alumno_id, $year_id)
 	{
 		$consulta = 'SELECT a.id as alumno_id, a.nombres, a.apellidos, a.facebook, a.religion, 
-						a.user_id, u.username, a.sexo, u.email, a.fecha_nac,
+						a.user_id, u.username, a.sexo, u.email, a.fecha_nac, a.pazysalvo, a.deuda,
 						u.imagen_id, IFNULL(i.nombre, IF(a.sexo="F","default_female.png", "default_male.png")) as imagen_nombre, 
 						a.foto_id, IFNULL(i2.nombre, IF(a.sexo="F","default_female.png", "default_male.png")) as foto_nombre,
 						m.grupo_id, g.nombre as nombre_grupo, g.abrev as abrev_grupo, g.titular_id, g.orden, g.caritas

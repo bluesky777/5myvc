@@ -174,7 +174,7 @@ class NotasController extends Controller {
 
 		if ($user->alumnos_can_see_notas==false) {
 			$usuario = User::find($user->user_id);
-			if ($usuario->hasRole('alumno') || $usuario->hasRole('acudiente')) {
+			if ($usuario->hasRole('alumno') || $usuario->tipo=='Acudiente') {
 				return 'Sistema bloqueado. No puedes ver las notas';				
 			}
 		}
@@ -192,9 +192,18 @@ class NotasController extends Controller {
 		if ($user->tipo == 'Profesor') {
 			$profesor_id = $user->persona_id;
 		}
+		
 
 		$datos = Nota::alumnoPeriodosDetailed($alumno_id, $user->year_id, $profesor_id);
 
+		if ($user->tipo == 'Acudiente') {
+			if ($datos->pazysalvo){
+				return [$datos];
+			}else{
+				return ['msg'=>'No está a pazysalvo'];
+			}
+		}
+		
 		return [$datos];
 	}
 
