@@ -15,12 +15,6 @@ use App\Http\Controllers\Alumnos\OperacionesAlumnos;
 
 class AcudientesExportController extends Controller {
 
-	public function getIndex()
-	{
-        return 'Holaa';
-
-
-    }
 
 
 	public function getAcudientes()
@@ -79,19 +73,7 @@ class AcudientesExportController extends Controller {
                     // Traigo los alumnos de 
 		            $cantA = count($acudientes);
                     for ($i=0; $i < $cantA; $i++) { 
-                        $consulta = 'SELECT a.no_matricula, p.alumno_id, a.nombres, a.apellidos, a.sexo, a.user_id, 
-                                        a.fecha_nac, a.tipo_doc, a.documento, a.tipo_sangre, a.eps, a.telefono, a.celular, 
-                                        a.direccion, a.barrio, a.estrato, a.religion, a.email, a.facebook, a.created_by, a.updated_by,
-                                        a.pazysalvo, a.deuda, 
-                                        u.username, u.is_superuser, u.is_active,
-                                        p.parentesco, p.observaciones, g.nombre as nombre_grupo
-                                    FROM alumnos a 
-                                    inner join parentescos p on p.alumno_id=a.id and p.acudiente_id=?
-                                    left join users u on a.user_id=u.id and u.deleted_at is null
-                                    left join matriculas m on m.alumno_id=a.id and m.deleted_at is null and (m.estado="ASIS" or m.estado="MATR")
-                                    left join grupos g on g.id=m.grupo_id and g.deleted_at is null and g.year_id=?
-                                    where a.deleted_at is null and p.deleted_at is null
-                                    order by g.orden, a.apellidos, a.nombres';
+                        $consulta = Acudiente::$consulta_alumnos_de_acudiente; // Consulta compleja
                                             
                         $alumnos                    = DB::select($consulta, [ $acudientes[$i]->id, $user->year_id ]);
                         
@@ -115,89 +97,6 @@ class AcudientesExportController extends Controller {
 
     }
     
-    
-
-	public function getAcudientesExportar()
-	{
-        $user = User::fromToken();
-        
-        $host = parse_url(request()->headers->get('referer'), PHP_URL_HOST);
-        if ($host == '0.0.0.0' || $host == 'localhost' || $host == '127.0.0.1') {
-            $extension = 'xls';
-        }else{
-            $extension = 'xlsx';
-        }
-
-		Excel::create('Alumnos a importar '.$user->year, function($excel) {
-
-            $consulta = 'SELECT g.id, g.nombre, g.abrev, g.orden, gra.orden as orden_grado, g.grado_id, g.year_id, g.titular_id,
-                    p.nombres as nombres_titular, p.apellidos as apellidos_titular, p.titulo,
-                    g.created_at, g.updated_at, gra.nombre as nombre_grado 
-                from grupos g
-                inner join grados gra on gra.id=g.grado_id and g.year_id=:year_id 
-                left join profesores p on p.id=g.titular_id
-                where g.deleted_at is null
-                order by g.orden';
-
-            $grupos = DB::select($consulta, [':year_id'=> Year::actual()->id] );
-            
-            for ($i=0; $i < count($grupos); $i++) { 
-                $grupo = $grupos[$i];
-
-                $excel->sheet($grupos[$i]->abrev, function($sheet) use ($grupo) {
-                    
-                    $consulta   = Matricula::$consulta_asistentes_o_matriculados_simat;
-                    $alumnos    = DB::select($consulta, [ ':grupo_id' => $grupo->id ] );
-                    
-                    $sheet->setBorder('A1:BL'.(count($alumnos)+5), 'thin', "D8572C");
-                    $sheet->getStyle('A1:BL1')->getAlignment()->setWrapText(true); 
-                    //$sheet->mergeCells('A2:E2');
-                    
-                    $this->Comentarios($sheet, 1);
-                    
-                    $opera = new OperacionesAlumnos;
-                    $opera->recorrer_y_dividir_nombres($alumnos);
-                    
-                    // Traigo los acudientes de 
-		            $cantA = count($alumnos);
-                    for ($i=0; $i < $cantA; $i++) { 
-                        $consulta                   = Matricula::$consulta_parientes;
-                        $acudientes                 = DB::select($consulta, [ $alumnos[$i]->alumno_id ]);
-                        
-                        if (count($acudientes) == 0) {
-                            $acu1       = (object)Acudiente::$acudiente_vacio;
-                            //$acu1->id   = -1;
-                            array_push($acudientes, $acu1);
-                            
-                            $acu2       = (object)Acudiente::$acudiente_vacio;
-                            //$acu2->id   = 0;
-                            array_push($acudientes, $acu2);
-                        }else if (count($acudientes) == 1) {
-                            $acu1 = (object)Acudiente::$acudiente_vacio;
-                            //$acu1->id = -1;
-                            array_push($acudientes, $acu1);
-                        }
-                        $alumnos[$i]->acudientes    = $acudientes;
-                    }
-                    
-                    $sheet->loadView('alumnosexportar', compact('alumnos', 'grupo') );
-                    
-                    //$sheet->setAutoFilter();
-                    $sheet->setWidth(['A'=>5, 'B'=>5, 'C'=>10, 'D'=>11, 'E'=>10, 'F'=>16, 'P'=>13, 'Q'=>7, 'R'=>11, 'S'=>11, 'T'=>7, 'Y'=>14, 'Z'=>5, 'AA'=>7, 'X'=>10, 'AB'=>5, 'AD'=>10, 
-                                        'AF'=>12, 'AG'=>12, 'AH'=>6, 'AL'=>11, 'AN'=>14, 'AO'=>11, 'AP'=>11, 'AU'=>17,
-                                        'AW'=>12, 'AX'=>12, 'AY'=>6, 'BC'=>11, 'BE'=>14, 'BF'=>11, 'BG'=>11, 'BL'=>17,]);
-                    $sheet->setHeight(1, 30);
-                    
-                });
-
-            }
-
-            
-        
-        })->download($extension, ['Access-Control-Allow-Origin' => '*']);
-
-
-    }
     
     
     private function Comentarios(&$sheet, $numero=1){

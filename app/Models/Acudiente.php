@@ -23,6 +23,25 @@ class Acudiente extends Model {
 						left join ciudades c2 on c2.id=ac.ciudad_doc and c2.deleted_at is null
 						WHERE pa.alumno_id=? and pa.deleted_at is null';
 						
+
+	public static $consulta_alumnos_de_acudiente = 'SELECT a.no_matricula, a.nombres, a.apellidos, a.sexo, a.user_id, 
+							a.fecha_nac, a.tipo_doc, a.documento, a.tipo_sangre, a.eps, a.telefono, a.celular, 
+							a.direccion, a.barrio, a.estrato, a.religion, a.email, a.facebook, a.created_by, a.updated_by,
+							a.pazysalvo, a.deuda, 
+							u.username, u.is_superuser, u.is_active,
+							p.parentesco, p.observaciones, gr.nombre_grupo
+						FROM alumnos a 
+						inner join parentescos p on p.alumno_id=a.id and p.acudiente_id=?
+						left join users u on a.user_id=u.id and u.deleted_at is null
+						left join 
+							(SELECT m.alumno_id, g.orden, g.nombre as nombre_grupo FROM matriculas m 
+							INNER JOIN grupos g on g.id=m.grupo_id and g.deleted_at is null and g.year_id=?
+							WHERE m.deleted_at is null and (m.estado="ASIS" or m.estado="MATR")
+							) as gr
+							on gr.alumno_id=a.id
+						where a.deleted_at is null and p.deleted_at is null
+						order by gr.orden, a.apellidos, a.nombres';
+
 	public static $acudiente_vacio = ['id' => '', 'nombres' => '', 'apellidos' => '', 'sexo' => '', 'es_acudiente' => '', 'fecha_nac' => '', 'ciudad_nac_nombre' => '', 'ciudad_doc_nombre' => '', 'departamento_doc_nombre' => '', 'telefono' => '', 'parentesco' => '', 'observaciones' => '', 
 				'celular' => '', 'ocupacion' => '', 'email' => '', 'barrio' => '', 'direccion' => '', 'tipo_doc' => '', 'tipo_doc_nombre' => '', 'documento' => '', 'username' => '', 'is_active' => ''];
 

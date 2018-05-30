@@ -2,20 +2,20 @@
 <table >
     <thead>
         <tr>
-            <th style="background-color: #fff7ad; vertical-align: middle">No</th>
-            <th style="background-color: #fff7ad; vertical-align: middle">ID</th>
-            <th style="background-color: #fff7ad; vertical-align: middle">Tipo de Documento</th>
-            <th style="background-color: #fff7ad; vertical-align: middle">Nro de documento</th>
-            <th style="background-color: #fff7ad; vertical-align: middle">Lugar de Expedición Departamento</th>
-            <th style="background-color: #fff7ad; vertical-align: middle">Lugar de Expedición Ciudad</th>
-            <th style="background-color: #fff7ad; vertical-align: middle">Apellidos</th>
-            <th style="background-color: #fff7ad; vertical-align: middle">Nombres</th>
-            <th style="background-color: #fff7ad; vertical-align: middle">Usuario</th>
-            <th style="background-color: #fff7ad; vertical-align: middle">Teléfono</th>
-            <th style="background-color: #fff7ad; vertical-align: middle">Celular</th>
-            <th style="background-color: #fff7ad; vertical-align: middle">Fecha de nacim</th>
-            <th style="background-color: #fff7ad; vertical-align: middle">Ciudad nacimiento</th>
-            <th style="background-color: #fff7ad; vertical-align: middle">Sexo</th>
+            <th style="background-color: #fff7ad; vertical-align: middle; border: 1px solid #000">No</th>
+            <th style="background-color: #fff7ad; vertical-align: middle; border: 1px solid #000">ID</th>
+            <th style="background-color: #fff7ad; vertical-align: middle; border: 1px solid #000">Tipo de Documento</th>
+            <th style="background-color: #fff7ad; vertical-align: middle; border: 1px solid #000">Nro de documento</th>
+            <th style="background-color: #fff7ad; vertical-align: middle; border: 1px solid #000">Lugar de Expedición Departamento</th>
+            <th style="background-color: #fff7ad; vertical-align: middle; border: 1px solid #000">Lugar de Expedición Ciudad</th>
+            <th style="background-color: #fff7ad; vertical-align: middle; border: 1px solid #000">Apellidos</th>
+            <th style="background-color: #fff7ad; vertical-align: middle; border: 1px solid #000">Nombres</th>
+            <th style="background-color: #fff7ad; vertical-align: middle; border: 1px solid #000">Usuario</th>
+            <th style="background-color: #fff7ad; vertical-align: middle; border: 1px solid #000">Teléfono</th>
+            <th style="background-color: #fff7ad; vertical-align: middle; border: 1px solid #000">Celular</th>
+            <th style="background-color: #fff7ad; vertical-align: middle; border: 1px solid #000">Fecha de nacim</th>
+            <th style="background-color: #fff7ad; vertical-align: middle; border: 1px solid #000">Ciudad nacimiento</th>
+            <th style="background-color: #fff7ad; vertical-align: middle; border: 1px solid #000">Sexo</th>
             
         </tr>
     </thead>
