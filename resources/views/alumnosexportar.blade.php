@@ -87,7 +87,7 @@
             <td>{{$alumno->no_matricula}}</td>
             <td>{{$alumno->direccion}}</td>
             <td>{{$alumno->barrio}}</td>
-            <td>{{$alumno->ciudad_resid}}</td>
+            <td>{{$alumno->ciudad_resid_nombre}}</td>
             <td>{{$alumno->es_urbana}}</td>
             <td>{{$alumno->telefono}}</td>
             <td>{{$alumno->celular}}</td>
