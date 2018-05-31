@@ -246,8 +246,8 @@ class MatriculasController extends Controller {
 			// Para el botón agregar
 			array_push($acudientes, ['nombres' => null]);
 
-			$btGrid1 = '<a uib-tooltip="Cambiar" ng-show="row.entity.nombres" tooltip-placement="left" class="btn btn-default btn-xs shiny icon-only info" ng-click="grid.appScope.cambiarAcudiente(grid.parentRow.entity, row.entity)"><i class="fa fa-edit "></i></a>';
-			$btGrid2 = '<a uib-tooltip="Quitar" ng-show="row.entity.nombres" tooltip-placement="right" class="btn btn-default btn-xs shiny icon-only danger" ng-click="grid.appScope.quitarAcudiente(grid.parentRow.entity, row.entity)"><i class="fa fa-trash "></i></a>';
+			$btGrid1 = '<a uib-tooltip="Cambiar" ng-show="row.entity.nombres" tooltip-placement="left" class="btn btn-default btn-xs shiny icon-only info" ng-click="grid.appScope.cambiarAcudiente(grid.parentRow.entity, row.entity)" tooltip-append-to-body="true"><i class="fa fa-edit "></i></a>';
+			$btGrid2 = '<a uib-tooltip="Quitar" ng-show="row.entity.nombres" tooltip-placement="right" class="btn btn-default btn-xs shiny icon-only danger" ng-click="grid.appScope.quitarAcudiente(grid.parentRow.entity, row.entity)" tooltip-append-to-body="true"><i class="fa fa-trash "></i></a>';
 			$btGrid3 = '<a uib-tooltip="Seleccionar o crear acudiente para asignar a alumno" ng-show="!row.entity.nombres" class="btn btn-info btn-xs" ng-click="grid.appScope.agregarAcudiente(grid.parentRow.entity)">Agregar...</a>';
 			$btEdit = '<span style="padding-left: 2px; padding-top: 4px;" class="btn-group">' . $btGrid1 . $btGrid2 . $btGrid3 . '</span>';
 
@@ -255,21 +255,22 @@ class MatriculasController extends Controller {
 				'enableCellEditOnFocus' => true,
 				'columnDefs' 	=> [
 					['name' => 'edicion', 'displayName' => 'Edici', 'width' => 54, 'enableSorting' => false, 'cellTemplate' => $btEdit, 'enableCellEdit' => false],
+					['name' => "Id", 'field' => "id", 'maxWidth' => 60, 'enableCellEdit' => false ],
 					['name' => "Nombres", 'field' => "nombres", 'maxWidth' => 120 ],
 					['name' => "Apellidos", 'field' => "apellidos", 'maxWidth' => 100],
 					['name' => "Sex", 'field' => "sexo", 'maxWidth' => 40],
 					['name' => "Parentesco", 'field' => "parentesco", 'maxWidth' => 90],
 					['name' => "Usuario", 'field' => "username", 'maxWidth' => 135, 'cellTemplate' => "==directives/botonesResetPassword.tpl.html", 'editableCellTemplate' => "==alumnos/botonEditUsername.tpl.html" ], 
-					['name' => "Documento", 'field' => "documento", 'maxWidth' => 70],
+					['name' => "Documento", 'field' => "documento", 'maxWidth' => 100, 'cellFilter' => 'formatNumberDocumento'],
 					['name' => "Ciudad doc", 'field' => "ciudad_doc", 'cellTemplate' => "==directives/botonCiudadDoc.tpl.html", 'enableCellEdit' => false, 'maxWidth' => 100],
 					['name' => "Fecha nac", 'field' => "fecha_nac", 'cellFilter' => "date:mediumDate", 'type' => 'date', 'maxWidth' => 120],
 					['name' => "Ciudad nac", 'field' => "ciudad_nac", 'cellTemplate' => "==directives/botonCiudadNac.tpl.html", 'enableCellEdit' => false, 'maxWidth' => 100],
-					['name' => "Teléfono", 'field' => "telefono", 'maxWidth' => 80],
-					['name' => "Celular", 'field' => "celular", 'maxWidth' => 80],
-					['name' => "Ocupación", 'field' => "ocupacion", 'maxWidth' => 80],
-					['name' => "Email", 'field' => "email", 'maxWidth' => 80],
-					['name' => "Barrio", 'field' => "barrio", 'maxWidth' => 80],
-					['name' => "Dirección", 'field' => "direccion", 'maxWidth' => 80],
+					['name' => "Teléfono", 'field' => "telefono", 'maxWidth' => 90],
+					['name' => "Celular", 'field' => "celular", 'maxWidth' => 90],
+					['name' => "Ocupación", 'field' => "ocupacion", 'maxWidth' => 90],
+					['name' => "Email", 'field' => "email", 'maxWidth' => 90],
+					['name' => "Barrio", 'field' => "barrio", 'maxWidth' => 90],
+					['name' => "Dirección", 'field' => "direccion", 'maxWidth' => 100],
 				],
 				'data' 			=> $acudientes
 			];

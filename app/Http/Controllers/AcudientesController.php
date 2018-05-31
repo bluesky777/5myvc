@@ -179,7 +179,7 @@ class AcudientesController extends Controller {
 						left join users u on ac.user_id=u.id and u.deleted_at is null
 						left join images i on i.id=ac.foto_id and i.deleted_at is null
 						WHERE ac.deleted_at is null
-						order by ac.id asc, ac.nombres limit 6';
+						order by ac.id desc, ac.nombres limit 8';
 
 		$res = DB::select($consulta);
 
@@ -409,7 +409,7 @@ class AcudientesController extends Controller {
 	}
 
 
-	public function destroy($id)
+	public function deleteDestroy($id)
 	{
 		$acudiente = Acudiente::findOrFail($id);
 		$acudiente->delete();
