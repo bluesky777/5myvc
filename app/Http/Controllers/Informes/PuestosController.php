@@ -145,7 +145,7 @@ class PuestosController extends Controller {
                     FROM unidades u 
                     inner join subunidades s on s.unidad_id=u.id and s.deleted_at is null and u.deleted_at is null
                     inner join notas n on n.subunidad_id=s.id and n.deleted_at is null and n.nota<:min and n.alumno_id=:alu_id2
-                    inner join periodos p on p.id=u.periodo_id and p.numero=1 and p.deleted_at is null and p.year_id=:year_id2
+                    inner join periodos p on p.id=u.periodo_id and p.numero=:num_periodo2 and p.deleted_at is null and p.year_id=:year_id2
                 )df1
                 group by df1.asignatura_id
             )p ON p.asignatura_id=r.asignatura_id 
@@ -258,7 +258,7 @@ class PuestosController extends Controller {
             
             $consulta   = $this->consulta_notas_finales_periodo;
             
-			$alumno->asignaturas = DB::select($consulta, [ ':gr_id' => $grupo_id, ':alu_id' => $alumno->alumno_id, ':year_id' => $user->year_id, ':min' => $user->nota_minima_aceptada, ':alu_id2' => $alumno->alumno_id, ':num_periodo' => $user->numero_periodo, ':year_id2' => $user->year_id ]);
+			$alumno->asignaturas = DB::select($consulta, [ ':gr_id' => $grupo_id, ':alu_id' => $alumno->alumno_id, ':num_periodo' => $user->numero_periodo, ':year_id' => $user->year_id, ':min' => $user->nota_minima_aceptada, ':alu_id2' => $alumno->alumno_id, ':num_periodo2' => $user->numero_periodo, ':year_id2' => $user->year_id ]);
 
 			$sumatoria_asignaturas = 0;
 			$perdidos_year = 0;
