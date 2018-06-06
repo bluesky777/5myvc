@@ -169,24 +169,6 @@ class AcudientesController extends Controller {
 		return [ 'acudientes' => $acudientes ];
 	}
 
-	public function putUltimos()
-	{
-		$consulta = 'SELECT ac.id, ac.nombres, ac.apellidos, ac.sexo, ac.fecha_nac, ac.ciudad_nac, ac.telefono, ac.user_id, 
-							ac.celular, ac.ocupacion, ac.email, ac.barrio, ac.direccion, ac.tipo_doc, ac.documento, ac.created_by, ac.updated_by, ac.created_at, ac.updated_at, 
-							ac.foto_id, IFNULL(i.nombre, IF(ac.sexo="F","default_female.png", "default_male.png")) as foto_nombre, 
-							u.username, u.is_active
-						FROM acudientes ac 
-						left join users u on ac.user_id=u.id and u.deleted_at is null
-						left join images i on i.id=ac.foto_id and i.deleted_at is null
-						WHERE ac.deleted_at is null
-						order by ac.id desc, ac.nombres limit 8';
-
-		$res = DB::select($consulta);
-
-		return $res;
-	}
-
-
 	// Planilla de asistencia padres
 	public function putPlanillasAusencias()
 	{
@@ -255,20 +237,42 @@ class AcudientesController extends Controller {
 	{
 		$termino 	= Request::input('termino');
 
-		$consulta = 'SELECT ac.id, ac.nombres, ac.apellidos, ac.sexo, ac.fecha_nac, ac.ciudad_nac, ac.telefono, ac.user_id, 
+		$consulta = 'SELECT ac.id, ac.nombres, ac.apellidos, count(p.id) as cant_acudidos, ac.sexo, ac.fecha_nac, ac.ciudad_nac, ac.telefono, ac.user_id, 
 							ac.celular, ac.ocupacion, ac.email, ac.barrio, ac.direccion, ac.tipo_doc, ac.documento, ac.created_by, ac.updated_by, ac.created_at, ac.updated_at, 
 							ac.foto_id, IFNULL(i.nombre, IF(ac.sexo="F","default_female.png", "default_male.png")) as foto_nombre, 
 							u.username, u.is_active
 						FROM acudientes ac 
 						left join users u on ac.user_id=u.id and u.deleted_at is null
 						left join images i on i.id=ac.foto_id and i.deleted_at is null
+						inner join parentescos p on p.acudiente_id=ac.id and p.deleted_at is null
 						WHERE (ac.nombres like ? or ac.apellidos like ?) and ac.deleted_at is null
+						group by ac.id
 						order by ac.nombres';
 
 		$res = DB::select($consulta, [ '%'.$termino.'%', '%'.$termino.'%' ]);
 
 		return $res;
 	}
+
+	public function putUltimos()
+	{
+		$consulta = 'SELECT ac.id, ac.nombres, ac.apellidos, count(p.id) as cant_acudidos, ac.sexo, ac.fecha_nac, ac.ciudad_nac, ac.telefono, ac.user_id, 
+							ac.celular, ac.ocupacion, ac.email, ac.barrio, ac.direccion, ac.tipo_doc, ac.documento, ac.created_by, ac.updated_by, ac.created_at, ac.updated_at, 
+							ac.foto_id, IFNULL(i.nombre, IF(ac.sexo="F","default_female.png", "default_male.png")) as foto_nombre, 
+							u.username, u.is_active
+						FROM acudientes ac 
+						left join users u on ac.user_id=u.id and u.deleted_at is null
+						left join images i on i.id=ac.foto_id and i.deleted_at is null
+						inner join parentescos p on p.acudiente_id=ac.id and p.deleted_at is null
+						WHERE ac.deleted_at is null
+						group by ac.id
+						order by ac.id desc, ac.nombres limit 8';
+
+		$res = DB::select($consulta);
+
+		return $res;
+	}
+
 
 
 	public function postCrear()
