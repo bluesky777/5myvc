@@ -34,7 +34,7 @@ class Grupo extends Model {
 			// Consulta con solo los matriculados
 			$consulta = 'SELECT m.id as matricula_id, m.alumno_id, a.no_matricula, a.nombres, a.apellidos, a.sexo, a.user_id, 
 							a.fecha_nac, a.ciudad_nac, a.celular, a.direccion, a.religion,
-							m.grupo_id, m.estado, 
+							m.grupo_id, m.estado, m.nuevo, m.repitente,
 							u.imagen_id, IFNULL(i.nombre, IF(a.sexo="F","default_female.png", "default_male.png")) as imagen_nombre, 
 							a.foto_id, IFNULL(i2.nombre, IF(a.sexo="F","default_female.png", "default_male.png")) as foto_nombre
 						FROM alumnos a 
@@ -48,7 +48,7 @@ class Grupo extends Model {
 			// Consulta incluyendo los matriculados y retirados.
 			$consulta = 'SELECT m.id as matricula_id, m.alumno_id, a.no_matricula, a.nombres, a.apellidos, a.sexo, a.user_id, 
 							a.fecha_nac, a.ciudad_nac, a.celular, a.direccion, a.religion,
-							m.grupo_id, m.estado, 
+							m.grupo_id, m.estado, m.nuevo, m.repitente,
 							u.imagen_id, IFNULL(i.nombre, IF(a.sexo="F","default_female.png", "default_male.png")) as imagen_nombre, 
 							a.foto_id, IFNULL(i2.nombre, IF(a.sexo="F","default_female.png", "default_male.png")) as foto_nombre,
 							m.fecha_retiro as fecha_retiro 

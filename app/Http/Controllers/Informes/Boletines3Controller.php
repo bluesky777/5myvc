@@ -111,7 +111,9 @@ class Boletines3Controller extends Controller {
 			$this->asignaturasPerdidasDeAlumno($alumno, $grupo_id, $user->year_id, $periodo_a_calcular);
 			
 			if ($this->user->year_pasado_en_bol) {
-				$this->datosYearPasado($alumno, $grupo_id, $user->year_id);
+				if (!$alumno->nuevo || !$alumno->repitente) {
+					$this->datosYearPasado($alumno, $grupo_id, $user->year_id);
+				}
 			}
 			
 			unset($alumno->asignaturas);
