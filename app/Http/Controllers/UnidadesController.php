@@ -7,6 +7,7 @@ use DB;
 use App\Models\User;
 use App\Models\Unidad;
 use App\Models\Subunidad;
+use App\Models\Profesor;
 
 use Carbon\Carbon;
 
@@ -67,6 +68,35 @@ class UnidadesController extends Controller {
 		}
 
 		return $unidades;
+	}
+
+
+	// Un informe con todo lo del profe
+	public function putDeProfesor()
+	{
+		$user 			= User::fromToken();
+		$periodo_id 	= $user->periodo_id;
+		$profesor_id	= Request::input('profesor_id');
+		
+		$info_profesor 	= Profesor::detallado($profesor_id);
+		$asignaturas 	= Profesor::asignaturas($user->year_id, $profesor_id);
+
+		foreach ($asignaturas as $asignatura) {
+			
+			$asignatura->unidades = DB::select($this->cons_unidades, [$asignatura->asignatura_id, $periodo_id]);
+			
+			
+			foreach ($asignatura->unidades as $unidad) {
+
+				$subunidades 			= DB::select($this->cons_subunidades, [$unidad->id]);
+				$unidad->subunidades 	= $subunidades;
+
+			}
+
+		}
+		
+		return ['info_profesor' => $info_profesor, 'asignaturas' => $asignaturas];
+		
 	}
 
 
