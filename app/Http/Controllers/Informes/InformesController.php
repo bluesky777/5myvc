@@ -125,6 +125,57 @@ class InformesController extends Controller {
 
 
 
+	
+	
+	public function putCumpleanosPorMeses(){
+		
+		$user 	= User::fromToken();
+		
+		$meses = [
+			['indice' => 1, 'mes' => 'Enero'],
+			['indice' => 2, 'mes' => 'Febrero'],
+			['indice' => 3, 'mes' => 'Marzo'],
+			['indice' => 4, 'mes' => 'Abril'],
+			['indice' => 5, 'mes' => 'Mayo'],
+			['indice' => 6, 'mes' => 'Junio'],
+			['indice' => 7, 'mes' => 'Julio'],
+			['indice' => 8, 'mes' => 'Agosto'],
+			['indice' => 9, 'mes' => 'Septiembre'],
+			['indice' => 10, 'mes' => 'Octubre'],
+			['indice' => 11, 'mes' => 'Noviembre'], 
+			['indice' => 12, 'mes' => 'Diciembre'], 
+		];
+		
+		for ($i=0; $i < count($meses); $i++) { 
+			
+			
+			$consulta = 'SELECT m.id as matricula_id, m.alumno_id, a.no_matricula, a.nombres, a.apellidos, a.sexo, a.user_id, 
+					a.fecha_nac, a.tipo_doc, a.documento, a.tipo_sangre, a.eps, a.telefono, a.celular, 
+					a.direccion, a.barrio, a.estrato, a.religion, a.email, a.facebook, a.created_by, a.updated_by,
+					a.pazysalvo, a.deuda, m.grupo_id, u.username, u.is_active,
+					u.imagen_id, IFNULL(i.nombre, IF(a.sexo="F","default_female.png", "default_male.png")) as imagen_nombre, 
+					a.foto_id, IFNULL(i2.nombre, IF(a.sexo="F","default_female.png", "default_male.png")) as foto_nombre,
+					m.estado, m.fecha_matricula, m.nuevo, m.repitente,
+					g.nombre as nombre_grupo, g.abrev as abrev_grupo, g.orden
+				FROM alumnos a 
+				inner join matriculas m on a.id=m.alumno_id and (m.estado="ASIS" or m.estado="MATR") 
+				inner join grupos g on g.id=m.grupo_id and g.year_id=?
+				left join users u on a.user_id=u.id and u.deleted_at is null
+				left join images i on i.id=u.imagen_id and i.deleted_at is null
+				left join images i2 on i2.id=a.foto_id and i2.deleted_at is null
+				where a.deleted_at is null and m.deleted_at is null AND MONTH(fecha_nac) = ?
+				order by g.orden, a.apellidos, a.nombres';
+				
+			$alumnos = DB::select($consulta, [$user->year_id, $meses[$i]['indice']]);
+
+			$meses[$i]['alumnos'] = $alumnos;
+		}
+		
+		return $meses;
+	}
+
+
+
 
 
 }
