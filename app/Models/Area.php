@@ -108,15 +108,25 @@ class Area extends Model {
 
 			if ($num_periodo > 1) {
 				$areas[$i]->per2_nota 			= round($areas[$i]->sumatoria_per2 / $found);
-				$areas[$i]->desempenio_per2 	= EscalaDeValoracion::valoracion($areas[$i]->per2_nota, $escalas)->desempenio;
+				$des 							= EscalaDeValoracion::valoracion($areas[$i]->per2_nota, $escalas);
+				if ($des) {
+					$areas[$i]->desempenio_per2 	= $des->desempenio;
+				}
+				
 			}
 			if ($num_periodo > 2) {
 				$areas[$i]->per3_nota 			= round($areas[$i]->sumatoria_per3 / $found);
-				$areas[$i]->desempenio_per3 	= EscalaDeValoracion::valoracion($areas[$i]->per3_nota, $escalas)->desempenio;
+				$des 							= EscalaDeValoracion::valoracion($areas[$i]->per3_nota, $escalas);
+				if ($des) {
+					$areas[$i]->desempenio_per3 	= $des->desempenio;
+				}
 			}
 			if ($num_periodo == 4) {
 				$areas[$i]->per4_nota 			= round($areas[$i]->sumatoria_per4 / $found);
-				$areas[$i]->desempenio_per4 	= EscalaDeValoracion::valoracion($areas[$i]->per4_nota, $escalas)->desempenio;
+				$des 							= EscalaDeValoracion::valoracion($areas[$i]->per4_nota, $escalas);
+				if ($des) {
+					$areas[$i]->desempenio_per4 	= $des->desempenio;
+				}
 			}
 			//$areas[$i]->area_nota 			= round($areas[$i]->sumatoria / $found);
 			//$areas[$i]->area_desempenio 	= EscalaDeValoracion::valoracion($areas[$i]->area_nota, $escalas)->desempenio;
