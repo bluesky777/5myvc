@@ -196,7 +196,11 @@ class BoletinesController extends Controller {
 			$alumno->promedio = $sumatoria_asignaturas / count($alumno->asignaturas);
 		}
 		
-		$alumno->promedio_desempenio = EscalaDeValoracion::valoracion($alumno->promedio, $this->escalas_val)->desempenio;
+		$des = EscalaDeValoracion::valoracion($alumno->promedio, $this->escalas_val);
+		
+		if ($des) {
+			$alumno->promedio_desempenio = $des->desempenio;
+		} 
 			
 
 
