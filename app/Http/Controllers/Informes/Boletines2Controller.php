@@ -111,7 +111,7 @@ class Boletines2Controller extends Controller {
 		foreach ($alumnos as $alumno) {
 
 			// Todas las materias con sus unidades y subunides
-			$this->allNotasAlumno($alumno, $grupo_id, $user->periodo_id, true);
+			$this->allNotasAlumno($alumno, $grupo_id, $user->periodo_id, true, $year->show_fortaleza_bol);
 
 			//$alumno->userData = Alumno::userData($alumno->alumno_id);
 			
@@ -149,7 +149,7 @@ class Boletines2Controller extends Controller {
 		return array($grupo, $year, $response_alumnos);
 	}
 
-	public function allNotasAlumno(&$alumno, $grupo_id, $periodo_id, $comport_and_frases=false)
+	public function allNotasAlumno(&$alumno, $grupo_id, $periodo_id, $comport_and_frases=false, $show_fortaleza_bol=0)
 	{
 
 
@@ -162,7 +162,13 @@ class Boletines2Controller extends Controller {
 		$alumno->ausencias_total = $ausencias_total;
 
 		foreach ($asignaturas as $asignatura) {
-			$asignatura->unidades = Unidad::deAsignaturaCalculada($alumno->alumno_id, $asignatura->asignatura_id, $periodo_id, true, $this->user->year_id);
+			
+			if ($show_fortaleza_bol == 0) {
+				$asignatura->unidades = Unidad::deAsignaturaCalculada($alumno->alumno_id, $asignatura->asignatura_id, $periodo_id, 'con_desempenio', $this->user->year_id);
+			}else{
+				$asignatura->unidades = Unidad::deAsignaturaCalculada($alumno->alumno_id, $asignatura->asignatura_id, $periodo_id, 'fortaleza_debilidad', $this->user->year_id, $this->user->nota_minima_aceptada);
+			}
+			
 			
 			if ($comport_and_frases) {
 				$asignatura->ausencias	= Ausencia::deAlumno($asignatura->asignatura_id, $alumno->alumno_id, $periodo_id);

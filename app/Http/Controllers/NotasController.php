@@ -40,13 +40,7 @@ class NotasController extends Controller {
 			$subunidades = DB::select('SELECT * FROM subunidades s WHERE s.unidad_id=? and s.deleted_at is null order by s.orden, s.id', [$unidad->id]);
 
 			foreach ($subunidades as $subunidad) {
-				$notas = DB::select('SELECT * FROM notas n WHERE n.subunidad_id=?', [$subunidad->id]);
-
-				if (count($notas) == 0) {
-					Nota::crearNotas($asignatura->grupo_id, $subunidad, $user->user_id);
-				}else{
-					Nota::verificarCrearNotas($asignatura->grupo_id, $subunidad, $user->user_id);
-				}
+				Nota::verificarCrearNotas($asignatura->grupo_id, $subunidad, $user->user_id);
 			}
 
 			$unidad->subunidades = $subunidades;
@@ -83,7 +77,7 @@ class NotasController extends Controller {
 			
 			// Notas
 			$cons = "SELECT n.id, n.nota, n.subunidad_id, n.alumno_id, n.created_by, n.updated_by, n.deleted_by, n.deleted_at, n.created_at, n.updated_at, u.asignatura_id,
-							s.porcentaje/100 as subunidad_porc, u.porcentaje/100 as unidad_porc, s.definicion, s.porcentaje as subunidad_porcentaje
+							s.porcentaje/100 as subunidad_porc, u.porcentaje/100 as unidad_porc, s.definicion, s.porcentaje as subunidad_porcentaje, u.orden as orden_unidad, s.orden as orden_subunidad
 						FROM notas n
 						INNER JOIN alumnos a ON a.id=n.alumno_id and n.deleted_at is null
 						INNER JOIN subunidades s ON s.id=n.subunidad_id and s.deleted_at is null

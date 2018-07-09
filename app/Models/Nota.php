@@ -24,7 +24,7 @@ class Nota extends Model {
 	use SoftDeletes;
 	protected $softDelete = true;
 
-
+	/*
 	// Solo si la subunidad tiene cero notas
 	public static function crearNotas($grupo_id, $subunidad, $user_id)
 	{
@@ -37,6 +37,7 @@ class Nota extends Model {
 
 		return;
 	}
+	*/
 
 	// Verificar cada alumno si tiene nota en la subunidad
 	public static function verificarCrearNotas($grupo_id, $subunidad, $user_id)
@@ -45,17 +46,27 @@ class Nota extends Model {
 		$now 		= Carbon::now('America/Bogota');
 
 		foreach ($alumnos as $alumno) {
-
+			/*
 			$notVerif = DB::select('SELECT * from notas WHERE subunidad_id=? and alumno_id=? and deleted_at is null', [$subunidad->id, $alumno->alumno_id]);
 
 			if (count($notVerif) == 0) {
 				DB::insert('INSERT INTO notas(subunidad_id, alumno_id, nota, created_by, created_at, updated_at) VALUES(?, ?, ?, ?, ?, ?)', [$subunidad->id, $alumno->alumno_id, $subunidad->nota_default, $user_id, $now, $now]);
 			}
+			*/
+			$consulta = "INSERT INTO notas(subunidad_id, alumno_id, nota, created_by, created_at, updated_at) 
+						SELECT * FROM 
+						(SELECT '.$subunidad->id.' as subunidad_id, '.$alumno->alumno_id.' as alumno_id, '.$subunidad->nota_default.' as nota, '.$user_id.' as created_by, '.$now.' as created_at, '.$now.' as updated_at) AS tmp
+							WHERE NOT EXISTS (
+								SELECT * from notas WHERE subunidad_id=? and alumno_id=? and deleted_at is null
+							) LIMIT 1";
+							
+			DB::insert($consulta, [ $subunidad->id, $alumno->alumno_id ]);
 		}
 
 		return;
 	}
-
+	
+	/*
 	// Verificar nota de un alumno si tiene o crearla
 	public static function verificarCrearNota($alumno_id, $subunidad)
 	{
@@ -78,6 +89,7 @@ class Nota extends Model {
 
 		return $notVerif;
 	}
+	*/
 
 
 	public static function puestoAlumno($promedio_alumno, $alumnos)
