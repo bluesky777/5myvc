@@ -65,8 +65,15 @@ class InformesController extends Controller {
 		$consulta 	= 'SELECT * FROM periodos WHERE deleted_at is null and year_id=?';	
 		$periodos 	= DB::select($consulta, [$user->year_id]);
 		
-		$consulta 	= 'SELECT *, id as grupo_id FROM grupos WHERE deleted_at is null and year_id=?';
-		$grupos 	= DB::select($consulta, [ $user->year_id ]);	
+		
+		if ($user->tipo == 'Profesor') {
+			$consulta 	= 'SELECT *, id as grupo_id FROM grupos WHERE titular_id=? and deleted_at is null and year_id=?';
+			$grupos 	= DB::select($consulta, [ $user->persona_id, $user->year_id ]);	
+		}else{
+			$consulta 	= 'SELECT *, id as grupo_id FROM grupos WHERE deleted_at is null and year_id=?';
+			$grupos 	= DB::select($consulta, [ $user->year_id ]);	
+		}
+		
 		
 		$cant_pers = count($periodos);
 		
