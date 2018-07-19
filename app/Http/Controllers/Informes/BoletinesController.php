@@ -48,20 +48,32 @@ class BoletinesController extends Controller {
 		$consulta 		= 'SELECT * FROM historiales WHERE user_id=? and deleted_at is null order by id desc limit 1 ';
 		$this->hist 	= DB::select($consulta, [$this->user->user_id])[0];
 
-
+		
+		$requested_alumnos 		= Request::input('requested_alumnos');
+		
 		if($this->user->tipo == 'Alumno'){
-			
+			/*
 			$consulta 	= 'INSERT INTO bitacoras (created_by, historial_id, affected_person_type, affected_element_type, created_at) 
 				VALUES (?, ?, "Al", "AlumnoVerBoletin", ?)';
 
 			DB::insert($consulta, [$this->user->user_id, $this->hist->id, $this->now]);
 
 			return abort(400, 'Eres alumno');
+			*/
+			if (count($requested_alumnos) > 1) {
+				return abort(400, 'Pedis más de lo que debes');
+			}
+			
+			$alumno = $requested_alumnos[0];
+			
+			if ((int)$alumno['alumno_id'] != $this->user->persona_id){
+				return abort(400, 'No puedes ver el de otros');
+			};
 		}
 		
 		
 		if($this->user->tipo == 'Acudiente'){
-			$requested_alumnos 		= Request::input('requested_alumnos');
+			
 			
 			if (count($requested_alumnos) > 1) {
 				

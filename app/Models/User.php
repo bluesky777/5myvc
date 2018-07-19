@@ -161,7 +161,7 @@ class User extends Authenticatable implements AuthenticatableUserContract
 								left join images i on i.id=:imagen_id
 								left join images i2 on i2.id=a.foto_id
 								left join periodos per on per.id=:periodo_id
-								left join years y on y.id=per.year_id
+								inner join years y on y.id=per.year_id and g.year_id=y.id 
 								left join users u on u.id=a.user_id
 								where a.deleted_at is null and a.user_id=:user_id';
 					
@@ -189,7 +189,7 @@ class User extends Authenticatable implements AuthenticatableUserContract
 								left join images i on i.id=:imagen_id
 								left join images i2 on i2.id=ac.foto_id
 								left join periodos per on per.id=:periodo_id
-								left join years y on y.id=per.year_id
+								inner join years y on y.id=per.year_id  
 								left join users u on u.id=ac.user_id
 								where ac.deleted_at is null and ac.user_id=:user_id';
 
