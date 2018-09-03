@@ -59,6 +59,7 @@ AdvancedRoute::controller('eventos', 'EventosController');
 AdvancedRoute::controller('years', 'YearsController');
 AdvancedRoute::controller('certificados', 'ConfigCertificadosController');
 AdvancedRoute::controller('periodos', 'PeriodosController');
+AdvancedRoute::controller('asistencias', 'Tardanzas\AsistenciasController');
 
 AdvancedRoute::controller('historiales', 'Historiales\HistorialesController');
 

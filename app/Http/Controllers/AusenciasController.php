@@ -55,17 +55,20 @@ class AusenciasController extends Controller {
 	public function postStore()
 	{
 		$user = User::fromToken();
-		User::pueden_editar_notas($user);
 		
 		$aus = new Ausencia;
 		$aus->alumno_id 		= Request::input('alumno_id');
-		$aus->asignatura_id 	= Request::input('asignatura_id');
+		$aus->asignatura_id 	= Request::input('asignatura_id', null);
 		$aus->periodo_id		= $user->periodo_id;
 		$aus->cantidad_ausencia	= Request::input('cantidad_ausencia', null);
 		$aus->cantidad_tardanza	= Request::input('cantidad_tardanza', null);
 		$aus->fecha_hora		= Request::input('fecha_hora', null);
+		$aus->entrada			= Request::input('entrada', 0);
 		$aus->created_by		= $user->user_id;
-
+		
+		if (Request::input('tipo')) {
+			$aus->tipo = Request::input('tipo');
+		}
 		if ($aus->cantidad_ausencia) {
 			$aus->tipo = 'ausencia';
 		}

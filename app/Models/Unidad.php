@@ -112,7 +112,7 @@ class Unidad extends Model {
 		$result = new \stdClass;
 
 		
-		$consulta = 'SELECT id, definicion, porcentaje
+		$consulta = 'SELECT id, definicion, porcentaje, orden 
 					FROM unidades
 					where asignatura_id=:asignatura_id and periodo_id=:periodo_id and deleted_at is null
 					order by orden';
@@ -130,7 +130,7 @@ class Unidad extends Model {
 			
 			$porc_unidades += $unidad->porcentaje;
 
-			$consulta = 'SELECT id, definicion, porcentaje
+			$consulta = 'SELECT id, definicion, porcentaje, orden 
 						FROM subunidades
 						where unidad_id=:unidad_id and deleted_at is null
 						order by orden';
