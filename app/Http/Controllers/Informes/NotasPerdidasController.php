@@ -23,8 +23,13 @@ class NotasPerdidasController extends Controller {
 
 		$periodo_a_calcular 	= (int)Request::input('periodo_a_calcular');
 		$profesor_id 			= Request::input('profesor_id');
-		//$periodos 				= Periodo::hastaPeriodo($user->year_id, $periodo_a_calcular, $user->numero_periodo);
+		$solo_periodo 			= Request::input('solo_periodo', false);
+
+		$periodo_sql = 'p.numero<=:periodo';
 		
+		if ($solo_periodo) {
+			$periodo_sql = 'p.numero=:periodo';
+		}
 
 		$consulta = 'SELECT g.id as grupo_id, g.nombre, g.abrev, g.orden, gra.orden as orden_grado, g.grado_id, g.year_id, g.titular_id,
 			p.nombres as nombres_titular, p.apellidos as apellidos_titular, p.titulo,
@@ -37,48 +42,50 @@ class NotasPerdidasController extends Controller {
 
 		$grupos_all 		= DB::select($consulta, [':year_id' => $user->year_id]);
 		$cant_gr_all 		= count($grupos_all);
+		
+
+		$consulta_asig = 'SELECT a.id as asignatura_id, a.grupo_id, a.profesor_id, a.creditos, a.orden, m.materia, m.alias, p.nombres as profesor_nombres, p.apellidos as profesor_apellidos
+			from asignaturas a
+			inner join profesores p on p.id=a.profesor_id and p.id=:profesor_id
+			inner join materias m on m.id=a.materia_id 
+			where a.grupo_id=:grupo_id and a.deleted_at is null';
+
+		$consulta_alums = "SELECT a.id as alumno_id, a.nombres, a.apellidos, a.sexo, a.user_id, a.celular, a.email, a.foto_id, a.pazysalvo
+			from alumnos a
+			inner join matriculas m on m.alumno_id=a.id and (m.estado='MATR' or m.estado='ASIS') and m.grupo_id=:grupo_id and m.deleted_at is null
+			inner join notas n on n.alumno_id=a.id and n.nota < :nota_minima_aceptada
+			inner join subunidades s on s.id=n.subunidad_id and s.deleted_at is null 
+			inner join unidades u on u.id=s.unidad_id and u.asignatura_id=:asignatura_id and u.deleted_at is null 
+			inner join periodos p on p.id=u.periodo_id and ".$periodo_sql." and p.deleted_at is null 
+			where a.deleted_at is null
+			group by a.id order by a.apellidos";
+
+		$consulta_subs = "SELECT a.id as alumno_id, a.nombres, a.apellidos, a.sexo, a.user_id, a.celular, a.email, a.foto_id, a.pazysalvo,
+				n.nota, n.id as nota_id, n.subunidad_id, s.definicion as defin_subunidad, s.porcentaje as porc_subunidad, s.orden as orden_subunidad, s.created_at, 
+				s.unidad_id, u.definicion as defin_unidad, u.porcentaje as porc_unidad, u.periodo_id, u.asignatura_id, u.orden as orden_unidad,
+				p.numero as numero_periodo
+			from alumnos a
+			inner join notas n on n.alumno_id=a.id and n.nota < :nota_minima_aceptada 
+			inner join subunidades s on s.id=n.subunidad_id and s.deleted_at is null 
+			inner join unidades u on u.id=s.unidad_id and u.asignatura_id=:asignatura_id and u.deleted_at is null 
+			inner join periodos p on p.id=u.periodo_id and ".$periodo_sql." and p.deleted_at is null 
+			where a.id=:alumno_id and a.deleted_at is null";
+
 
 		for ($i=0; $i < $cant_gr_all; $i++) { 
 
-			$consulta = 'SELECT a.id as asignatura_id, a.grupo_id, a.profesor_id, a.creditos, a.orden, m.materia, m.alias, p.nombres as profesor_nombres, p.apellidos as profesor_apellidos
-				from asignaturas a
-				inner join profesores p on p.id=a.profesor_id and p.id=:profesor_id
-				inner join materias m on m.id=a.materia_id 
-				where a.grupo_id=:grupo_id and a.deleted_at is null';
-
-			$asign_all 		= DB::select($consulta, [':profesor_id' => $profesor_id, ':grupo_id' => $grupos_all[$i]->grupo_id ]);
+			$asign_all 		= DB::select($consulta_asig, [':profesor_id' => $profesor_id, ':grupo_id' => $grupos_all[$i]->grupo_id ]);
 			$cant_asig_all 	= count($asign_all);
 
 			for ($j=0; $j < $cant_asig_all; $j++) { 
 
 
-				$consulta = "SELECT a.id as alumno_id, a.nombres, a.apellidos, a.sexo, a.user_id, a.celular, a.email, a.foto_id, a.pazysalvo
-					from alumnos a
-					inner join matriculas m on m.alumno_id=a.id and (m.estado='MATR' or m.estado='ASIS') and m.grupo_id=:grupo_id and m.deleted_at is null
-					inner join notas n on n.alumno_id=a.id and n.nota < :nota_minima_aceptada
-					inner join subunidades s on s.id=n.subunidad_id and s.deleted_at is null 
-					inner join unidades u on u.id=s.unidad_id and u.asignatura_id=:asignatura_id and u.deleted_at is null 
-					inner join periodos p on p.id=u.periodo_id and p.numero<=:periodo and p.deleted_at is null 
-					where a.deleted_at is null
-					group by a.id order by a.apellidos";
-
-				$alumn_all 		= DB::select($consulta, [ ':grupo_id' => $grupos_all[$i]->grupo_id, ':nota_minima_aceptada' => $user->nota_minima_aceptada, ':asignatura_id' => $asign_all[$j]->asignatura_id, 'periodo' => $periodo_a_calcular ]);
+				$alumn_all 		= DB::select($consulta_alums, [ ':grupo_id' => $grupos_all[$i]->grupo_id, ':nota_minima_aceptada' => $user->nota_minima_aceptada, ':asignatura_id' => $asign_all[$j]->asignatura_id, 'periodo' => $periodo_a_calcular ]);
 				$cant_alum		= count($alumn_all);
 				
 				for ($k=0; $k < $cant_alum; $k++) { 
 
-					$consulta = 'SELECT a.id as alumno_id, a.nombres, a.apellidos, a.sexo, a.user_id, a.celular, a.email, a.foto_id, a.pazysalvo,
-						n.nota, n.id as nota_id, n.subunidad_id, s.definicion as defin_subunidad, s.porcentaje as porc_subunidad, s.orden as orden_subunidad, s.created_at, 
-						s.unidad_id, u.definicion as defin_unidad, u.porcentaje as porc_unidad, u.periodo_id, u.asignatura_id, u.orden as orden_unidad,
-						p.numero as numero_periodo
-						from alumnos a
-						inner join notas n on n.alumno_id=a.id and n.nota < :nota_minima_aceptada 
-						inner join subunidades s on s.id=n.subunidad_id and s.deleted_at is null 
-						inner join unidades u on u.id=s.unidad_id and u.asignatura_id=:asignatura_id and u.deleted_at is null 
-						inner join periodos p on p.id=u.periodo_id and p.numero<=:periodo and p.deleted_at is null 
-						where a.id=:alumno_id and a.deleted_at is null';
-
-					$notas 		= DB::select($consulta, [':nota_minima_aceptada' => $user->nota_minima_aceptada, ':asignatura_id' => $asign_all[$j]->asignatura_id, 
+					$notas 		= DB::select($consulta_subs, [':nota_minima_aceptada' => $user->nota_minima_aceptada, ':asignatura_id' => $asign_all[$j]->asignatura_id, 
 															'periodo' => $periodo_a_calcular, ':alumno_id' => $alumn_all[$k]->alumno_id ]);
 					$alumn_all[$k]->notas = $notas;
 					$alumn_all[$k]->userData = Alumno::userData($alumn_all[$k]->alumno_id);
@@ -198,6 +205,13 @@ class NotasPerdidasController extends Controller {
 		$user 					= User::fromToken();
 		$periodo_a_calcular 	= (int)Request::input('periodo_a_calcular');
 		$profesores 			= Profesor::contratos($user->year_id);
+		$solo_periodo 			= Request::input('solo_periodo', false);
+
+		$periodo_sql = 'p.numero<=:periodo';
+		
+		if ($solo_periodo) {
+			$periodo_sql = 'p.numero=:periodo';
+		}
 
 
 		$cantProf = count($profesores);
@@ -239,7 +253,7 @@ class NotasPerdidasController extends Controller {
 						inner join notas n on n.alumno_id=a.id and n.nota < :nota_minima_aceptada
 						inner join subunidades s on s.id=n.subunidad_id and s.deleted_at is null 
 						inner join unidades u on u.id=s.unidad_id and u.asignatura_id=:asignatura_id and u.deleted_at is null 
-						inner join periodos p on p.id=u.periodo_id and p.numero<=:periodo and p.deleted_at is null 
+						inner join periodos p on p.id=u.periodo_id and ".$periodo_sql." and p.deleted_at is null 
 						where a.deleted_at is null
 						group by a.id order by a.apellidos";
 
@@ -248,7 +262,7 @@ class NotasPerdidasController extends Controller {
 					
 					for ($k=0; $k < $cant_alum; $k++) { 
 
-						$consulta = 'SELECT a.id as alumno_id, a.nombres, a.apellidos, a.sexo, a.user_id, a.celular, a.email, a.foto_id, a.pazysalvo,
+						$consulta = "SELECT a.id as alumno_id, a.nombres, a.apellidos, a.sexo, a.user_id, a.celular, a.email, a.foto_id, a.pazysalvo,
 							n.nota, n.id as nota_id, n.subunidad_id, s.definicion as defin_subunidad, s.porcentaje as porc_subunidad, s.orden as orden_subunidad, s.created_at, 
 							s.unidad_id, u.definicion as defin_unidad, u.porcentaje as porc_unidad, u.periodo_id, u.asignatura_id, u.orden as orden_unidad,
 							p.numero as numero_periodo
@@ -256,8 +270,8 @@ class NotasPerdidasController extends Controller {
 							inner join notas n on n.alumno_id=a.id and n.nota < :nota_minima_aceptada 
 							inner join subunidades s on s.id=n.subunidad_id and s.deleted_at is null 
 							inner join unidades u on u.id=s.unidad_id and u.asignatura_id=:asignatura_id and u.deleted_at is null 
-							inner join periodos p on p.id=u.periodo_id and p.numero<=:periodo and p.deleted_at is null 
-							where a.id=:alumno_id and a.deleted_at is null';
+							inner join periodos p on p.id=u.periodo_id and ".$periodo_sql." and p.deleted_at is null 
+							where a.id=:alumno_id and a.deleted_at is null";
 
 						$notas 		= DB::select($consulta, [':nota_minima_aceptada' => $user->nota_minima_aceptada, ':asignatura_id' => $asign_all[$j]->asignatura_id, 
 																'periodo' => $periodo_a_calcular, ':alumno_id' => $alumn_all[$k]->alumno_id ]);

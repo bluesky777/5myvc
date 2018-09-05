@@ -33,6 +33,7 @@ class GuardarAlumno {
 			break;
 			
 			case 'nuevo':
+			case 'fecha_pension':
 			case 'repitente':
 				$consulta = 'UPDATE matriculas SET '.$propiedad.'=:valor, updated_by=:modificador, updated_at=:fecha WHERE id=:matricula_id';
 				$datos 		= [

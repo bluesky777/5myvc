@@ -554,6 +554,59 @@ class AlumnosController extends Controller {
 
 
 
+	public function putGuardarValorVarios()
+	{
+		if ($this->user->roles[0]->name == 'Profesor' && $this->user->profes_can_edit_alumnos) {
+			
+			$alumnos 	= Request::input('alumnos');
+			$cant 		= count($alumnos);
+			
+			for ($i=0; $i < $cant; $i++) { 
+				$consulta 	= 'SELECT a.id, a.user_id, g.id as grupo_id, g.titular_id, m.id as matricula_id FROM alumnos a
+								INNER JOIN matriculas m ON m.alumno_id=a.id
+								INNER JOIN grupos g ON g.id=m.grupo_id AND g.year_id=? AND g.titular_id=?
+								WHERE a.id=?';
+				$alumno 	= DB::select($consulta, [ $this->user->year_id, $this->user->persona_id, $alumnos[$i]['alumno_id'] ]);
+				
+				if (count($alumno)>0) {
+					$alumno = $alumno[0];
+					$guardarAlumno = new GuardarAlumno();
+					return $guardarAlumno->valor($this->user, $alumno, Request::input('propiedad'), Request::input('valor'), $this->user->user_id);
+				}else{
+					return response()->json([ 'autorizado'=> false, 'msg'=> 'No eres el titular' ], 400);
+				}
+			
+			}
+				
+		} else if($this->user->roles[0]->name == 'Admin'){
+			
+			$alumnos 	= Request::input('alumnos');
+			$cant 		= count($alumnos);
+			
+			for ($i=0; $i < $cant; $i++) { 
+				$consulta 	= 'SELECT a.id, a.user_id, g.id as grupo_id, g.titular_id, m.id as matricula_id FROM alumnos a
+								INNER JOIN matriculas m ON m.alumno_id=a.id
+								INNER JOIN grupos g ON g.id=m.grupo_id AND g.year_id=?
+								WHERE a.id=?';
+				$alumno 	= DB::select($consulta, [ $this->user->year_id, $alumnos[$i]['alumno_id'] ]);
+				if (count($alumno)>0) {
+					$alumno = $alumno[0];
+					$guardarAlumno = new GuardarAlumno();
+					$guardarAlumno->valor($this->user, $alumno, Request::input('propiedad'), Request::input('valor'), $this->user->user_id);
+				}else{
+					return response()->json([ 'No encontrado'=> false, 'msg'=> 'Alumno no encontrado' ], 400);
+				}
+				
+			}
+			return 'Cambios realizados';
+		} else {
+			return abort('400', 'No tiene permisos');
+		}
+		
+	}
+
+
+
 
 	public function deleteDestroy($id)
 	{
