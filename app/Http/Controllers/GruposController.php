@@ -163,6 +163,32 @@ class GruposController extends Controller {
 				
 				array_push($grupos[$j]->periodos_matr, $peri);
 			}
+			
+			
+			
+			// Cantidad de hombres
+			$consulta = 'SELECT count(m.id) as cant_alumnos, g.nombre, g.id
+				from grupos g
+				INNER JOIN matriculas m ON m.grupo_id=g.id and m.deleted_at is null and (m.estado="MATR" or m.estado="ASIS")
+				INNER JOIN alumnos a ON a.id=m.alumno_id and a.deleted_at is null and a.sexo="M"
+				where g.deleted_at is null and g.id=?';
+						
+			$cant_matr 					= DB::select($consulta, [$grupos[$j]->id] )[0];
+			$grupos[$j]->cant_hombres 	= $cant_matr->cant_alumnos;
+				
+			
+			
+			// Cantidad de mujeres
+			$consulta = 'SELECT count(m.id) as cant_alumnos, g.nombre, g.id
+				from grupos g
+				INNER JOIN matriculas m ON m.grupo_id=g.id and m.deleted_at is null and (m.estado="MATR" or m.estado="ASIS")
+				INNER JOIN alumnos a ON a.id=m.alumno_id and a.deleted_at is null and a.sexo="F"
+				where g.deleted_at is null and g.id=?';
+						
+			$cant_matr 					= DB::select($consulta, [$grupos[$j]->id] )[0];
+			$grupos[$j]->cant_mujeres 	= $cant_matr->cant_alumnos;
+				
+			
 		}
 		
 		
@@ -175,7 +201,7 @@ class GruposController extends Controller {
 						from grupos g
 						INNER JOIN matriculas m ON m.grupo_id=g.id and m.deleted_at is null and (m.estado="RETI" or m.estado="DESE")
 						INNER JOIN alumnos a ON a.id=m.alumno_id and a.deleted_at is null
-						where g.deleted_at is null and m.fecha_retiro>? and m.fecha_retiro<? 
+						where g.deleted_at is null and m.fecha_retiro>=? and m.fecha_retiro<=? 
 						order by g.orden';
 						
 			$periodos[$i]->total_reti = DB::select($consulta, [$periodos[$i]->fecha_inicio, $periodos[$i]->fecha_fin] )[0];
@@ -184,7 +210,7 @@ class GruposController extends Controller {
 							from grupos g
 							INNER JOIN matriculas m ON m.grupo_id=g.id and m.deleted_at is null
 							INNER JOIN alumnos a ON a.id=m.alumno_id and a.deleted_at is null
-							where g.deleted_at is null and m.fecha_matricula>? and m.fecha_matricula<?
+							where g.deleted_at is null and m.fecha_matricula>=? and m.fecha_matricula<=?
 							order by g.orden';
 					
 			$periodos[$i]->total_matr = DB::select($consulta, [$periodos[$i]->fecha_inicio, $periodos[$i]->fecha_fin] )[0];;

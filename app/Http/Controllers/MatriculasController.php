@@ -243,6 +243,18 @@ class MatriculasController extends Controller {
 			$consulta 		= Matricula::$consulta_parientes;
 			$acudientes 	= DB::select($consulta, [ $result['AlumnosActuales'][$i]->alumno_id ]);	
 
+			// Edad
+			if ($result['AlumnosActuales'][$i]->fecha_nac) {
+				$anio 	= date('Y', strtotime( $result['AlumnosActuales'][$i]->fecha_nac) );
+				$mes 	= date('m', strtotime( $result['AlumnosActuales'][$i]->fecha_nac) );
+				$dia 	= date('d', strtotime( $result['AlumnosActuales'][$i]->fecha_nac) );
+				$result['AlumnosActuales'][$i]->edad = Carbon::createFromDate($anio, $mes, $dia)->age;
+				//$result['AlumnosActuales'][$i]->edad = $anio.'-'. $mes.'-'. $dia;
+			}else{
+				$result['AlumnosActuales'][$i]->edad = '';
+			}
+			
+			
 			// Para el botón agregar
 			array_push($acudientes, ['nombres' => null]);
 
