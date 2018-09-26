@@ -100,7 +100,8 @@ class InformesController extends Controller {
 		$consulta 	= 'SELECT * FROM periodos WHERE deleted_at is null and year_id=?';	
 		$periodos 	= DB::select($consulta, [$user->year_id]);
 		
-		$cant_pers = count($periodos);
+		$cant_pers 	= count($periodos);
+		$result 	= [];
 		
 		for ($i=0; $i < $cant_pers; $i++) { 
 			$consulta 	= 'SELECT n.updated_at as n_updated_at, nf.updated_at as nf_updated_at, n.grupo_id, n.nombre, n.abrev FROM
@@ -114,7 +115,7 @@ class InformesController extends Controller {
 						inner join
 							(SELECT max(nf.updated_at) as updated_at, g.id as grupo_id, g.nombre, g.abrev
 							FROM notas_finales nf
-							inner join asignaturas a on nf.asignatura_id=a.id and nf.periodo_id=? and nf.updated_at and a.deleted_at is null
+							inner join asignaturas a on nf.asignatura_id=a.id and nf.periodo_id=? and a.deleted_at is null
 							inner join grupos g on g.id=a.grupo_id and g.deleted_at is null and g.year_id=?
 							group by g.id)nf
 						ON n.grupo_id=nf.grupo_id and n.updated_at>nf.updated_at';	
@@ -122,12 +123,12 @@ class InformesController extends Controller {
 			$grupos_desactualizados = DB::select($consulta, [$periodos[$i]->id, $user->year_id, $periodos[$i]->id, $user->year_id]);
 			if (count($grupos_desactualizados) > 0) {
 				$periodos[$i]->grupos = $grupos_desactualizados;
-			}else{
-				unset($periodos[$i]);
+				array_push($result, $periodos[$i]);
 			}
 			
 		}
-		return $periodos;
+		
+		return $result;
 	}
 
 

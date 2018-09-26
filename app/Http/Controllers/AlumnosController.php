@@ -376,25 +376,62 @@ class AlumnosController extends Controller {
 
 
 
-	public function getShow($id)
+	public function putShow()
 	{
-		$alumno = Alumno::findOrFail($id);
-		if (!is_null($alumno->user_id)){
-			$alumno->user = User::findOrFail($alumno->user_id);
-		}
+		$id 		= Request::input('id');
+		$con_grupos = Request::input('con_grupos');
+		
+		$consulta = 'SELECT m.id as matricula_id, m.alumno_id, a.no_matricula, a.nombres, a.apellidos, a.sexo, a.user_id, g.nombre as grupo_nombre, g.abrev as grupo_abrev, 
+				a.fecha_nac, a.ciudad_nac, c1.departamento as departamento_nac_nombre, c1.ciudad as ciudad_nac_nombre, a.tipo_doc, t1.tipo as tipo_doc_name, a.documento, a.ciudad_doc, 
+				c2.ciudad as ciudad_doc_nombre, c2.departamento as departamento_doc_nombre, a.tipo_sangre, a.eps, a.telefono, a.celular, 
+				a.direccion, a.barrio, a.is_urbana, a.estrato, a.ciudad_resid, c3.ciudad as ciudad_resid_nombre, c3.departamento as departamento_resid_nombre, a.religion, a.email, a.facebook, a.created_by, a.updated_by,
+				a.pazysalvo, a.deuda, m.grupo_id, a.is_urbana, IF(a.is_urbana, "SI", "NO") as es_urbana,
+				u.imagen_id, IFNULL(i.nombre, IF(a.sexo="F","default_female.png", "default_male.png")) as imagen_nombre, 
+				u.username, u.is_superuser, u.is_active,
+				a.foto_id, IFNULL(i2.nombre, IF(a.sexo="F","default_female.png", "default_male.png")) as foto_nombre,
+				m.fecha_retiro as fecha_retiro, m.estado, m.fecha_matricula, m.nuevo, IF(m.nuevo, "SI", "NO") as es_nuevo, m.repitente,
+				a.has_sisben, a.nro_sisben, a.has_sisben_3, a.nro_sisben_3 
+			FROM alumnos a 
+			inner join matriculas m on a.id=m.alumno_id and a.id=:alumno_id 
+			INNER JOIN grupos g ON g.id=m.grupo_id AND g.year_id=:year_id and g.deleted_at is null
+			left join users u on a.user_id=u.id and u.deleted_at is null
+			left join images i on i.id=u.imagen_id and i.deleted_at is null
+			left join tipos_documentos t1 on t1.id=a.tipo_doc and t1.deleted_at is null
+			left join images i2 on i2.id=a.foto_id and i2.deleted_at is null
+			left join ciudades c1 on c1.id=a.ciudad_nac and c1.deleted_at is null
+			left join ciudades c2 on c2.id=a.ciudad_doc and c2.deleted_at is null
+			left join ciudades c3 on c3.id=a.ciudad_resid and c3.deleted_at is null
+			where a.deleted_at is null and m.deleted_at is null
+			order by a.apellidos, a.nombres';
+			
+		$alumno = DB::select($consulta, [ ':alumno_id' => $id, ':year_id' => $this->user->year_id ]);
+		
+		if( count($alumno) > 0){
+			$alumno 	= $alumno[0];
+			$grados 	= [];
+			$tipos_doc 	= [];
+		
+			if ($con_grupos) {
+				$consulta = 'SELECT g.id, g.nombre, g.abrev, g.orden, gra.orden as orden_grado, g.grado_id, g.year_id, g.titular_id,
+						p.nombres as nombres_titular, p.apellidos as apellidos_titular, p.titulo, g.caritas, 
+						g.created_at, g.updated_at, gra.nombre as nombre_grado
+					from grupos g
+					inner join grados gra on gra.id=g.grado_id and g.year_id=:year_id
+					left join profesores p on p.id=g.titular_id
+					where g.deleted_at is null
+					order by g.orden';
 
-		$imagen = ImageModel::find($alumno->foto_id);
-		if ($imagen) {
-			$alumno->foto_nombre = $imagen->nombre;
-		}else{
-			if ($alumno->sexo=='F') {
-				$alumno->foto_nombre = 'default_female.png';
-			}else{
-				$alumno->foto_nombre = 'default_male.png';
+				$grados = DB::select($consulta, [':year_id'=>$this->user->year_id] );
+				
+				$consulta = 'SELECT * from tipos_documentos where deleted_at is null';
+				$tipos_doc = DB::select($consulta);
 			}
+			
+			return [ 'alumno' => $alumno, 'grupos' => $grados, 'tipos_doc' => $tipos_doc ];
+		}else{
+			return ['pailas' => 'nada'];
 		}
 
-		return $alumno;
 	}
 
 
@@ -551,6 +588,25 @@ class AlumnosController extends Controller {
 		}
 		
 	}
+	
+	
+	public function putPersonasCheck()
+	{
+		$texto = Request::input('texto');
+		$consulta = 'SELECT m.alumno_id, a.nombres, a.apellidos, m.id as matricula_id, "alumno" as tipo, g.abrev, 
+				a.foto_id, IFNULL(i2.nombre, IF(a.sexo="F","default_female.png", "default_male.png")) as foto_nombre
+			FROM alumnos a
+			INNER JOIN matriculas m on a.id=m.alumno_id and (m.estado="ASIS" or m.estado="MATR")
+			INNER JOIN grupos g on g.year_id=:anio and g.id=m.grupo_id and g.deleted_at is null
+			LEFT JOIN images i2 on i2.id=a.foto_id and i2.deleted_at is null
+			WHERE nombres like :texto or apellidos like :texto2
+			GROUP BY m.alumno_id order by g.orden';
+		
+		$res = DB::select($consulta, [':anio' => $this->user->year_id, ':texto' => '%'.$texto.'%', ':texto2' => '%'.$texto.'%']);
+		return [ 'personas' => $res ];
+	}
+
+
 
 
 

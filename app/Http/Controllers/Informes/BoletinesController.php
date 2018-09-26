@@ -153,6 +153,49 @@ class BoletinesController extends Controller {
 	{
 		$periodo_a_calcular 	= Request::input('periodo_a_calcular', 10);
 		$requested_alumnos 		= Request::input('requested_alumnos', '');
+		
+		if (count($requested_alumnos) == 1) {
+			
+			$alumno 	= $requested_alumnos[0];
+			$now 		= Carbon::now('America/Bogota');
+			
+			// CALCULAMOS SIN VERIFICAR QUE ESTÉ DESACTUALIZADO
+			DB::delete('DELETE nf FROM notas_finales nf INNER JOIN asignaturas a ON a.id=nf.asignatura_id and a.grupo_id=? 
+					WHERE (nf.manual is null or nf.manual=0) and (nf.recuperada is null or nf.recuperada=0) and nf.periodo_id=? and nf.alumno_id=?', 
+					[ $grupo_id, $this->user->periodo_id, $alumno['alumno_id'] ]);
+
+			$consulta = 'SELECT nt.alumno_id, asi.id as asignatura_id, nt.periodo_id, cast(sum(nt.ValorNota) as decimal(4,0)) as nota_asignatura
+				FROM asignaturas asi 
+				inner join 
+					(select u.asignatura_id, n.alumno_id, u.periodo_id, sum( ((u.porcentaje/100)*((s.porcentaje/100)*n.nota)) ) ValorNota
+					from unidades u 
+					inner join subunidades s on s.unidad_id=u.id and s.deleted_at is null and u.periodo_id=:periodo_id
+					inner join notas n on n.subunidad_id=s.id and n.deleted_at is null and n.alumno_id=:alumno_id
+					inner join asignaturas asi2 on asi2.id=u.asignatura_id and asi2.deleted_at is null and asi2.grupo_id=:grupo_id
+					where  u.deleted_at is null
+					group by n.alumno_id, u.id, s.id
+				) nt ON asi.id=nt.asignatura_id and asi.grupo_id=:grupo_id2 
+				where asi.deleted_at is null
+				group by nt.alumno_id, asi.id, nt.periodo_id';
+
+			$defi_autos = DB::select($consulta, [ ':periodo_id'=>$this->user->periodo_id, ':alumno_id'=>$alumno['alumno_id'], ':grupo_id'=>$grupo_id, ':grupo_id2'=>$grupo_id ]);
+			$cant_def = count($defi_autos);
+					
+			for ($i=0; $i < $cant_def; $i++) { 
+
+				$consulta = 'INSERT INTO notas_finales(alumno_id, asignatura_id, periodo_id, periodo, nota, recuperada, manual, created_at, updated_at) 
+							SELECT * FROM (SELECT '.$defi_autos[$i]->alumno_id.' as alumno_id, '.$defi_autos[$i]->asignatura_id.' as asignatura_id, '.$defi_autos[$i]->periodo_id.' as periodo_id, '.$this->user->numero_periodo.' as periodo, '.$defi_autos[$i]->nota_asignatura.' as nota_asignatura, 0 as recuperada, 0 as manual, '.$this->user->user_id.' as crea, "'.$now.'" as fecha) AS tmp
+							WHERE NOT EXISTS (
+								SELECT id FROM notas_finales WHERE alumno_id='.$defi_autos[$i]->alumno_id.' and asignatura_id='.$defi_autos[$i]->asignatura_id.' and periodo_id='.$defi_autos[$i]->periodo_id.'
+							) LIMIT 1';
+
+				DB::select($consulta);
+
+			}
+			// CIERRO CALCULAMOS
+
+
+		}
 
 		$boletines = $this->detailedNotasGrupo($grupo_id, $this->user, $requested_alumnos, $periodo_a_calcular);
 		return $boletines;
