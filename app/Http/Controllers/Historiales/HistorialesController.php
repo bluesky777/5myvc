@@ -119,8 +119,16 @@ class HistorialesController extends Controller {
 		if (count($historial) > 0) {
 		
 			$historial = $historial[0];
+			/* Se supone que debe ser con el user_id, pero la embarré
 			$consulta   = 'SELECT b.*, a.nombres, a.apellidos, s.definicion FROM bitacoras b
 						inner join alumnos a ON b.affected_user_id=a.user_id and a.deleted_at is null
+						inner join notas n ON n.id=b.affected_element_id
+						inner join subunidades s ON s.id=n.subunidad_id and s.deleted_at is null
+						WHERE b.historial_id=? and b.deleted_at is null';
+			*/
+			
+			$consulta   = 'SELECT b.*, a.nombres, a.apellidos, s.definicion FROM bitacoras b
+						inner join alumnos a ON b.affected_user_id=a.id and a.deleted_at is null
 						inner join notas n ON n.id=b.affected_element_id
 						inner join subunidades s ON s.id=n.subunidad_id and s.deleted_at is null
 						WHERE b.historial_id=? and b.deleted_at is null';
