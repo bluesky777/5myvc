@@ -60,8 +60,8 @@ class EditnotaController extends Controller {
 
 				foreach ($unidad->subunidades as $subunidad) {
 					
-					$nota = Nota::where('subunidad_id',	'=', $subunidad->subunidad_id)
-								->where('alumno_id',	'=', $alumno_id)->first();
+					$nota = Nota::where('subunidad_id', $subunidad->subunidad_id)
+								->where('alumno_id', $alumno_id)->first();
 
 					if ($nota) {
 						$subunidad->nota = $nota;
@@ -83,8 +83,16 @@ class EditnotaController extends Controller {
 
 			$periodo->unidades = $asigna->unidades;
 
-			$periodo->nota_asignatura = $nota_asignatura; // Definitiva de la materia en este periodo
-
+			$periodo->nota_asignatura_calc 	= $nota_asignatura; // Definitiva de la materia en este periodo
+			
+			$nota_asignatura 		= DB::select('SELECT * FROM notas_finales WHERE alumno_id=? and asignatura_id=? and periodo_id=?',
+													[$alumno_id, $asignatura_id, $periodo->id]);
+													
+			if (count($nota_asignatura) > 0) {
+				$periodo->nota_asignatura 	= $nota_asignatura[0]->nota;
+				$periodo->manual 			= $nota_asignatura[0]->manual;
+				$periodo->recuperada 		= $nota_asignatura[0]->recuperada;
+			}
 		}
 
 		return $periodos;
