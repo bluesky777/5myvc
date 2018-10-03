@@ -147,7 +147,7 @@ class User extends Authenticatable implements AuthenticatableUserContract
 				case 'Alumno':
 					
 					$consulta = 'SELECT a.id as persona_id, a.nombres, a.apellidos, a.user_id, 
-									a.sexo, a.fecha_nac, a.ciudad_nac, a.pazysalvo, a.deuda, u.username,
+									a.sexo, a.fecha_nac, a.ciudad_nac, a.pazysalvo, a.deuda, u.username, m.fecha_pension,
 									IFNULL(i.nombre, IF(a.sexo="F","default_female.png", "default_male.png")) as imagen_nombre, 
 									a.foto_id, IFNULL(i2.nombre, IF(a.sexo="F","default_female.png", "default_male.png")) as foto_nombre, 
 									g.id as grupo_id, g.nombre as nombre_grupo, g.abrev as abrev_grupo, 

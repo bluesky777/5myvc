@@ -14,6 +14,7 @@ use App\Models\Grupo;
 use App\Models\Alumno;
 use App\Models\Bitacora;
 use App\Models\FraseAsignatura;
+use App\Http\Controllers\Informes\PuestosController;
 
 
 class NotasController extends Controller {
@@ -161,7 +162,7 @@ class NotasController extends Controller {
 	
 	
 	
-	public function getAlumno($alumno_id='')
+	public function getAlumno($alumno_id='', $grupo_id='')
 	{
 		$user = User::fromToken();
 
@@ -190,6 +191,19 @@ class NotasController extends Controller {
 
 		$datos = Nota::alumnoPeriodosDetailed($alumno_id, $user->year_id, $profesor_id);
 
+		
+		// Definitivas hasta el tercer periodo para calcular nota faltante
+		$puestosCtrl 	= new PuestosController();
+		$consulta 		= $puestosCtrl->consulta_notas_finales_alumno3;
+		$notas_asig     = DB::select($consulta, [ ':gr_id' => $grupo_id, ':alu_id' => $alumno_id, ':year_id' => $user->year_id, ':min' => $user->nota_minima_aceptada, ':alu_id2' => $alumno_id, ':year_id2' => $user->year_id ]);
+		
+		foreach ($notas_asig as $keyAsig => $asignatura) {
+			$asignatura->nota_final_year = round($asignatura->nota_final_year);
+		}
+		$datos->notas_tercer_per = $notas_asig;
+		// !! Definitivas
+		
+		
 		if ($user->tipo == 'Acudiente') {
 			if ($datos->pazysalvo){
 				return [$datos];
