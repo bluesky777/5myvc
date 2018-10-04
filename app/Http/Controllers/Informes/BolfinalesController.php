@@ -197,44 +197,32 @@ class BolfinalesController extends Controller {
 		foreach ($alumno->asignaturas as $asignatura) {
 
 			$alumno->total_creditos += $asignatura->creditos;
-			
-			$consulta = 'SELECT alumno_id, asignatura_id, periodo_id, numero_periodo,
-							creditos, sum( ValorUnidad ) DefMateria, cantidad_ausencia, cantidad_tardanza 
-						FROM(
-							SELECT n.alumno_id, a.id as asignatura_id, a.profesor_id, 
-								a.creditos, u.periodo_id, u.definicion, u.id as unidad_id, u.porcentaje as porc_unidad, 
-								s.id as subunidad_id, s.definicion as definicion_subunidad, s.porcentaje as porcentaje_subunidad, p.numero as numero_periodo, 
-								sum( ((u.porcentaje/100)*((s.porcentaje/100)*n.nota)) ) ValorUnidad,
-								aus.cantidad_ausencia, tar.cantidad_tardanza
-							FROM asignaturas a 
-							inner join unidades u on u.asignatura_id=a.id and u.deleted_at is null
-							inner join subunidades s on s.unidad_id=u.id and s.deleted_at is null
-							inner join notas n on n.subunidad_id=s.id and n.alumno_id=:alumno_id and n.deleted_at is null
-							inner join periodos p on p.year_id=:year_id and p.id=u.periodo_id and p.deleted_at is null
-							left join (
+						
+			$consulta = 'SELECT nf.*, nf.nota as DefMateria, aus.cantidad_ausencia, tar.cantidad_tardanza
+						FROM notas_finales nf
+						INNER JOIN periodos p on p.year_id=:year_id and p.id=nf.periodo_id and p.deleted_at is null
+						left join (
 								select count(au.id) as cantidad_ausencia, au.alumno_id, au.periodo_id, au.asignatura_id
 								from ausencias au 
 								where au.deleted_at is null and au.cantidad_ausencia > 0
 								group by au.alumno_id, au.periodo_id, au.asignatura_id
 								
-								)as aus on aus.alumno_id=n.alumno_id and aus.asignatura_id=a.id and aus.periodo_id=p.id
-							left join (
+								)as aus on aus.alumno_id=nf.alumno_id and aus.asignatura_id=nf.asignatura_id and aus.periodo_id=nf.periodo_id
+						left join (
 								select count(au.id) as cantidad_tardanza, au.alumno_id, au.periodo_id, au.asignatura_id
 								from ausencias au 
 								where au.deleted_at is null and au.cantidad_tardanza > 0
 								group by au.alumno_id, au.periodo_id, au.asignatura_id
-								
-								)as tar on tar.alumno_id=n.alumno_id and tar.asignatura_id=a.id and tar.periodo_id=p.id
-							where a.grupo_id=:grupo_id and a.deleted_at is null and a.id=:asignatura_id
-							group by n.alumno_id, s.unidad_id, s.id, aus.cantidad_ausencia, tar.cantidad_tardanza
-						)r
-						group by alumno_id, asignatura_id, periodo_id, r.cantidad_ausencia, r.cantidad_tardanza
-						order by numero_periodo, asignatura_id, periodo_id';
+									
+						)as tar on tar.alumno_id=nf.alumno_id and tar.asignatura_id=nf.asignatura_id and tar.periodo_id=nf.periodo_id
+						WHERE nf.alumno_id=:alumno_id and nf.asignatura_id=:asignatura_id
+						ORDER BY nf.periodo';
+						
+						
 			//User::$nota_minima_aceptada
 			$asignatura->definitivas = DB::select($consulta, [
-										':alumno_id'	=> $alumno->alumno_id, 
 										':year_id'		=> $year_id,
-										':grupo_id'		=> $grupo_id,
+										':alumno_id'	=> $alumno->alumno_id, 
 										':asignatura_id'=> $asignatura->asignatura_id
 									]);
 
