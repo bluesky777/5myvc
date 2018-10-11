@@ -86,6 +86,58 @@ class ImportarController extends Controller {
 
 	
 
+	public function postCartera()
+	{
+		if(Request::hasFile('file')){
+			$path = Request::file('file')->getRealPath();
+
+			$rr = Excel::load($path, function($reader){
+				
+				$now 		= Carbon::now('America/Bogota');
+				$results 	= $reader->all();
+				
+				for ($i=0; $i < count($results); $i++) {
+					$alumno 	= $results[$i];
+					
+					
+					if (strtolower($results[$i]->pazysalvo) == 'si' || strtolower($results[$i]->paz_y_salvo) == 'si') {
+						$pazysalvo = 1;
+					}else{
+						$pazysalvo = 0;
+					}
+					
+					$fecha_pension = null;
+					
+					if ($results[$i]->fecha_pension) {
+						$fecha_pension = Carbon::parse($results[$i]->fecha_pension);
+					}
+					
+					if ($results[$i]->fecha) {
+						$fecha_pension = Carbon::parse($results[$i]->fecha);
+					}
+					
+					if ($results[$i]->documento) {
+						$consulta 	= 'UPDATE alumnos SET deuda=?, pazysalvo=? WHERE documento=?;';
+						$actua 		= DB::update($consulta, [$results[$i]->deuda, $pazysalvo, $results[$i]->documento]);
+						
+						DB::update('UPDATE matriculas m INNER JOIN alumnos a ON a.id=m.alumno_id and m.deleted_at is null 
+							SET m.fecha_pension=? WHERE a.documento=? and a.deleted_at is null', 
+							[$fecha_pension, $alumno->documento]);
+						
+						//No eliminar para continuar si se cae el servidor!!
+						Debugging::pin('Alum_documento: ' . $alumno->documento) ;
+						
+					}
+					
+				}
+				
+			});
+		}
+		return (array)$rr;
+	}
+
+	
+
 	public function getIndex()
 	{
 

@@ -83,6 +83,7 @@ AdvancedRoute::controller('observador', 'Informes\ObservadorController');
 AdvancedRoute::controller('perfiles', 'Perfiles\PerfilesController');
 AdvancedRoute::controller('myimages', 'Perfiles\ImagesController');
 AdvancedRoute::controller('images-users', 'Perfiles\ImagesUsuariosController');
+AdvancedRoute::controller('publicaciones', 'Perfiles\PublicacionesController');
 
 AdvancedRoute::controller('editnota', 'EditnotaController');
 
