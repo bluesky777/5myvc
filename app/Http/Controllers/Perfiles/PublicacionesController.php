@@ -83,6 +83,31 @@ class PublicacionesController extends Controller {
 
     
     
+	public function putComentar()
+	{
+        $user   = User::fromToken();
+        $now 	= Carbon::now('America/Bogota');
+        
+        $consulta = 'INSERT INTO comentarios(publicacion_id, persona_id, tipo_persona, comentario, created_at, updated_at) 
+            VALUES (:publicacion_id, :persona_id, :tipo_persona, :comentario, :created_at, :updated_at)';
+        
+        DB::insert($consulta, [
+            ':publicacion_id' 	   => Request::input('publi_id'), 
+            ':persona_id'          => $user->persona_id, 
+            ':tipo_persona' 	   => $user->tipo, 
+            ':comentario' 	       => Request::input('comentario'), 
+            ':created_at' 	       => $now, 
+            ':updated_at' 	       => $now, 
+        ]);
+        
+        $last_id = DB::getPdo()->lastInsertId();
+
+		return ['comentario_id' => $last_id];
+    }
+
+    
+    
+    
 	public function putDelete()
 	{
         $user   = User::fromToken();

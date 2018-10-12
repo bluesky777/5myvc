@@ -18,6 +18,7 @@ use App\Models\NotaComportamiento;
 use App\Models\DefinicionComportamiento;
 
 use App\Http\Controllers\Alumnos\Solicitudes;
+use App\Http\Controllers\Perfiles\Publicaciones;
 
 use Carbon\Carbon;
 use \DateTime;
@@ -31,12 +32,6 @@ class ChangeAskedController extends Controller {
 		$user = User::fromToken();
 
 		
-		# Mis publicaciones
-		$mis_publicaciones = DB::select('SELECT * FROM publicaciones 
-						WHERE persona_id=? order by updated_at desc limit 10', 
-						[ $user->persona_id ]);
-
-
 		// toca quitar los campos somebody, ya que esta consulta solo será para buscar los pedidos que han hecho alumnos.
 		if ($user->tipo == 'Usuario' && $user->is_superuser) {
 
@@ -83,10 +78,17 @@ class ChangeAskedController extends Controller {
 			$profes_actuales = $this->datos_de_docentes_este_anio($user);
 
 			
+			# Mis publicaciones
+			$mis_publicaciones = DB::select('SELECT * FROM publicaciones 
+				WHERE persona_id=? order by updated_at desc limit 10', 
+				[ $user->persona_id ]);
+
+
+			
 			# Las publicaciones
 			$publicaciones = DB::select('SELECT * FROM publicaciones 
-							WHERE para_todos=1 or para_alumnos=1 order by updated_at desc limit 10', 
-							[ $user->persona_id ]);
+							WHERE (para_todos=1 or para_alumnos=1) and deleted_at is null order by updated_at desc limit 10', 
+							[ ]);
 
 
 			
@@ -135,10 +137,17 @@ class ChangeAskedController extends Controller {
 			$profes_actuales = $this->datos_de_docentes_este_anio($user, true);
 			
 			
+			
+			# Mis publicaciones
+			$mis_publicaciones = DB::select('SELECT * FROM publicaciones 
+				WHERE persona_id=? order by updated_at desc limit 10', 
+				[ $user->persona_id ]);
+
+				
 			# Las publicaciones
 			$publicaciones = DB::select('SELECT * FROM publicaciones 
-							WHERE para_todos=1 or para_profes=1 order by updated_at desc limit 10', 
-							[ $user->persona_id ]);
+							WHERE (para_todos=1 or para_profes=1) and deleted_at is null order by updated_at desc limit 10', 
+							[ ]);
 
 							
 			return [ 'alumnos'=>$cambios_alum, 'profesores'=>[], 'historial'=> $historial, 'intentos_fallidos'=> $intentos_fallidos, 
@@ -159,12 +168,10 @@ class ChangeAskedController extends Controller {
 			}
 			
 			# Las publicaciones
-			$publicaciones = DB::select('SELECT * FROM publicaciones 
-							WHERE para_todos=1 or para_alumnos=1 order by updated_at desc limit 10', 
-							[ $user->persona_id ]);
+			$publicaciones = Publicaciones::ultimas_publicaciones('Alumno');
 
 			
-			return [ 'ausencias_periodo'=>$ausencias, 'comportamiento'=>$comportamiento, 'profes_actuales' => $profes_actuales, 'mis_publicaciones' => $mis_publicaciones,
+			return [ 'ausencias_periodo'=>$ausencias, 'comportamiento'=>$comportamiento, 'profes_actuales' => $profes_actuales,
 				'publicaciones' => $publicaciones ];
 		
 		
@@ -207,7 +214,7 @@ class ChangeAskedController extends Controller {
 
 			# Las publicaciones
 			$publicaciones = DB::select('SELECT * FROM publicaciones 
-							WHERE para_todos=1 or para_acudientes=1 order by updated_at desc limit 10', 
+							WHERE (para_todos=1 or para_acudientes=1) and deleted_at is null order by updated_at desc limit 10', 
 							[ ]);
 
 			return [ 'alumnos' => $alumnos, 'publicaciones' => $publicaciones ];
