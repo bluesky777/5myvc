@@ -86,9 +86,7 @@ class ChangeAskedController extends Controller {
 
 			
 			# Las publicaciones
-			$publicaciones = DB::select('SELECT * FROM publicaciones 
-							WHERE (para_todos=1 or para_alumnos=1) and deleted_at is null order by updated_at desc limit 10', 
-							[ ]);
+			$publicaciones = Publicaciones::ultimas_publicaciones('Usuario');
 
 
 			
@@ -145,9 +143,7 @@ class ChangeAskedController extends Controller {
 
 				
 			# Las publicaciones
-			$publicaciones = DB::select('SELECT * FROM publicaciones 
-							WHERE (para_todos=1 or para_profes=1) and deleted_at is null order by updated_at desc limit 10', 
-							[ ]);
+			$publicaciones = Publicaciones::ultimas_publicaciones('Profesor');
 
 							
 			return [ 'alumnos'=>$cambios_alum, 'profesores'=>[], 'historial'=> $historial, 'intentos_fallidos'=> $intentos_fallidos, 
@@ -213,9 +209,7 @@ class ChangeAskedController extends Controller {
 			}
 
 			# Las publicaciones
-			$publicaciones = DB::select('SELECT * FROM publicaciones 
-							WHERE (para_todos=1 or para_acudientes=1) and deleted_at is null order by updated_at desc limit 10', 
-							[ ]);
+			$publicaciones = Publicaciones::ultimas_publicaciones('Acudiente');
 
 			return [ 'alumnos' => $alumnos, 'publicaciones' => $publicaciones ];
 		}

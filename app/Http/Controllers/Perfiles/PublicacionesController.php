@@ -16,12 +16,19 @@ use App\Models\Profesor;
 use App\Models\Acudiente;
 use App\Models\ChangeAsked;
 use App\Models\Debugging;
+use App\Http\Controllers\Perfiles\Publicaciones;
 
 use Carbon\Carbon;
 
 
 class PublicacionesController extends Controller {
 
+    public function getUltimas(){
+        # Las publicaciones
+        $publicaciones = Publicaciones::ultimas_publicaciones('Todos');
+        return $publicaciones;
+    }
+    
 
 	public function putStore()
 	{
