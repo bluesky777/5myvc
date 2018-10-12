@@ -50,7 +50,7 @@ class PublicacionesController extends Controller {
         }elseif($publi_para == "publi_privada") {
             $para_todos             = 0;
             
-            if (Request::input('publi_para_alumnos'))   $para_alumnos = 1;
+            if (Request::input('para_alumnos'))   $para_alumnos = 1;
             if (Request::input('para_acudientes'))      $para_acudientes = 1;
             if (Request::input('para_profes'))          $para_profes = 1;
             if (Request::input('para_administradores')) $para_administradores = 1;
@@ -89,6 +89,64 @@ class PublicacionesController extends Controller {
 
 
     
+
+	public function putGuardarEdicion()
+	{
+        $user   = User::fromToken();
+        $now 	= Carbon::now('America/Bogota');
+        
+        $publi_para             = Request::input('publi_para');
+        $para_alumnos           = 0;
+        $para_acudientes        = 0;
+        $para_profes            = 0;
+        $para_administradores   = 0;
+
+		if ($publi_para == "publi_para_todos"){
+            $para_todos             = 1;
+            $para_alumnos           = 1;
+            $para_acudientes        = 1;
+            $para_profes            = 1;
+            $para_administradores   = 1;
+        }elseif($publi_para == "publi_privada") {
+            $para_todos             = 0;
+            
+            if (Request::input('para_alumnos'))   $para_alumnos = 1;
+            if (Request::input('para_acudientes'))      $para_acudientes = 1;
+            if (Request::input('para_profes'))          $para_profes = 1;
+            if (Request::input('para_administradores')) $para_administradores = 1;
+
+		}
+        
+        $imagen         = Request::input('imagen');
+        $imagen_id      = null;
+        $imagen_nom     = null;
+        if ($imagen) {
+            $imagen_id  = $imagen['id'];
+            $imagen_nom = $imagen['nombre'];
+        }
+        
+        $consulta = 'UPDATE publicaciones SET contenido=:contenido, imagen_id=:imagen_id, imagen_nombre=:imagen_nombre, 
+            para_todos=:para_todos, para_alumnos=:para_alumnos, para_acudientes=:para_acudientes, para_profes=:para_profes, 
+            para_administradores=:para_administradores, updated_at=:updated_at WHERE id=:id';
+            
+        DB::update($consulta, [
+            ':contenido' 	        => Request::input('contenido'), 
+            ':imagen_id' 	        => $imagen_id, 
+            ':imagen_nombre' 	    => $imagen_nom, 
+            ':para_todos' 	        => $para_todos, 
+            ':para_alumnos' 	    => $para_alumnos, 
+            ':para_acudientes'	    => $para_acudientes, 
+            ':para_profes'	        => $para_profes, 
+            ':para_administradores'	=> $para_administradores, 
+            ':updated_at' 	        => $now,
+            ':id'                   => Request::input('id'),
+        ]);
+        
+		return 'Modificada';
+	}
+
+
+    
     
 	public function putComentar()
 	{
@@ -110,6 +168,29 @@ class PublicacionesController extends Controller {
         $last_id = DB::getPdo()->lastInsertId();
 
 		return ['comentario_id' => $last_id];
+    }
+
+    
+    
+    
+	public function putBorrarComentario()
+	{
+        $user   = User::fromToken();
+        $now 	= Carbon::now('America/Bogota');
+        
+        if ($user->is_superuser || $user.persona_id==comentario.persona_id) {
+            
+            $consulta = 'UPDATE comentarios SET deleted_at=:deleted_at, deleted_by=:deleted_by WHERE id=:id';
+            DB::update($consulta, [
+                ':deleted_at' 	        => $now, 
+                ':deleted_by'           => $user->user_id, 
+                ':id' 	                => Request::input('comentario_id'), 
+            ]);
+            return 'Eliminado';
+        }else{
+            return abort(400, 'No tienes permitido borrar este comentario');
+        }
+        
     }
 
     

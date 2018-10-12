@@ -41,7 +41,7 @@ class Publicaciones {
 			
 			LEFT JOIN users u ON u.id=c.persona_id and u.deleted_at is null
 			LEFT JOIN images ius ON ius.id=u.imagen_id and ius.deleted_at is null
-			WHERE c.publicacion_id=?';
+			WHERE c.publicacion_id=? and c.deleted_at is null';
 			
 			
 			

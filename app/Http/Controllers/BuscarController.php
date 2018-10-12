@@ -12,12 +12,12 @@ class BuscarController extends Controller {
 	private $consulta_ini = "SELECT a.no_matricula, a.id as alumno_id, a.nombres, a.apellidos, a.sexo, a.user_id, a.created_by, a.updated_by, a.deleted_by, a.deleted_at, a.created_at, a.updated_at,
 					a.foto_id, IFNULL(i.nombre, IF(a.sexo='F','default_female.png', 'default_male.png')) as foto_nombre,
 					m.estado, m.nombre as nombre_grupo, m.abrev as abrev_grupo 
-				FROM alumnos a
-				left join images i on i.id=a.foto_id and i.deleted_at is null
-				left join 
-					(SELECT mt.estado, mt.alumno_id, g.* FROM matriculas mt 
-					inner join grupos g on g.id=mt.grupo_id and g.deleted_at is null and g.year_id=? and mt.deleted_at is null
-					)m on m.alumno_id=a.id ";
+					FROM alumnos a
+					left join images i on i.id=a.foto_id and i.deleted_at is null
+					left join 
+						(SELECT mt.estado, mt.alumno_id, g.* FROM matriculas mt 
+						inner join grupos g on g.id=mt.grupo_id and g.deleted_at is null and g.year_id=? and mt.deleted_at is null
+						)m on m.alumno_id=a.id ";
 
 
 	public function putPorNombre()
