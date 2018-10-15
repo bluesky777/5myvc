@@ -17,6 +17,9 @@ class MatriculasController extends Controller {
 	public function __construct()
 	{
 		$this->user = User::fromToken();
+		if($this->user->roles[0]->name != 'Admin'){
+			return 'No tienes permiso';
+		}
 	}
 	
 
@@ -26,7 +29,7 @@ class MatriculasController extends Controller {
 		$alumno_id 		= Request::input('alumno_id');
 		$grupo_id 		= Request::input('grupo_id');
 		$year_id 		= Request::input('year_id');
-		$year_id 		= Request::input('year_id');
+
 		return Matricula::matricularUno($alumno_id, $grupo_id, $year_id, $this->user->user_id);
 	}
 
