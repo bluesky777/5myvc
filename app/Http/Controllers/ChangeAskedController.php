@@ -30,7 +30,7 @@ class ChangeAskedController extends Controller {
 	public function getToMe()
 	{
 		$user = User::fromToken();
-
+		
 		
 		// toca quitar los campos somebody, ya que esta consulta solo será para buscar los pedidos que han hecho alumnos.
 		if ($user->tipo == 'Usuario' && $user->is_superuser) {
@@ -88,11 +88,13 @@ class ChangeAskedController extends Controller {
 			# Las publicaciones
 			$publicaciones = Publicaciones::ultimas_publicaciones('Usuario');
 
+			# Calendario
+			$eventos = DB::select('SELECT * FROM calendario WHERE deleted_at is null');
 
 			
 			return [ 'alumnos'=>$cambios_alum, 'profesores'=> $pedidos, 'historial'=> $historial, 'intentos_fallidos'=> 
 				$intentos_fallidos, 'profes_actuales' => $profes_actuales, 'mis_publicaciones' => $mis_publicaciones,
-				'publicaciones' => $publicaciones ];
+				'publicaciones' => $publicaciones, 'eventos' => $eventos ];
 
 			
 		}elseif ($user->tipo == 'Profesor') {
@@ -145,10 +147,15 @@ class ChangeAskedController extends Controller {
 			# Las publicaciones
 			$publicaciones = Publicaciones::ultimas_publicaciones('Profesor');
 
+			
+			# Calendario
+			$eventos = DB::select('SELECT * FROM calendario WHERE deleted_at is null');
+
+			
 							
 			return [ 'alumnos'=>$cambios_alum, 'profesores'=>[], 'historial'=> $historial, 'intentos_fallidos'=> $intentos_fallidos, 
 				'profes_actuales' => $profes_actuales, 'mis_publicaciones' => $mis_publicaciones,
-				'publicaciones' => $publicaciones ];
+				'publicaciones' => $publicaciones, 'eventos' => $eventos ];
 		
 		
 		}elseif ($user->tipo == 'Alumno') {
@@ -167,8 +174,12 @@ class ChangeAskedController extends Controller {
 			$publicaciones = Publicaciones::ultimas_publicaciones('Alumno');
 
 			
+			# Calendario
+			$eventos = DB::select('SELECT * FROM calendario WHERE solo_profes=0 and deleted_at is null');
+
+			
 			return [ 'ausencias_periodo'=>$ausencias, 'comportamiento'=>$comportamiento, 'profes_actuales' => $profes_actuales,
-				'publicaciones' => $publicaciones ];
+				'publicaciones' => $publicaciones, 'eventos' => $eventos ];
 		
 		
 			
@@ -211,7 +222,12 @@ class ChangeAskedController extends Controller {
 			# Las publicaciones
 			$publicaciones = Publicaciones::ultimas_publicaciones('Acudiente');
 
-			return [ 'alumnos' => $alumnos, 'publicaciones' => $publicaciones ];
+			
+			# Calendario
+			$eventos = DB::select('SELECT * FROM calendario WHERE solo_profes=0 and deleted_at is null');
+
+			
+			return [ 'alumnos' => $alumnos, 'publicaciones' => $publicaciones, 'eventos' => $eventos ];
 		}
 		
 		return ['msg'=> 'No puedes ver pedidos'];

@@ -11,10 +11,6 @@ use \stdClass;
 use App\Models\User;
 use App\Models\ImageModel;
 use App\Models\Year;
-use App\Models\Alumno;
-use App\Models\Profesor;
-use App\Models\Acudiente;
-use App\Models\ChangeAsked;
 use App\Models\Debugging;
 use App\Http\Controllers\Perfiles\Publicaciones;
 

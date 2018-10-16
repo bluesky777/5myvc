@@ -84,6 +84,7 @@ AdvancedRoute::controller('perfiles', 'Perfiles\PerfilesController');
 AdvancedRoute::controller('myimages', 'Perfiles\ImagesController');
 AdvancedRoute::controller('images-users', 'Perfiles\ImagesUsuariosController');
 AdvancedRoute::controller('publicaciones', 'Perfiles\PublicacionesController');
+AdvancedRoute::controller('calendario', 'Perfiles\CalendarioController');
 
 AdvancedRoute::controller('editnota', 'EditnotaController');
 
