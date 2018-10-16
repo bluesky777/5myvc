@@ -34,7 +34,7 @@ class CalendarioController extends Controller {
             $start              = Request::input('start');
             $end                = Request::input('end');
             $allDay             = Request::input('allDay');
-            $solo_profes        = Request::input('solo_profes');
+            $solo_profes        = Request::input('solo_profes', 0);
             $nombres            = $user->tipo == 'Usuario' ? $user->username : ($user->nombres . $user->apellidos);
 
             
@@ -73,7 +73,7 @@ class CalendarioController extends Controller {
             $start              = null;
             $end                = null;
             $allDay             = Request::input('allDay');
-            $solo_profes        = Request::input('solo_profes');
+            $solo_profes        = Request::input('solo_profes', 0);
             $nombres            = $user->tipo == 'Usuario' ? $user->username : ($user->nombres . $user->apellidos);
             
             if (Request::input('start')) {
