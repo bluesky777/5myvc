@@ -34,7 +34,7 @@ class Grupo extends Model {
 			// Consulta con solo los matriculados
 			$consulta = 'SELECT m.id as matricula_id, m.alumno_id, a.no_matricula, a.nombres, a.apellidos, a.sexo, a.user_id, 
 							a.fecha_nac, a.ciudad_nac, a.celular, a.direccion, a.religion,
-							m.grupo_id, m.estado, m.nuevo, m.repitente,
+							m.grupo_id, m.estado, m.nuevo, m.repitente, username,
 							u.imagen_id, IFNULL(i.nombre, IF(a.sexo="F","default_female.png", "default_male.png")) as imagen_nombre, 
 							a.foto_id, IFNULL(i2.nombre, IF(a.sexo="F","default_female.png", "default_male.png")) as foto_nombre
 						FROM alumnos a 
@@ -294,7 +294,7 @@ class Grupo extends Model {
 	public static function datos($grupo_id)
 	{
 		$consulta = 'SELECT g.id as grupo_id, g.titular_id, g.nombre as nombre_grupo, g.abrev as abrev_grupo,
-						g.caritas, g.grado_id, g.orden, username, 
+						g.caritas, g.grado_id, g.orden, 
 						p.nombres as nombres_profesor, p.apellidos as apellidos_profesor,
 						p.foto_id, IFNULL(i.nombre, IF(p.sexo="F","default_female.png", "default_male.png")) as foto_nombre,
 						p.firma_id, i2.nombre as firma_titular_nombre
