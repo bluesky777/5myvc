@@ -14,7 +14,12 @@
 Route::get('/', function () {
     return view('welcome');
 });
-
+Route::get('/foo', function () {
+    $out = [];
+    //exec("php -q server.php  > /dev/null &");
+    exec("php ../artisan queue:work ", $out);
+    return $out;
+});
 
 
 AdvancedRoute::controller('login', 'LoginController');

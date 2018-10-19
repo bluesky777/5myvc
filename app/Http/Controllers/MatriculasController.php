@@ -8,6 +8,8 @@ use App\Models\Matricula;
 use App\Models\Acudiente;
 use Carbon\Carbon;
 
+use App\Events\MatriculasEvent;
+
 
 class MatriculasController extends Controller {
 
@@ -226,6 +228,10 @@ class MatriculasController extends Controller {
 		if (!$grupo_actual) {
 			return;
 		}
+		
+		// Probando Events, borrar
+		event(new MatriculasEvent());
+		//! Borrar Event
 
 		$sqlYearAnt = 'SELECT id from years where year=:year_ant';
 		

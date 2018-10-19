@@ -3,6 +3,7 @@
 .env
 composer.phar
 composer.lock
+nohup.out
 .DS_Store
 Thumbs.db
 !/public/images/perfil/default_male.jpg
