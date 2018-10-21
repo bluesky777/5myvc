@@ -23,7 +23,7 @@ class GuardarAlumno {
 		$datos 		= [];
 		$now 		= Carbon::now('America/Bogota');
 
-		if ($propiedad == 'fecha_nac' || $propiedad == 'fecha_retiro')
+		if ($propiedad == 'fecha_nac' || $propiedad == 'fecha_retiro' || $propiedad == 'prematriculado')
 			$valor = Carbon::parse($valor);
 
 		switch ($propiedad) {
@@ -38,6 +38,7 @@ class GuardarAlumno {
 			case 'fecha_matricula':
 			case 'razon_retiro':
 			case 'repitente':
+			case 'prematriculado':
 				$consulta = 'UPDATE matriculas SET '.$propiedad.'=:valor, updated_by=:modificador, updated_at=:fecha WHERE id=:matricula_id';
 				$datos 		= [
 					':valor'		=> $valor, 

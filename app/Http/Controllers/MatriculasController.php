@@ -9,6 +9,7 @@ use App\Models\Acudiente;
 use Carbon\Carbon;
 
 use App\Events\MatriculasEvent;
+use \Log;
 
 
 class MatriculasController extends Controller {
@@ -376,6 +377,59 @@ class MatriculasController extends Controller {
 		return $matri;
 	}
 
+	public function putPrematricular()
+	{
+		$alumno_id 		= Request::input('alumno_id');
+		$grupo_id 		= Request::input('grupo_id');
+		$now 			= Carbon::now('America/Bogota');
+
+		$consulta = 'SELECT m.id, m.alumno_id, m.grupo_id, m.estado 
+			FROM matriculas m 
+			where m.alumno_id = :alumno_id and m.grupo_id=:grupo_id and m.deleted_at is null';
+
+		$matriculas = DB::select($consulta, ['alumno_id'=>$alumno_id, 'grupo_id'=>$grupo_id]);
+
+		if (count($matriculas) > 0) {
+			return 'Ya prematriculado';
+		}
+		
+
+		$matri 	= new Matricula;
+		$matri->estado 			= 'PREM';
+		$matri->alumno_id 		= $alumno_id;
+		$matri->grupo_id		= $grupo_id;
+		$matri->prematriculado 	= $now;
+		$matri->created_by 		= $this->user->user_id;
+		$matri->save();
+		
+		$consulta = 'SELECT m.id as matricula_id, m.alumno_id, a.no_matricula, a.nombres, a.apellidos, g.nombre as grupo_nombre, g.abrev as grupo_abrev, m.estado, m.repitente, m.prematriculado, y.id as year_id, y.year as year 
+			FROM alumnos a 
+			inner join matriculas m on a.id=m.alumno_id and a.id=:alumno_id 
+			INNER JOIN grupos g ON g.id=m.grupo_id AND g.deleted_at is null
+			INNER JOIN years y ON y.id=g.year_id AND y.deleted_at is null and y.year=:anio
+			where a.deleted_at is null and m.deleted_at is null
+			order by y.year, g.orden';
+
+		$matri = DB::select($consulta, [ ':alumno_id' => $alumno_id, ':anio'=> ($this->user->year+1) ] )[0];
+		Log::info( 'PreMatriculando' );
+		return ['matricula' => $matri];
+	}
+
+	
+
+	public function putQuitarPrematricula()
+	{
+		$matricula_id 	= Request::input('matricula_id');
+		//$now 			= Carbon::now('America/Bogota');
+
+		$consulta = 'DELETE FROM matriculas WHERE id=?';
+
+		DB::delete($consulta, [$matricula_id]);
+
+		return 'Quitada';
+	}
+
+	
 	public function putDesertar()
 	{
 		$id 	= Request::input('matricula_id');

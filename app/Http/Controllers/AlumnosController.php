@@ -383,14 +383,14 @@ class AlumnosController extends Controller {
 		
 		$consulta = 'SELECT m.id as matricula_id, m.alumno_id, a.no_matricula, a.nombres, a.apellidos, a.sexo, a.user_id, g.nombre as grupo_nombre, g.abrev as grupo_abrev, 
 				a.fecha_nac, a.ciudad_nac, c1.departamento as departamento_nac_nombre, c1.ciudad as ciudad_nac_nombre, a.tipo_doc, t1.tipo as tipo_doc_name, a.documento, a.ciudad_doc, 
-				c2.ciudad as ciudad_doc_nombre, c2.departamento as departamento_doc_nombre, a.tipo_sangre, a.eps, a.telefono, a.celular, 
+				c2.ciudad as ciudad_doc_nombre, c2.departamento as departamento_doc_nombre, a.tipo_sangre, a.eps, a.telefono, a.celular, a.egresado,
 				a.direccion, a.barrio, a.is_urbana, a.estrato, a.ciudad_resid, c3.ciudad as ciudad_resid_nombre, c3.departamento as departamento_resid_nombre, a.religion, a.email, a.facebook, a.created_by, a.updated_by,
 				a.pazysalvo, a.deuda, m.grupo_id, a.is_urbana, IF(a.is_urbana, "SI", "NO") as es_urbana,
 				u.imagen_id, IFNULL(i.nombre, IF(a.sexo="F","default_female.png", "default_male.png")) as imagen_nombre, 
-				u.username, u.is_superuser, u.is_active,
+				u.username, u.is_active,
 				a.foto_id, IFNULL(i2.nombre, IF(a.sexo="F","default_female.png", "default_male.png")) as foto_nombre,
-				m.fecha_retiro as fecha_retiro, m.estado, m.fecha_matricula, m.nuevo, IF(m.nuevo, "SI", "NO") as es_nuevo, m.repitente,
-				a.has_sisben, a.nro_sisben, a.has_sisben_3, a.nro_sisben_3 
+				m.fecha_retiro as fecha_retiro, m.estado, m.fecha_matricula, m.nuevo, IF(m.nuevo, "SI", "NO") as es_nuevo, m.repitente, m.fecha_pension,
+				a.has_sisben, a.nro_sisben, a.has_sisben_3, a.nro_sisben_3, m.programar, m.descripcion_recomendacion, m.efectuar_una, m.descripcion_efectuada 
 			FROM alumnos a 
 			inner join matriculas m on a.id=m.alumno_id and a.id=:alumno_id 
 			INNER JOIN grupos g ON g.id=m.grupo_id AND g.year_id=:year_id and g.deleted_at is null
@@ -404,37 +404,115 @@ class AlumnosController extends Controller {
 			where a.deleted_at is null and m.deleted_at is null
 			order by a.apellidos, a.nombres';
 			
+		// \Log::info('Año '.$this->user->year_id);
 		$alumno = DB::select($consulta, [ ':alumno_id' => $id, ':year_id' => $this->user->year_id ]);
 		
 		if( count($alumno) > 0){
-			$alumno 	= $alumno[0];
-			$grados 	= [];
-			$tipos_doc 	= [];
-		
-			if ($con_grupos) {
-				$consulta = 'SELECT g.id, g.nombre, g.abrev, g.orden, gra.orden as orden_grado, g.grado_id, g.year_id, g.titular_id,
-						p.nombres as nombres_titular, p.apellidos as apellidos_titular, p.titulo, g.caritas, 
-						g.created_at, g.updated_at, gra.nombre as nombre_grado
-					from grupos g
-					inner join grados gra on gra.id=g.grado_id and g.year_id=:year_id
-					left join profesores p on p.id=g.titular_id
-					where g.deleted_at is null
-					order by g.orden';
-
-				$grados = DB::select($consulta, [':year_id'=>$this->user->year_id] );
-				
-				$consulta = 'SELECT * from tipos_documentos where deleted_at is null';
-				$tipos_doc = DB::select($consulta);
-			}
 			
-			return [ 'alumno' => $alumno, 'grupos' => $grados, 'tipos_doc' => $tipos_doc ];
+			$alumno 	= $alumno[0];
+			return $this->comprobar_alumno_con_grupos($alumno, $con_grupos);
+			
 		}else{
-			return ['pailas' => 'nada'];
+			
+			$consulta = 'SELECT a.id as alumno_id, a.no_matricula, a.nombres, a.apellidos, a.sexo, a.user_id, 
+					a.fecha_nac, a.ciudad_nac, c1.departamento as departamento_nac_nombre, c1.ciudad as ciudad_nac_nombre, a.tipo_doc, t1.tipo as tipo_doc_name, a.documento, a.ciudad_doc, 
+					c2.ciudad as ciudad_doc_nombre, c2.departamento as departamento_doc_nombre, a.tipo_sangre, a.eps, a.telefono, a.celular, a.egresado,
+					a.direccion, a.barrio, a.is_urbana, a.estrato, a.ciudad_resid, c3.ciudad as ciudad_resid_nombre, c3.departamento as departamento_resid_nombre, a.religion, a.email, a.facebook, a.created_by, a.updated_by,
+					a.pazysalvo, a.deuda, a.is_urbana, IF(a.is_urbana, "SI", "NO") as es_urbana,
+					u.imagen_id, IFNULL(i.nombre, IF(a.sexo="F","default_female.png", "default_male.png")) as imagen_nombre, 
+					u.username, u.is_active,
+					a.foto_id, IFNULL(i2.nombre, IF(a.sexo="F","default_female.png", "default_male.png")) as foto_nombre,
+					a.has_sisben, a.nro_sisben, a.has_sisben_3, a.nro_sisben_3
+				FROM alumnos a 
+				left join users u on a.user_id=u.id and u.deleted_at is null
+				left join images i on i.id=u.imagen_id and i.deleted_at is null
+				left join tipos_documentos t1 on t1.id=a.tipo_doc and t1.deleted_at is null
+				left join images i2 on i2.id=a.foto_id and i2.deleted_at is null
+				left join ciudades c1 on c1.id=a.ciudad_nac and c1.deleted_at is null
+				left join ciudades c2 on c2.id=a.ciudad_doc and c2.deleted_at is null
+				left join ciudades c3 on c3.id=a.ciudad_resid and c3.deleted_at is null
+				where a.id=:alumno_id and a.deleted_at is null
+				order by a.apellidos, a.nombres';
+				
+			$alumno = DB::select($consulta, [ ':alumno_id' => $id ]);
+			
+			if( count($alumno) > 0){
+				
+				$alumno 	= $alumno[0];
+				return $this->comprobar_alumno_con_grupos($alumno, $con_grupos);
+					
+			}else{
+				return ['pailas' => 'nada'];
+			}
 		}
 
 	}
+	public function comprobar_alumno_con_grupos($alumno, $con_grupos){
+		$grados 	= [];
+		$grados_sig = [];
+		$tipos_doc 	= [];
+		
+		$consulta = 'SELECT m.id as matricula_id, m.alumno_id, a.no_matricula, a.nombres, a.apellidos, g.nombre as grupo_nombre, g.abrev as grupo_abrev, m.*
+			FROM alumnos a 
+			inner join matriculas m on a.id=m.alumno_id and a.id=:alumno_id 
+			INNER JOIN grupos g ON g.id=m.grupo_id AND g.deleted_at is null
+			INNER JOIN years y ON y.id=g.year_id AND y.deleted_at is null
+			where a.deleted_at is null and m.deleted_at is null
+			order by y.year, g.orden';
+
+		$matriculas = DB::select($consulta, [ ':alumno_id' => $alumno->alumno_id ] );
+			
+	
+		// Matrícula del siguiente año
+		$consulta = 'SELECT m.id as matricula_id, m.alumno_id, a.no_matricula, a.nombres, a.apellidos, g.nombre as grupo_nombre, g.abrev as grupo_abrev, m.estado, m.repitente, m.prematriculado, y.id as year_id, y.year as year 
+			FROM alumnos a 
+			inner join matriculas m on a.id=m.alumno_id and a.id=:alumno_id 
+			INNER JOIN grupos g ON g.id=m.grupo_id AND g.deleted_at is null
+			INNER JOIN years y ON y.id=g.year_id AND y.deleted_at is null and y.year=:anio
+			where a.deleted_at is null and m.deleted_at is null
+			order by y.year, g.orden';
+
+		$matri_next = DB::select($consulta, [ ':alumno_id' => $alumno->alumno_id, ':anio'=> ($this->user->year+1) ] );
+		
+		$alumno->next_year = [];
+		if (count($matri_next) > 0) {
+			$alumno->next_year = $matri_next[0];
+		}
+			
+	
+		if ($con_grupos) {
+			// Grupos actuales
+			$consulta = 'SELECT g.id, g.nombre, g.abrev, g.orden, gra.orden as orden_grado, g.grado_id, g.year_id, g.titular_id,
+					p.nombres as nombres_titular, p.apellidos as apellidos_titular, p.titulo, g.caritas, 
+					g.created_at, g.updated_at, gra.nombre as nombre_grado
+				from grupos g
+				inner join grados gra on gra.id=g.grado_id and g.year_id=:year_id
+				left join profesores p on p.id=g.titular_id
+				where g.deleted_at is null
+				order by g.orden';
+
+			$grados = DB::select($consulta, [':year_id'=>$this->user->year_id] );
+			
+			// Grupos próximo año
+			$consulta = 'SELECT g.id, g.nombre, g.abrev, g.orden, g.grado_id, g.year_id, g.titular_id, g.created_at, g.updated_at
+				from grupos g
+				inner join years y on y.id=g.year_id and y.year=:anio and y.deleted_at is null
+				where g.deleted_at is null order by g.orden';
+			
+			$grados_sig = DB::select($consulta, [':anio'=> ($this->user->year+1) ] );
+			
+			// Tipos documentos
+			$consulta = 'SELECT * from tipos_documentos where deleted_at is null';
+			$tipos_doc = DB::select($consulta);
+		}
+		return [ 'alumno' => $alumno, 'grupos' => $grados, 'grupos_siguientes' => $grados_sig, 
+			'tipos_doc' => $tipos_doc, 'matriculas' => $matriculas ];
+	}
 
 
+	
+	
+	
 
 	public function putUpdate($id)
 	{
@@ -479,7 +557,7 @@ class AlumnosController extends Controller {
 					$usuario = User::find($alumno->user_id);
 					$usuario->username		=	Request::input('username');
 					$usuario->email			=	Request::input('email2');
-					$usuario->is_superuser	=	Request::input('is_superuser', false);
+					$usuario->is_superuser	=	false;
 					$usuario->is_active		=	Request::input('is_active', true);
 					$usuario->updated_by 	= $this->user->user_id;
 
@@ -513,7 +591,7 @@ class AlumnosController extends Controller {
 					$usuario->username		=	Request::input('username');
 					$usuario->password		=	Hash::make(Request::input('password', '123456'));
 					$usuario->email			=	Request::input('email2');
-					$usuario->is_superuser	=	Request::input('is_superuser', false);
+					$usuario->is_superuser	=	false;
 					$usuario->is_active		=	Request::input('is_active', true);
 					$usuario->periodo_id	=	$periodo_actual->id;
 					$usuario->created_by 	= $this->user->user_id;
@@ -728,7 +806,7 @@ class AlumnosController extends Controller {
 		$consulta = 'SELECT m2.matricula_id, a.id as alumno_id, a.no_matricula, a.nombres, a.apellidos, a.sexo, a.user_id, 
 				a.fecha_nac, a.ciudad_nac, a.celular, a.direccion, a.religion,
 				m2.year_id, m2.grupo_id, m2.nombregrupo, m2.abrevgrupo, IFNULL(m2.actual, -1) as currentyear,
-				u.username, u.is_superuser, u.is_active
+				u.username, u.is_active
 			FROM alumnos a left join 
 				(select m.id as matricula_id, g.year_id, m.grupo_id, m.alumno_id, g.nombre as nombregrupo, g.abrev as abrevgrupo, 0 as actual
 				from matriculas m INNER JOIN grupos g ON m.grupo_id=g.id and g.year_id=:id_previous_year

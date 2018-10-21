@@ -35,6 +35,7 @@ class CreateAlumnosTable extends Migration {
 			$table->integer('estrato')->nullable()->default(1);
 			$table->integer('ciudad_resid')->unsigned()->index()->nullable(); // Cuidad de residencia
 			$table->boolean('is_urbana')->nullable()->default(true); // Zona. si False, es Rural
+			$table->boolean('egresado')->nullable()->default(false); // Cuando termine Once
 			$table->string('religion')->nullable();
 			$table->string('email')->nullable();
 			$table->string('facebook')->nullable(); // Si no asigna facebook, se tomará el email
