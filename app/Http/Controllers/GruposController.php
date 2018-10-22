@@ -66,6 +66,37 @@ class GruposController extends Controller {
 		return $res;
 	}
 
+	
+	public function getConPaisesTiposNextYear()
+	{
+		$user 	= User::fromToken();
+		$res 	= [];
+
+		$consulta = 'SELECT g.id, g.nombre, g.abrev, g.orden, g.grado_id, g.year_id, gra.orden as orden_grado, g.titular_id, g.created_at, g.updated_at, count(m.id) as cantidad
+			from grupos g
+			inner join years y on y.id=g.year_id and y.year=:anio and y.deleted_at is null
+			left join matriculas m on m.grupo_id=g.id and m.deleted_at is null
+			inner join grados gra on gra.id=g.grado_id and g.year_id=y.id 
+			where g.deleted_at is null 
+			group by g.id
+			order by g.orden';
+		
+		$res['grupos'] = DB::select($consulta, [':anio'=> ($user->year+1) ] );
+
+
+
+		$consulta = 'SELECT * from tipos_documentos t where t.deleted_at is null';
+		$res['tipos_doc'] = DB::select($consulta, [':year_id'=>$user->year_id] );
+
+
+		// Todos los Paises
+		$consulta = 'SELECT * FROM paises WHERE deleted_at is null';
+		$res['paises'] = DB::select($consulta);
+		
+		return $res;
+	}
+
+	
 	public function getIndex()
 	{
 		$user = User::fromToken();

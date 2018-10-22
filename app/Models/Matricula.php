@@ -21,13 +21,13 @@ class Matricula extends Model {
 	public static $consulta_asistentes_o_matriculados = 'SELECT m.id as matricula_id, m.alumno_id, a.no_matricula, a.nombres, a.apellidos, a.sexo, a.user_id, a.egresado,
 							a.fecha_nac, a.ciudad_nac, c1.ciudad as ciudad_nac_nombre, a.tipo_doc, a.documento, a.ciudad_doc, c2.ciudad as ciudad_doc_nombre, a.tipo_sangre, a.eps, a.telefono, a.celular, 
 							a.direccion, a.barrio, a.estrato, a.ciudad_resid, c3.ciudad as ciudad_resid_nombre, a.religion, a.email, a.facebook, a.created_by, a.updated_by,
-							a.pazysalvo, a.deuda, m.grupo_id, 
+							a.pazysalvo, a.deuda, m.grupo_id, m.prematriculado, 
 							u.imagen_id, IFNULL(i.nombre, IF(a.sexo="F","default_female.png", "default_male.png")) as imagen_nombre, 
 							u.username, u.is_superuser, u.is_active,
 							a.foto_id, IFNULL(i2.nombre, IF(a.sexo="F","default_female.png", "default_male.png")) as foto_nombre,
 							m.fecha_retiro as fecha_retiro, m.estado, m.fecha_matricula, m.nuevo, m.repitente 
 						FROM alumnos a 
-						inner join matriculas m on a.id=m.alumno_id and m.grupo_id=:grupo_id and (m.estado="ASIS" or m.estado="MATR")
+						inner join matriculas m on a.id=m.alumno_id and m.grupo_id=:grupo_id and (m.estado="ASIS" or m.estado="MATR" or m.estado="PREM")
 						left join users u on a.user_id=u.id and u.deleted_at is null
 						left join images i on i.id=u.imagen_id and i.deleted_at is null
 						left join images i2 on i2.id=a.foto_id and i2.deleted_at is null

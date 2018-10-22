@@ -12,7 +12,7 @@ use App\Events\MatriculasEvent;
 use \Log;
 
 
-class MatriculasController extends Controller {
+class PrematriculasController extends Controller {
 
 
 	public $user;
@@ -27,111 +27,7 @@ class MatriculasController extends Controller {
 	
 
 
-	public function postMatricularuno()
-	{
-		$alumno_id 		= Request::input('alumno_id');
-		$grupo_id 		= Request::input('grupo_id');
-		$year_id 		= Request::input('year_id');
 
-		return Matricula::matricularUno($alumno_id, $grupo_id, $year_id, $this->user->user_id);
-	}
-
-
-
-	public function postMatricularEn()
-	{
-		$alumno_id 		= Request::input('alumno_id');
-		$grupo_id 		= Request::input('grupo_id');
-		$year_id 		= Request::input('year_id');
-
-		$consulta = 'SELECT m.id, m.alumno_id, m.grupo_id, m.estado, g.year_id 
-			FROM matriculas m 
-			inner join grupos g 
-				on m.alumno_id = :alumno_id and g.year_id = :year_id and m.grupo_id=g.id and m.grupo_id=:grupo_id and m.deleted_at is null';
-
-		$matriculas = DB::select($consulta, ['alumno_id'=>$alumno_id, 'year_id'=>$year_id, 'grupo_id'=>$grupo_id]);
-
-		if (count($matriculas) > 0) {
-			return 'Ya matriculado';
-		}
-
-		return Matricula::matricularUno($alumno_id, $grupo_id, $year_id, $this->user->user_id);
-	}
-
-
-	public function putReMatricularuno()
-	{
-		$matricula_id 		= Request::input('matricula_id');
-		
-		$matri 				= Matricula::findOrFail($matricula_id);
-		$matri->estado 		= 'MATR';
-		$matri->updated_by 	= $this->user->user_id;
-		
-		$matri->save();
-
-		return $matri;
-	}
-
-
-
-	public function putSetAsistente()
-	{
-		$alumno_id 		= Request::input('alumno_id');
-		$matricula_id 	= Request::input('matricula_id');
-		
-		$matricula 				= Matricula::findOrFail($matricula_id);
-		$matricula->estado 		= 'ASIS';
-		$matricula->updated_by 	= $this->user->user_id;
-		$matricula->save();
-
-		return $matricula;
-	}
-
-
-	public function putSetNewAsistente()
-	{
-		$alumno_id 	= Request::input('alumno_id');
-		$grupo_id 	= Request::input('grupo_id');
-
-		$matricula = new Matricula;
-		$matricula->alumno_id 	= $alumno_id;
-		$matricula->grupo_id	= $grupo_id;
-		$matricula->estado 		= 'ASIS';
-		$matricula->updated_by 	= $this->user->user_id;
-		$matricula->save();
-
-
-		return $matricula;
-	}
-
-
-
-	public function putCambiarFechaRetiro()
-	{
-		$matricula_id = Request::input('matricula_id');
-		$fecha_retiro = Request::input('fecha_retiro');
-		
-		$matricula 					= Matricula::findOrFail($matricula_id);
-		$matricula->fecha_retiro 	= $fecha_retiro;
-		$matricula->updated_by 		= $this->user->user_id;
-		$matricula->save();
-
-		return $matricula;
-	}
-
-
-	public function putCambiarFechaMatricula()
-	{
-		$matricula_id 		= Request::input('matricula_id');
-		$fecha_matricula 	= Carbon::parse(Request::input('fecha_matricula'));
-		
-		$matricula 					= Matricula::findOrFail($matricula_id);
-		$matricula->fecha_matricula = $fecha_matricula;
-		$matricula->updated_by 		= $this->user->user_id;
-		$matricula->save();
-
-		return $matricula;
-	}
 
 
 	public function putAlumnosGradoAnterior()
@@ -301,23 +197,6 @@ class MatriculasController extends Controller {
 		}
 		
 
-		// Alumnos desertores o retirados del grupo
-		$consulta = 'SELECT m.id as matricula_id, m.alumno_id, a.no_matricula, a.nombres, a.apellidos, a.sexo, a.user_id, 
-							a.fecha_nac, a.ciudad_nac, a.celular, a.direccion, a.religion,
-							m.grupo_id, 
-							u.imagen_id, IFNULL(i.nombre, IF(a.sexo="F","default_female.png", "default_male.png")) as imagen_nombre, 
-							a.foto_id, IFNULL(i2.nombre, IF(a.sexo="F","default_female.png", "default_male.png")) as foto_nombre,
-							m.fecha_retiro as fecha_retiro, m.estado, m.fecha_matricula 
-						FROM alumnos a 
-						inner join matriculas m on a.id=m.alumno_id and m.grupo_id=:grupo_id and (m.estado="RETI" or m.estado="DESE")
-						left join users u on a.user_id=u.id and u.deleted_at is null
-						left join images i on i.id=u.imagen_id and i.deleted_at is null
-						left join images i2 on i2.id=a.foto_id and i2.deleted_at is null
-						where a.deleted_at is null and m.deleted_at is null
-						order by a.apellidos, a.nombres';
-
-		$result['AlumnosDesertRetir'] = DB::select($consulta, [ ':grupo_id' => $grupo_actual['id'] ]);
-
 
 		// Alumnos del grado anterior que no se han matriculado en este grupo
 		$consulta = 'SELECT m.id as matricula_id, m.alumno_id, a.no_matricula, a.nombres, a.apellidos, a.sexo, a.user_id, 
@@ -347,112 +226,5 @@ class MatriculasController extends Controller {
 	}
 
 
-
-
-	public function putToggleNuevo()
-	{
-		$id 		= Request::input('matricula_id');
-		$is_nuevo 	= Request::input('is_nuevo');
-
-		$matri 	= Matricula::findOrFail($id);
-		$matri->nuevo 			= $is_nuevo;
-		$matri->updated_by 		= $this->user->user_id;
-		$matri->save();
-
-		return $matri;
-	}
-
-
-	public function putRetirar()
-	{
-		$id 	= Request::input('matricula_id');
-		$fecha 	= Carbon::parse(Request::input('fecha_retiro'));
-
-		$matri 	= Matricula::findOrFail($id);
-		$matri->estado 			= 'RETI';
-		$matri->fecha_retiro 	= $fecha;
-		$matri->updated_by 		= $this->user->user_id;
-		$matri->save();
-
-		return $matri;
-	}
-
-	public function putPrematricular()
-	{
-		$alumno_id 		= Request::input('alumno_id');
-		$grupo_id 		= Request::input('grupo_id');
-		$now 			= Carbon::now('America/Bogota');
-
-		$consulta = 'SELECT m.id, m.alumno_id, m.grupo_id, m.estado 
-			FROM matriculas m 
-			where m.alumno_id = :alumno_id and m.grupo_id=:grupo_id and m.deleted_at is null';
-
-		$matriculas = DB::select($consulta, ['alumno_id'=>$alumno_id, 'grupo_id'=>$grupo_id]);
-
-		if (count($matriculas) > 0) {
-			return 'Ya prematriculado';
-		}
-		
-
-		$matri 	= new Matricula;
-		$matri->estado 			= 'PREM';
-		$matri->alumno_id 		= $alumno_id;
-		$matri->grupo_id		= $grupo_id;
-		$matri->prematriculado 	= $now;
-		$matri->created_by 		= $this->user->user_id;
-		$matri->save();
-		
-		$consulta = 'SELECT m.id as matricula_id, m.alumno_id, a.no_matricula, a.nombres, a.apellidos, g.nombre as grupo_nombre, g.abrev as grupo_abrev, m.estado, m.repitente, m.prematriculado, y.id as year_id, y.year as year 
-			FROM alumnos a 
-			inner join matriculas m on a.id=m.alumno_id and a.id=:alumno_id 
-			INNER JOIN grupos g ON g.id=m.grupo_id AND g.deleted_at is null
-			INNER JOIN years y ON y.id=g.year_id AND y.deleted_at is null and y.year=:anio
-			where a.deleted_at is null and m.deleted_at is null
-			order by y.year, g.orden';
-
-		$matri = DB::select($consulta, [ ':alumno_id' => $alumno_id, ':anio'=> ($this->user->year+1) ] )[0];
-
-		return ['matricula' => $matri];
-	}
-
-	
-
-	public function putQuitarPrematricula()
-	{
-		$matricula_id 	= Request::input('matricula_id');
-		//$now 			= Carbon::now('America/Bogota');
-
-		$consulta = 'DELETE FROM matriculas WHERE id=?';
-
-		DB::delete($consulta, [$matricula_id]);
-
-		return 'Quitada';
-	}
-
-	
-	public function putDesertar()
-	{
-		$id 	= Request::input('matricula_id');
-		$fecha 	= Carbon::parse(Request::input('fecha_retiro'));
-
-		$matri 	= Matricula::findOrFail($id);
-		$matri->estado 			= 'DESE';
-		$matri->fecha_retiro 	= $fecha;
-		$matri->updated_by 		= $this->user->user_id;
-		$matri->save();
-
-		return $matri;
-	}
-
-
-	public function deleteDestroy($id)
-	{
-		$matri = Matricula::findOrFail($id);
-		$matri->estado 		= 'RETI';
-		$matri->deleted_by 	= $this->user->user_id;
-		$matri->save();
-		$matri->delete();
-		return $matri;
-	}
 
 }
