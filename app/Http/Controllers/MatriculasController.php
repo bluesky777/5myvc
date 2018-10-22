@@ -390,7 +390,13 @@ class MatriculasController extends Controller {
 		$matriculas = DB::select($consulta, ['alumno_id'=>$alumno_id, 'grupo_id'=>$grupo_id]);
 
 		if (count($matriculas) > 0) {
-			return 'Ya prematriculado';
+			$matri = Matricula::where('id', $matriculas[0]->id)->first();
+			$matri->estado 			= 'PREM'; // Matriculado, Asistente o Retirado o Prematriculado
+			$matri->prematriculado 	= $now;
+			$matri->grupo_id 		= $grupo_id;
+			$matri->updated_by		= $this->user->user_id;
+			$matri->save();
+			return ['matricula' => $matri];
 		}
 		
 
