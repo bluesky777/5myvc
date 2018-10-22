@@ -411,7 +411,7 @@ class MatriculasController extends Controller {
 			order by y.year, g.orden';
 
 		$matri = DB::select($consulta, [ ':alumno_id' => $alumno_id, ':anio'=> ($this->user->year+1) ] )[0];
-		Log::info( 'PreMatriculando' );
+
 		return ['matricula' => $matri];
 	}
 

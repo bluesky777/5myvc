@@ -275,9 +275,16 @@ class AlumnosController extends Controller {
 					$matricula = new Matricula;
 					$matricula->alumno_id		=	$alumno->id;
 					$matricula->grupo_id		=	$grupo_id;
-					$matricula->estado			=	"MATR";
 					$matricula->created_by 		= 	$this->user->user_id;
-					$matricula->fecha_matricula = 	$now;
+					
+					if (Request::input('prematricula')) {
+						$matricula->estado			=	"PREM";
+						$matricula->prematriculado 	= 	$now;
+					}else{
+						$matricula->estado			=	"MATR";
+						$matricula->fecha_matricula = 	$now;
+					}
+					
 					$matricula->save();
 
 					$grupo = Grupo::find($matricula->grupo_id);
@@ -671,17 +678,32 @@ class AlumnosController extends Controller {
 	public function putPersonasCheck()
 	{
 		$texto = Request::input('texto');
-		$consulta = 'SELECT m.alumno_id, a.nombres, a.apellidos, m.id as matricula_id, "alumno" as tipo, g.abrev, 
-				a.foto_id, IFNULL(i2.nombre, IF(a.sexo="F","default_female.png", "default_male.png")) as foto_nombre
-			FROM alumnos a
-			INNER JOIN matriculas m on a.id=m.alumno_id and (m.estado="ASIS" or m.estado="MATR")
-			INNER JOIN grupos g on g.year_id=:anio and g.id=m.grupo_id and g.deleted_at is null
-			LEFT JOIN images i2 on i2.id=a.foto_id and i2.deleted_at is null
-			WHERE nombres like :texto or apellidos like :texto2
-			GROUP BY m.alumno_id order by g.orden';
+		$todos_anios = Request::input('todos_anios');
 		
-		$res = DB::select($consulta, [':anio' => $this->user->year_id, ':texto' => '%'.$texto.'%', ':texto2' => '%'.$texto.'%']);
-		return [ 'personas' => $res ];
+		if ($todos_anios) {
+				$consulta = 'SELECT a.id as alumno_id, a.nombres, a.apellidos, "alumno" as tipo, 
+						a.foto_id, IFNULL(i2.nombre, IF(a.sexo="F","default_female.png", "default_male.png")) as foto_nombre
+					FROM alumnos a
+					LEFT JOIN images i2 on i2.id=a.foto_id and i2.deleted_at is null
+					WHERE nombres like :texto or apellidos like :texto2
+					GROUP BY a.id order by a.nombres, a.apellidos';
+			
+			$res = DB::select($consulta, [':texto' => '%'.$texto.'%', ':texto2' => '%'.$texto.'%']);
+			return [ 'personas' => $res ];
+		}else{
+			$consulta = 'SELECT m.alumno_id, a.nombres, a.apellidos, m.id as matricula_id, "alumno" as tipo, g.abrev, 
+					a.foto_id, IFNULL(i2.nombre, IF(a.sexo="F","default_female.png", "default_male.png")) as foto_nombre
+				FROM alumnos a
+				INNER JOIN matriculas m on a.id=m.alumno_id and (m.estado="ASIS" or m.estado="MATR")
+				INNER JOIN grupos g on g.year_id=:anio and g.id=m.grupo_id and g.deleted_at is null
+				LEFT JOIN images i2 on i2.id=a.foto_id and i2.deleted_at is null
+				WHERE nombres like :texto or apellidos like :texto2
+				GROUP BY m.alumno_id order by g.orden';
+			
+			$res = DB::select($consulta, [':anio' => $this->user->year_id, ':texto' => '%'.$texto.'%', ':texto2' => '%'.$texto.'%']);
+			return [ 'personas' => $res ];
+			
+		}
 	}
 
 
