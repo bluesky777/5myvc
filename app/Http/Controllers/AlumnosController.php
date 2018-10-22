@@ -658,7 +658,7 @@ class AlumnosController extends Controller {
 		} else if($this->user->roles[0]->name == 'Admin'){
 			$consulta 	= 'SELECT a.id, a.user_id, g.id as grupo_id, g.titular_id, m.id as matricula_id FROM alumnos a
 							INNER JOIN matriculas m ON m.alumno_id=a.id
-							INNER JOIN grupos g ON g.id=m.grupo_id AND g.year_id=?
+							LEFT JOIN grupos g ON g.id=m.grupo_id AND g.year_id=?
 							WHERE a.id=?';
 			$alumno 	= DB::select($consulta, [ $this->user->year_id, Request::input('alumno_id') ]);
 			if (count($alumno)>0) {

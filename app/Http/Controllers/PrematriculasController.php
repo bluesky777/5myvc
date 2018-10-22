@@ -217,7 +217,8 @@ class PrematriculasController extends Controller {
 								inner join matriculas m on a.id=m.alumno_id and m.grupo_id=:grupo_id 
 								where a.deleted_at is null and m.deleted_at is null)
 						order by a.apellidos, a.nombres';
-		
+        
+        Log::info(':year_id ' . $year_ant_id. ' :grado_id ' .$grado_ant_id.' :grupo_id '.$grupo_actual['id']);
 		$result['AlumnosSinMatricula'] = DB::select($consulta, [ ':year_id' => $year_ant_id, ':grado_id' => $grado_ant_id, ':grupo_id'	=> $grupo_actual['id'] ]);
 
 

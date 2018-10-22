@@ -281,6 +281,27 @@ class YearsController extends Controller {
 
 	
 
+	public function putSetActual(){
+		$user = User::fromToken();
+
+		$year_id 	= 	Request::input('year_id');
+		$actual 	= 	(boolean) Request::input('can');
+		
+		
+		if ($actual) {
+			Year::where('actual', true)->update(['actual'=>false]);
+		}
+		
+		$year = Year::findOrFail($year_id);
+		$year->actual = true;
+		$year->save();
+
+		if ($actual) { return 'Ahora es año actual.';
+		}else{ return 'Ahora NO es año actual';}
+		
+	}
+
+
 	public function putAlumnosCanSeeNotas(){
 		$user = User::fromToken();
 

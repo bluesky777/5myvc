@@ -62,9 +62,14 @@ class ConfigCertificadosController extends Controller {
 
 		if (Request::input('encabezado_img')) {
 			$certif->encabezado_img_id = Request::input('encabezado_img')['id'];
+		}else{
+			$certif->encabezado_img_id = null;
 		}
+		
 		if (Request::input('piepagina_img')) {
 			$certif->piepagina_img_id = Request::input('piepagina_img')['id'];
+		}else{
+			$certif->piepagina_img_id = null;
 		}
 		
 		$certif->nombre 				= Request::input('nombre');
