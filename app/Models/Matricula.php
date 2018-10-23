@@ -7,6 +7,7 @@ use DB;
 use Carbon\Carbon;
 
 use App\Models\Year;
+use \Log;
 
 class Matricula extends Model {
 
@@ -99,11 +100,7 @@ class Matricula extends Model {
 		for ($i=0; $i < count($matriculas); $i++) { 
 
 			$matri = Matricula::onlyTrashed()->where('id', $matriculas[$i]->id)->first();
-			/*
-			$queries = DB::getQueryLog();
-			$last_query = end($queries);
-			return $last_query;
-			*/
+
 			if ($matri) {
 				if ($matricula) { // Si ya he encontrado en un elemento anterior una matrícula identica, es porque ya la he activado, no debo activar más. Por el contrario, debo borrarlas
 					$matri->deleted_by		= $user_id;
@@ -120,9 +117,11 @@ class Matricula extends Model {
 				}
 			}
 		}
-
+		
+		Log::info('count($matriculas) > 0 && $matricula' . count($matriculas) .' - '. $matricula);
 		//Cuando estoy pasando de un grupo a otro, la matricula a modificar no necesariamente está en papelera así que:
 		if ( count($matriculas) > 0 && $matricula == false ) {
+			Log::info('Encuentra más de una matrícula: '.count($matriculas));
 			for ($i=0; $i < count($matriculas); $i++) { 
 
 				$matri = Matricula::where('id', $matriculas[$i]->id)->first();
@@ -160,15 +159,21 @@ class Matricula extends Model {
 				$matricula->fecha_matricula = $now;
 
 				$matricula->save();
+				Log::info('Se creó matrícula . '.$matricula->id);
+			}else{
+				Log::info('No entra a la condición . '.$matricula);
 			}
 			
 		} catch (Exception $e) {
+			Log::info('Error creando nueva matrícula .');
 			// se supone que esto nunca va a ocurrir, ya que eliminé todas las matrículas 
 			// excepto la que concordara con el grupo, poniéndola en estado=MATR
 			$matricula 				= Matricula::where('alumno_id', $alumno_id)->where('grupo_id', $grupo_id)->first();
 			$matricula->estado 		= 'MATR';
 			$matricula->updated_by	= $user_id;
 			$matricula->save();
+			
+			Log::info('Por lo tanto, una modificada .' . $matricula->id);
 		}
 
 		return $matricula;

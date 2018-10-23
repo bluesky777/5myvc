@@ -212,13 +212,13 @@ class PrematriculasController extends Controller {
 						left join users u on a.user_id=u.id and u.deleted_at is null
 						left join images i on i.id=u.imagen_id and i.deleted_at is null
 						left join images i2 on i2.id=a.foto_id and i2.deleted_at is null
-						where a.deleted_at is null and m.deleted_at is null and m.alumno_id
-							not in (SELECT m.alumno_id FROM alumnos a 
+						where a.deleted_at is null and m.deleted_at is null and (m.estado="PREM" or m.estado="MATR" or m.estado="ASIS")
+							and m.alumno_id not in (SELECT m.alumno_id FROM alumnos a 
 								inner join matriculas m on a.id=m.alumno_id and m.grupo_id=:grupo_id 
 								where a.deleted_at is null and m.deleted_at is null and (m.estado="PREM" or m.estado="MATR" or m.estado="ASIS") )
 						order by a.apellidos, a.nombres';
         
-        Log::info(':year_id ' . $year_ant_id. ' :grado_id ' .$grado_ant_id.' :grupo_id '.$grupo_actual['id']);
+        //Log::info(':year_id ' .$this->user->year_id. ' :grado_id ' .$grado_ant_id.' :grupo_id '.$grupo_actual['id']);
 		$result['AlumnosSinMatricula'] = DB::select($consulta, [ ':year_id' => $this->user->year_id, ':grado_id' => $grado_ant_id, ':grupo_id'	=> $grupo_actual['id'] ]);
 
 

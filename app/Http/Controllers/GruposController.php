@@ -71,19 +71,38 @@ class GruposController extends Controller {
 	{
 		$user 	= User::fromToken();
 		$res 	= [];
-
-		$consulta = 'SELECT g.id, g.nombre, g.abrev, g.orden, g.grado_id, g.year_id, gra.orden as orden_grado, g.titular_id, g.created_at, g.updated_at, count(m.id) as cantidad
+		
+		// Con los prematriculados
+		$consulta = 'SELECT g.id, g.nombre, g.abrev, gra.orden as orden_grado, g.orden, g.grado_id, g.year_id, gra.orden as orden_grado, g.titular_id, g.created_at, g.updated_at, count(m.id) as cantidad
 			from grupos g
 			inner join years y on y.id=g.year_id and y.year=:anio and y.deleted_at is null
-			left join matriculas m on m.grupo_id=g.id and m.deleted_at is null
 			inner join grados gra on gra.id=g.grado_id and g.year_id=y.id 
+			left join matriculas m on m.grupo_id=g.id and m.deleted_at is null and (m.estado="MATR" or m.estado="ASIS" or m.estado="PREM")
 			where g.deleted_at is null 
 			group by g.id
 			order by g.orden';
 		
 		$res['grupos'] = DB::select($consulta, [':anio'=> ($user->year+1) ] );
-
-
+		
+		for ($i=0; $i < count($res['grupos']); $i++) { 
+			
+			$consulta = 'SELECT m.grupo_id, count(m.id) as sin_matricular FROM matriculas m
+				INNER JOIN alumnos a ON a.id=m.alumno_id and a.deleted_at is null and m.deleted_at is null 
+				INNER JOIN grupos g ON g.id=m.grupo_id and g.deleted_at is null and g.year_id=:year_id
+				INNER JOIN grados gra ON gra.id=g.grado_id and gra.deleted_at is null and gra.orden=:orden_grado
+				WHERE (m.estado="MATR" or m.estado="ASIS" or m.estado="PREM")
+				GROUP BY m.grupo_id;';
+			
+			$sin_matr = DB::select($consulta, [ ':year_id'=> $user->year_id, ':orden_grado'=> ($res['grupos'][$i]->orden_grado-1) ] );
+			
+			if(count($sin_matr) > 0){
+				$res['grupos'][$i]->sin_matricular = $sin_matr[0]->sin_matricular;
+			}else{
+				$res['grupos'][$i]->sin_matricular = 0;
+			}
+		
+		}
+		
 
 		$consulta = 'SELECT * from tipos_documentos t where t.deleted_at is null';
 		$res['tipos_doc'] = DB::select($consulta, [':year_id'=>$user->year_id] );
