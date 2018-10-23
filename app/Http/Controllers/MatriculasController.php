@@ -29,108 +29,136 @@ class MatriculasController extends Controller {
 
 	public function postMatricularuno()
 	{
-		$alumno_id 		= Request::input('alumno_id');
-		$grupo_id 		= Request::input('grupo_id');
-		$year_id 		= Request::input('year_id');
+		if (($this->user->roles[0]->name == 'Profesor' && $this->user->profes_can_edit_alumnos) || $this->user->roles[0]->name == 'Admin') {
+			$alumno_id 		= Request::input('alumno_id');
+			$grupo_id 		= Request::input('grupo_id');
+			$year_id 		= Request::input('year_id');
 
-		return Matricula::matricularUno($alumno_id, $grupo_id, $year_id, $this->user->user_id);
+			return Matricula::matricularUno($alumno_id, $grupo_id, $year_id, $this->user->user_id);
+		} else {
+			return abort('400', 'No tiene permisos para editar');
+		}
 	}
 
 
 
 	public function postMatricularEn()
 	{
-		$alumno_id 		= Request::input('alumno_id');
-		$grupo_id 		= Request::input('grupo_id');
-		$year_id 		= Request::input('year_id');
+		if (($this->user->roles[0]->name == 'Profesor' && $this->user->profes_can_edit_alumnos) || $this->user->roles[0]->name == 'Admin') {
+			$alumno_id 		= Request::input('alumno_id');
+			$grupo_id 		= Request::input('grupo_id');
+			$year_id 		= Request::input('year_id');
 
-		$consulta = 'SELECT m.id, m.alumno_id, m.grupo_id, m.estado, g.year_id 
-			FROM matriculas m 
-			inner join grupos g 
-				on m.alumno_id = :alumno_id and g.year_id = :year_id and m.grupo_id=g.id and m.grupo_id=:grupo_id and m.deleted_at is null';
+			$consulta = 'SELECT m.id, m.alumno_id, m.grupo_id, m.estado, g.year_id 
+				FROM matriculas m 
+				inner join grupos g 
+					on m.alumno_id = :alumno_id and g.year_id = :year_id and m.grupo_id=g.id and m.grupo_id=:grupo_id and m.deleted_at is null';
 
-		$matriculas = DB::select($consulta, ['alumno_id'=>$alumno_id, 'year_id'=>$year_id, 'grupo_id'=>$grupo_id]);
+			$matriculas = DB::select($consulta, ['alumno_id'=>$alumno_id, 'year_id'=>$year_id, 'grupo_id'=>$grupo_id]);
 
-		if (count($matriculas) > 0) {
-			return 'Ya matriculado';
+			if (count($matriculas) > 0) {
+				return 'Ya matriculado';
+			}
+
+			return Matricula::matricularUno($alumno_id, $grupo_id, $year_id, $this->user->user_id);
+		} else {
+			return abort('400', 'No tiene permisos para editar');
 		}
-
-		return Matricula::matricularUno($alumno_id, $grupo_id, $year_id, $this->user->user_id);
 	}
 
 
 	public function putReMatricularuno()
 	{
-		$matricula_id 		= Request::input('matricula_id');
-		
-		$matri 				= Matricula::findOrFail($matricula_id);
-		$matri->estado 		= 'MATR';
-		$matri->updated_by 	= $this->user->user_id;
-		
-		$matri->save();
+		if (($this->user->roles[0]->name == 'Profesor' && $this->user->profes_can_edit_alumnos) || $this->user->roles[0]->name == 'Admin') {
+			$matricula_id 		= Request::input('matricula_id');
+			
+			$matri 				= Matricula::findOrFail($matricula_id);
+			$matri->estado 		= 'MATR';
+			$matri->updated_by 	= $this->user->user_id;
+			
+			$matri->save();
 
-		return $matri;
+			return $matri;
+		} else {
+			return abort('400', 'No tiene permisos para editar');
+		}
 	}
 
 
 
 	public function putSetAsistente()
 	{
-		$alumno_id 		= Request::input('alumno_id');
-		$matricula_id 	= Request::input('matricula_id');
-		
-		$matricula 				= Matricula::findOrFail($matricula_id);
-		$matricula->estado 		= 'ASIS';
-		$matricula->updated_by 	= $this->user->user_id;
-		$matricula->save();
+		if (($this->user->roles[0]->name == 'Profesor' && $this->user->profes_can_edit_alumnos) || $this->user->roles[0]->name == 'Admin') {
+			$alumno_id 		= Request::input('alumno_id');
+			$matricula_id 	= Request::input('matricula_id');
+			
+			$matricula 				= Matricula::findOrFail($matricula_id);
+			$matricula->estado 		= 'ASIS';
+			$matricula->updated_by 	= $this->user->user_id;
+			$matricula->save();
 
-		return $matricula;
+			return $matricula;
+		} else {
+			return abort('400', 'No tiene permisos para editar');
+		}
 	}
 
 
 	public function putSetNewAsistente()
 	{
-		$alumno_id 	= Request::input('alumno_id');
-		$grupo_id 	= Request::input('grupo_id');
+		if (($this->user->roles[0]->name == 'Profesor' && $this->user->profes_can_edit_alumnos) || $this->user->roles[0]->name == 'Admin') {
+			$alumno_id 	= Request::input('alumno_id');
+			$grupo_id 	= Request::input('grupo_id');
 
-		$matricula = new Matricula;
-		$matricula->alumno_id 	= $alumno_id;
-		$matricula->grupo_id	= $grupo_id;
-		$matricula->estado 		= 'ASIS';
-		$matricula->updated_by 	= $this->user->user_id;
-		$matricula->save();
+			$matricula = new Matricula;
+			$matricula->alumno_id 	= $alumno_id;
+			$matricula->grupo_id	= $grupo_id;
+			$matricula->estado 		= 'ASIS';
+			$matricula->updated_by 	= $this->user->user_id;
+			$matricula->save();
 
 
-		return $matricula;
+			return $matricula;
+		} else {
+			return abort('400', 'No tiene permisos para editar');
+		}
 	}
 
 
 
 	public function putCambiarFechaRetiro()
 	{
-		$matricula_id = Request::input('matricula_id');
-		$fecha_retiro = Request::input('fecha_retiro');
-		
-		$matricula 					= Matricula::findOrFail($matricula_id);
-		$matricula->fecha_retiro 	= $fecha_retiro;
-		$matricula->updated_by 		= $this->user->user_id;
-		$matricula->save();
+		if (($this->user->roles[0]->name == 'Profesor' && $this->user->profes_can_edit_alumnos) || $this->user->roles[0]->name == 'Admin') {
+			$matricula_id = Request::input('matricula_id');
+			$fecha_retiro = Request::input('fecha_retiro');
+			
+			$matricula 					= Matricula::findOrFail($matricula_id);
+			$matricula->fecha_retiro 	= $fecha_retiro;
+			$matricula->updated_by 		= $this->user->user_id;
+			$matricula->save();
 
-		return $matricula;
+			return $matricula;
+		} else {
+			return abort('400', 'No tiene permisos para editar');
+		}
 	}
 
 
 	public function putCambiarFechaMatricula()
 	{
-		$matricula_id 		= Request::input('matricula_id');
-		$fecha_matricula 	= Carbon::parse(Request::input('fecha_matricula'));
-		
-		$matricula 					= Matricula::findOrFail($matricula_id);
-		$matricula->fecha_matricula = $fecha_matricula;
-		$matricula->updated_by 		= $this->user->user_id;
-		$matricula->save();
+		if (($this->user->roles[0]->name == 'Profesor' && $this->user->profes_can_edit_alumnos) || $this->user->roles[0]->name == 'Admin') {
+			$matricula_id 		= Request::input('matricula_id');
+			$fecha_matricula 	= Carbon::parse(Request::input('fecha_matricula'));
+			
+			$matricula 					= Matricula::findOrFail($matricula_id);
+			$matricula->fecha_matricula = $fecha_matricula;
+			$matricula->updated_by 		= $this->user->user_id;
+			$matricula->save();
 
-		return $matricula;
+			return $matricula;
+		} else {
+			return abort('400', 'No tiene permisos para editar');
+		}
 	}
 
 
@@ -351,114 +379,139 @@ class MatriculasController extends Controller {
 
 	public function putToggleNuevo()
 	{
-		$id 		= Request::input('matricula_id');
-		$is_nuevo 	= Request::input('is_nuevo');
+		if (($this->user->roles[0]->name == 'Profesor' && $this->user->profes_can_edit_alumnos) || $this->user->roles[0]->name == 'Admin') {
+			$id 		= Request::input('matricula_id');
+			$is_nuevo 	= Request::input('is_nuevo');
 
-		$matri 	= Matricula::findOrFail($id);
-		$matri->nuevo 			= $is_nuevo;
-		$matri->updated_by 		= $this->user->user_id;
-		$matri->save();
+			$matri 	= Matricula::findOrFail($id);
+			$matri->nuevo 			= $is_nuevo;
+			$matri->updated_by 		= $this->user->user_id;
+			$matri->save();
 
-		return $matri;
+			return $matri;
+		} else {
+			return abort('400', 'No tiene permisos para editar');
+		}
 	}
 
 
 	public function putRetirar()
 	{
-		$id 	= Request::input('matricula_id');
-		$fecha 	= Carbon::parse(Request::input('fecha_retiro'));
+		if (($this->user->roles[0]->name == 'Profesor' && $this->user->profes_can_edit_alumnos) || $this->user->roles[0]->name == 'Admin') {
+			$id 	= Request::input('matricula_id');
+			$fecha 	= Carbon::parse(Request::input('fecha_retiro'));
 
-		$matri 	= Matricula::findOrFail($id);
-		$matri->estado 			= 'RETI';
-		$matri->fecha_retiro 	= $fecha;
-		$matri->updated_by 		= $this->user->user_id;
-		$matri->save();
+			$matri 	= Matricula::findOrFail($id);
+			$matri->estado 			= 'RETI';
+			$matri->fecha_retiro 	= $fecha;
+			$matri->updated_by 		= $this->user->user_id;
+			$matri->save();
 
-		return $matri;
+			return $matri;
+		} else {
+			return abort('400', 'No tiene permisos para editar');
+		}
 	}
 
 	public function putPrematricular()
 	{
-		$alumno_id 		= Request::input('alumno_id');
-		$grupo_id 		= Request::input('grupo_id');
-		$now 			= Carbon::now('America/Bogota');
+		if (($this->user->roles[0]->name == 'Profesor' && $this->user->profes_can_edit_alumnos) || $this->user->roles[0]->name == 'Admin') {
+			$alumno_id 		= Request::input('alumno_id');
+			$grupo_id 		= Request::input('grupo_id');
+			$now 			= Carbon::now('America/Bogota');
 
-		$consulta = 'SELECT m.id, m.alumno_id, m.grupo_id, m.estado 
-			FROM matriculas m 
-			where m.alumno_id = :alumno_id and m.grupo_id=:grupo_id and m.deleted_at is null';
+			$consulta = 'SELECT m.id, m.alumno_id, m.grupo_id, m.estado 
+				FROM matriculas m 
+				where m.alumno_id = :alumno_id and m.grupo_id=:grupo_id and m.deleted_at is null';
 
-		$matriculas = DB::select($consulta, ['alumno_id'=>$alumno_id, 'grupo_id'=>$grupo_id]);
+			$matriculas = DB::select($consulta, ['alumno_id'=>$alumno_id, 'grupo_id'=>$grupo_id]);
 
-		if (count($matriculas) > 0) {
-			$matri = Matricula::where('id', $matriculas[0]->id)->first();
-			$matri->estado 			= 'PREM'; // Matriculado, Asistente o Retirado o Prematriculado
+			if (count($matriculas) > 0) {
+				$matri = Matricula::where('id', $matriculas[0]->id)->first();
+				$matri->estado 			= 'PREM'; // Matriculado, Asistente o Retirado o Prematriculado
+				$matri->prematriculado 	= $now;
+				$matri->grupo_id 		= $grupo_id;
+				$matri->updated_by		= $this->user->user_id;
+				$matri->save();
+				return ['matricula' => $matri];
+			}
+			
+
+			$matri 	= new Matricula;
+			$matri->estado 			= 'PREM';
+			$matri->alumno_id 		= $alumno_id;
+			$matri->grupo_id		= $grupo_id;
 			$matri->prematriculado 	= $now;
-			$matri->grupo_id 		= $grupo_id;
-			$matri->updated_by		= $this->user->user_id;
+			$matri->created_by 		= $this->user->user_id;
 			$matri->save();
+			
+			$consulta = 'SELECT m.id as matricula_id, m.alumno_id, a.no_matricula, a.nombres, a.apellidos, g.nombre as grupo_nombre, g.abrev as grupo_abrev, m.estado, m.repitente, m.prematriculado, y.id as year_id, y.year as year 
+				FROM alumnos a 
+				inner join matriculas m on a.id=m.alumno_id and a.id=:alumno_id 
+				INNER JOIN grupos g ON g.id=m.grupo_id AND g.deleted_at is null
+				INNER JOIN years y ON y.id=g.year_id AND y.deleted_at is null and y.year=:anio
+				where a.deleted_at is null and m.deleted_at is null
+				order by y.year, g.orden';
+
+			$matri = DB::select($consulta, [ ':alumno_id' => $alumno_id, ':anio'=> ($this->user->year+1) ] )[0];
+
 			return ['matricula' => $matri];
+		} else {
+			return abort('400', 'No tiene permisos para editar');
 		}
-		
-
-		$matri 	= new Matricula;
-		$matri->estado 			= 'PREM';
-		$matri->alumno_id 		= $alumno_id;
-		$matri->grupo_id		= $grupo_id;
-		$matri->prematriculado 	= $now;
-		$matri->created_by 		= $this->user->user_id;
-		$matri->save();
-		
-		$consulta = 'SELECT m.id as matricula_id, m.alumno_id, a.no_matricula, a.nombres, a.apellidos, g.nombre as grupo_nombre, g.abrev as grupo_abrev, m.estado, m.repitente, m.prematriculado, y.id as year_id, y.year as year 
-			FROM alumnos a 
-			inner join matriculas m on a.id=m.alumno_id and a.id=:alumno_id 
-			INNER JOIN grupos g ON g.id=m.grupo_id AND g.deleted_at is null
-			INNER JOIN years y ON y.id=g.year_id AND y.deleted_at is null and y.year=:anio
-			where a.deleted_at is null and m.deleted_at is null
-			order by y.year, g.orden';
-
-		$matri = DB::select($consulta, [ ':alumno_id' => $alumno_id, ':anio'=> ($this->user->year+1) ] )[0];
-
-		return ['matricula' => $matri];
 	}
 
 	
 
 	public function putQuitarPrematricula()
 	{
-		$matricula_id 	= Request::input('matricula_id');
-		//$now 			= Carbon::now('America/Bogota');
+		if (($this->user->roles[0]->name == 'Profesor' && $this->user->profes_can_edit_alumnos) || $this->user->roles[0]->name == 'Admin') {
 
-		$consulta = 'DELETE FROM matriculas WHERE id=?';
+			$matricula_id 	= Request::input('matricula_id');
+			//$now 			= Carbon::now('America/Bogota');
 
-		DB::delete($consulta, [$matricula_id]);
+			$consulta = 'DELETE FROM matriculas WHERE id=?';
 
-		return 'Quitada';
+			DB::delete($consulta, [$matricula_id]);
+
+			return 'Quitada';
+		} else {
+			return abort('400', 'No tiene permisos para editar');
+		}
 	}
 
 	
 	public function putDesertar()
 	{
-		$id 	= Request::input('matricula_id');
-		$fecha 	= Carbon::parse(Request::input('fecha_retiro'));
+		if (($this->user->roles[0]->name == 'Profesor' && $this->user->profes_can_edit_alumnos) || $this->user->roles[0]->name == 'Admin') {
+			$id 	= Request::input('matricula_id');
+			$fecha 	= Carbon::parse(Request::input('fecha_retiro'));
 
-		$matri 	= Matricula::findOrFail($id);
-		$matri->estado 			= 'DESE';
-		$matri->fecha_retiro 	= $fecha;
-		$matri->updated_by 		= $this->user->user_id;
-		$matri->save();
+			$matri 	= Matricula::findOrFail($id);
+			$matri->estado 			= 'DESE';
+			$matri->fecha_retiro 	= $fecha;
+			$matri->updated_by 		= $this->user->user_id;
+			$matri->save();
 
-		return $matri;
+			return $matri;
+		} else {
+			return abort('400', 'No tiene permisos para editar');
+		}
 	}
 
 
 	public function deleteDestroy($id)
 	{
-		$matri = Matricula::findOrFail($id);
-		$matri->estado 		= 'RETI';
-		$matri->deleted_by 	= $this->user->user_id;
-		$matri->save();
-		$matri->delete();
-		return $matri;
+		if (($this->user->roles[0]->name == 'Profesor' && $this->user->profes_can_edit_alumnos) || $this->user->roles[0]->name == 'Admin') {
+			$matri = Matricula::findOrFail($id);
+			$matri->estado 		= 'RETI';
+			$matri->deleted_by 	= $this->user->user_id;
+			$matri->save();
+			$matri->delete();
+			return $matri;
+		} else {
+			return abort('400', 'No tiene permisos para editar');
+		}
 	}
 
 }
