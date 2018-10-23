@@ -20,6 +20,7 @@ use App\Models\ConfigCertificado;
 use App\Models\EscalaDeValoracion;
 use App\Models\Debugging;
 use App\Models\NotaComportamiento;
+use \Log;
 
 
 class BolfinalesController extends Controller {
@@ -81,11 +82,21 @@ class BolfinalesController extends Controller {
 		}
 		
 		
+		
+		
+		
 		$grupo			= Grupo::datos($grupo_id);
 		$year			= Year::datos($user->year_id, $year_actual);
 		$alumnos		= Grupo::alumnos($grupo_id, $requested_alumnos);
-
-		$year->periodos = Periodo::where('year_id', $user->year_id)->get();
+		
+		$periodo_a_calcular = Request::input('periodo_a_calcular');
+		
+		if ($periodo_a_calcular) {
+			Log::info('detailedNotasGrupo: ' . $periodo_a_calcular);
+			$year->periodos = Periodo::where('year_id', $user->year_id)->where('numero', '<=', $periodo_a_calcular)->get();
+		}else{
+			$year->periodos = Periodo::where('year_id', $user->year_id)->get();
+		}
 
 		$cons = 'SELECT c.*, i.nombre as encabezado_nombre, i2.nombre as piepagina_nombre 
 				FROM config_certificados c 
@@ -338,8 +349,16 @@ class BolfinalesController extends Controller {
 
 
 		foreach ($asignaturas as $keyAsig => $asignatura) {
+			$periodo_a_calcular = Request::input('periodo_a_calcular');
 			
-			$asignatura->periodos = Periodo::where('year_id', $year_id)->get();
+			if ($periodo_a_calcular) {
+				//Log::info('$periodo_a_calcular ' . $periodo_a_calcular);
+				$asignatura->periodos = Periodo::where('year_id', $year_id)->where('numero', '<=', $periodo_a_calcular)->get();
+			}else{
+				$asignatura->periodos = Periodo::where('year_id', $year_id)->get();
+			}
+			
+			
 
 			$asignatura->cantTotal = 0;
 
