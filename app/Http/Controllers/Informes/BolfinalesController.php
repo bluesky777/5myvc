@@ -132,7 +132,7 @@ class BolfinalesController extends Controller {
 		foreach ($alumnos as $alumno) {
 
 			// Todas las materias con sus unidades y subunides
-			$this->definitivasMateriasXPeriodo($alumno, $grupo_id, $user->year_id, $year->periodos);
+			$this->definitivasMateriasXPeriodo($alumno, $grupo_id, $user->year_id, $year->periodos, $periodo_a_calcular);
 
 
 			$asignaturas_perdidas = $this->asignaturasPerdidasDeAlumno($alumno, $grupo_id, $user->year_id);
@@ -141,7 +141,12 @@ class BolfinalesController extends Controller {
 				
 				$alumno->asignaturas_perdidas = $asignaturas_perdidas;
 				$alumno->notas_perdidas_year = 0;
-				$alumno->periodos_con_perdidas = Periodo::where('year_id', $user->year_id)->get();
+				
+				if ($periodo_a_calcular) {
+					$alumno->periodos_con_perdidas = Periodo::where('year_id', $user->year_id)->where('numero', '<=', $periodo_a_calcular)->get();
+				}else{
+					$alumno->periodos_con_perdidas = Periodo::where('year_id', $user->year_id)->get();
+				}
 
 				foreach ($alumno->periodos_con_perdidas as $keyPerA => $periodoAlone) {
 
@@ -192,7 +197,7 @@ class BolfinalesController extends Controller {
 		return array($grupo, $year, $response_alumnos);
 	}
 
-	public function definitivasMateriasXPeriodo(&$alumno, $grupo_id, $year_id, $periodos)
+	public function definitivasMateriasXPeriodo(&$alumno, $grupo_id, $year_id, $periodos, $per_calcular=null)
 	{
 
 		$alumno->asignaturas	= Grupo::detailed_materias($grupo_id);
@@ -203,7 +208,12 @@ class BolfinalesController extends Controller {
 		$alumno->tardanzas = 0;
 		$alumno->total_creditos = 0;
 		$alumno->notas_perdidas = 0;
-
+		
+		$sqlPeriodo = '';
+		if ($per_calcular) {
+			$sqlPeriodo = 'and nf.periodo<=:periodo';
+		}
+		
 
 		foreach ($alumno->asignaturas as $asignatura) {
 
@@ -211,7 +221,7 @@ class BolfinalesController extends Controller {
 						
 			$consulta = 'SELECT nf.*, nf.nota as DefMateria, aus.cantidad_ausencia, tar.cantidad_tardanza
 						FROM notas_finales nf
-						INNER JOIN periodos p on p.year_id=:year_id and p.id=nf.periodo_id and p.deleted_at is null
+						INNER JOIN periodos p on p.year_id=:year_id and p.id=nf.periodo_id '.$sqlPeriodo.' and p.deleted_at is null
 						left join (
 								select count(au.id) as cantidad_ausencia, au.alumno_id, au.periodo_id, au.asignatura_id
 								from ausencias au 
@@ -230,12 +240,23 @@ class BolfinalesController extends Controller {
 						ORDER BY nf.periodo';
 						
 						
-			//User::$nota_minima_aceptada
-			$asignatura->definitivas = DB::select($consulta, [
-										':year_id'		=> $year_id,
-										':alumno_id'	=> $alumno->alumno_id, 
-										':asignatura_id'=> $asignatura->asignatura_id
-									]);
+			if ($per_calcular) {
+				$paramentros = [
+					':year_id'		=> $year_id,
+					':periodo' 		=> $per_calcular, 
+					':alumno_id'	=> $alumno->alumno_id, 
+					':asignatura_id'=> $asignatura->asignatura_id
+				];
+			}else{
+				$paramentros = [
+					':year_id'		=> $year_id,
+					':alumno_id'	=> $alumno->alumno_id, 
+					':asignatura_id'=> $asignatura->asignatura_id
+				];
+			}
+			
+			
+			$asignatura->definitivas = DB::select($consulta, $paramentros);
 
 
 
