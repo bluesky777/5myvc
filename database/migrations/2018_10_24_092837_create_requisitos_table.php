@@ -40,12 +40,26 @@ class CreateRequisitosTable extends Migration {
 		});
 
 
+		Schema::create('llevo_formulario', function(Blueprint $table) {
+			$table->engine = "InnoDB";
+			$table->increments('id');
+			$table->integer('alumno_id')->unsigned();
+			$table->integer('year'); // Año 2018 o 2019 etc.
+			$table->dateTime('llevo_formulario')->nullable(); // Cuando se llevó el formulario
+			$table->timestamps();
+		});
+		Schema::table('llevo_formulario', function(Blueprint $table) {
+            $table->foreign('alumno_id')->references('id')->on('alumnos')->onDelete('cascade');
+		});
+
+
 
 
 	}
 
 	public function down()
 	{
+		Schema::drop('llevo_formulario');
 		Schema::drop('requisitos_alumno');
 		Schema::drop('requisitos_matricula');
 	}

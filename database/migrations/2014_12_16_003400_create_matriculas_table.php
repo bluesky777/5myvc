@@ -21,7 +21,6 @@ class CreateMatriculasTable extends Migration {
 			$table->integer('grupo_id')->unsigned();
 			$table->string('estado', 4)->default('MATR'); // MATR, ASIS, RETI, DESE, TRAS,      == Matriculado, Asistente, Retirado, Desertor, Trasladado
 			$table->date('prematriculado')->nullable(); // Cuando fue prematriculado
-			$table->date('llevo_formulario')->nullable(); // Cuando se llevó el formulario
 			$table->date('fecha_retiro')->nullable(); // Cuando fue retirado o desertado
 			$table->date('fecha_matricula')->nullable(); // Cuando por fin lo matricularon
 			$table->date('fecha_pension')->nullable(); // Fecha hasta la que vale su deuda
