@@ -26,6 +26,7 @@ class CreateGruposTable extends Migration {
 			$table->integer('valorpension')->nullable();
 			$table->integer('orden')->nullable();
 			$table->boolean('caritas')->default(false);
+			$table->integer('cupo')->default(20); // Cuantos alumnos se pueden matricular
 			$table->integer('created_by')->nullable();
 			$table->integer('updated_by')->nullable();
 			$table->integer('deleted_by')->nullable();

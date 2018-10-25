@@ -1,4 +1,6 @@
-<?php namespace App\Http\Controllers;
+<?php namespace App\Http\Controllers\Matriculas;
+
+use App\Http\Controllers\Controller;
 
 use Request;
 use DB;

@@ -25,7 +25,7 @@ class GruposController extends Controller {
 		$user 	= User::fromToken();
 		$res 	= [];
 
-		$consulta = 'SELECT g.id, g.nombre, g.abrev, g.orden, gra.orden as orden_grado, g.grado_id, g.year_id, g.titular_id,
+		$consulta = 'SELECT g.id, g.nombre, g.abrev, g.orden, gra.orden as orden_grado, g.grado_id, g.year_id, g.titular_id, g.cupo, 
 				p.nombres as nombres_titular, p.apellidos as apellidos_titular, p.titulo, g.caritas, 
 				g.created_at, g.updated_at, gra.nombre as nombre_grado 
 			from grupos g
@@ -73,7 +73,7 @@ class GruposController extends Controller {
 		$res 	= [];
 		
 		// Con los prematriculados
-		$consulta = 'SELECT g.id, g.nombre, g.abrev, gra.orden as orden_grado, g.orden, g.grado_id, g.year_id, gra.orden as orden_grado, g.titular_id, g.created_at, g.updated_at, count(m.id) as cantidad
+		$consulta = 'SELECT g.id, g.nombre, g.abrev, gra.orden as orden_grado, g.orden, g.grado_id, g.year_id, gra.orden as orden_grado, g.titular_id, g.created_at, g.updated_at, count(m.id) as cantidad, g.cupo, (g.cupo - count(m.id)) as cant_faltantes
 			from grupos g
 			inner join years y on y.id=g.year_id and y.year=:anio and y.deleted_at is null
 			inner join grados gra on gra.id=g.grado_id and g.year_id=y.id 
@@ -119,7 +119,7 @@ class GruposController extends Controller {
 	public function getIndex()
 	{
 		$user = User::fromToken();
-		$consulta = 'SELECT g.id, g.nombre, g.abrev, g.orden, gra.orden as orden_grado, g.grado_id, g.year_id, g.titular_id,
+		$consulta = 'SELECT g.id, g.nombre, g.abrev, g.orden, gra.orden as orden_grado, g.grado_id, g.year_id, g.titular_id, g.cupo, 
 						p.nombres as nombres_titular, p.apellidos as apellidos_titular, p.titulo, g.caritas, 
 						g.created_at, g.updated_at, gra.nombre as nombre_grado
 					from grupos g
@@ -151,7 +151,7 @@ class GruposController extends Controller {
 	public function getCantAlumnos()
 	{
 		$user = User::fromToken();
-		$consulta = 'SELECT g.id, g.nombre, g.abrev, g.orden, gra.orden as orden_grado, g.grado_id, g.year_id, g.titular_id,
+		$consulta = 'SELECT g.id, g.nombre, g.abrev, g.orden, gra.orden as orden_grado, g.grado_id, g.year_id, g.titular_id, g.cupo,
 						p.nombres as nombres_titular, p.apellidos as apellidos_titular, p.titulo, g.caritas, 
 						g.created_at, g.updated_at, gra.nombre as nombre_grado, count(a.id) as cant_alumnos 
 					from grupos g
@@ -172,7 +172,7 @@ class GruposController extends Controller {
 	public function putConCantidadAlumnos()
 	{
 		$user = User::fromToken();
-		$consulta = 'SELECT g.id, g.nombre, g.abrev, g.orden, g.grado_id, g.year_id, g.titular_id,
+		$consulta = 'SELECT g.id, g.nombre, g.abrev, g.orden, g.grado_id, g.year_id, g.titular_id, g.cupo,
 						p.nombres as nombres_titular, p.apellidos as apellidos_titular, p.titulo, g.caritas, 
 						g.created_at, g.updated_at, count(m.id) as cant_alumnos,
 						p.foto_id, IFNULL(i.nombre, IF(p.sexo="F","default_female.png", "default_male.png")) as foto_nombre 
@@ -465,6 +465,7 @@ class GruposController extends Controller {
 			$grupo->valorpension=	Request::input('valorpension');
 			$grupo->orden		=	Request::input('orden');
 			$grupo->caritas		=	Request::input('caritas', false);
+			$grupo->cupo		=	Request::input('cupo');
 
 			$grupo->save();
 
