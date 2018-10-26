@@ -65,23 +65,39 @@ class RequisitosController extends Controller {
 
 	public function putUpdate()
 	{
-        $id         = Request::input('id');
-        $requ       = Request::input('requisito');
-        $descrip    = Request::input('descripcion');
-        $now 		= Carbon::now('America/Bogota');
-        
-        $consulta = 'UPDATE requisitos_matricula SET requisito=?, descripcion=?, updated_by=?, updated_at=? WHERE id=?';
-        DB::select($consulta, [$requ, $descrip, $this->user->user_id, $now, $id]);
-        
-        return 'Actualizado';
+		$id         = Request::input('id');
+		$requ       = Request::input('requisito');
+		$descrip    = Request::input('descripcion');
+		$now 		= Carbon::now('America/Bogota');
+		
+		$consulta = 'UPDATE requisitos_matricula SET requisito=?, descripcion=?, updated_by=?, updated_at=? WHERE id=?';
+		DB::select($consulta, [$requ, $descrip, $this->user->user_id, $now, $id]);
+		
+		return 'Actualizado';
 	}
-	
+		
+
+
+
+	public function postAlumno()
+	{
+		$id         = Request::input('requisito_alumno_id');
+		$estado     = Request::input('estado');
+		$descrip    = Request::input('descripcion');
+		$now 		= Carbon::now('America/Bogota');
+		
+		$consulta = 'UPDATE requisitos_alumno SET estado=?, descripcion=?, updated_by=?, updated_at=? WHERE id=?';
+		DB::select($consulta, [ $estado, $descrip, $this->user->user_id, $now, $id ]);
+		
+		return 'Actualizado';
+	}
+		
 
 	public function deleteDestroy($id)
-	{
-        $now 		= Carbon::now('America/Bogota');
-        $consulta   = 'UPDATE requisitos_matricula SET deleted_at=? WHERE id=?';
-		DB::update($consulta, [$now, $id]);
+		{
+		$now 		= Carbon::now('America/Bogota');
+		$consulta   = 'UPDATE requisitos_matricula SET deleted_at=? WHERE id=?';
+				DB::update($consulta, [$now, $id]);
 
 		return 'Eliminado';
 	}

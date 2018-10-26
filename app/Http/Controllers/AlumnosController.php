@@ -22,6 +22,7 @@ use App\Models\Asignatura;
 use App\Models\NotaComportamiento;
 use App\Models\DefinicionComportamiento;
 use App\Models\ImageModel;
+use \Log;
 
 use Carbon\Carbon;
 
@@ -394,13 +395,14 @@ class AlumnosController extends Controller {
 				a.direccion, a.barrio, a.is_urbana, a.estrato, a.ciudad_resid, c3.ciudad as ciudad_resid_nombre, c3.departamento as departamento_resid_nombre, a.religion, a.email, a.facebook, a.created_by, a.updated_by,
 				a.pazysalvo, a.deuda, m.grupo_id, a.is_urbana, IF(a.is_urbana, "SI", "NO") as es_urbana,
 				u.imagen_id, IFNULL(i.nombre, IF(a.sexo="F","default_female.png", "default_male.png")) as imagen_nombre, 
-				u.username, u.is_active,
+				u.username, u.is_active, l.llevo_formulario,
 				a.foto_id, IFNULL(i2.nombre, IF(a.sexo="F","default_female.png", "default_male.png")) as foto_nombre,
 				m.fecha_retiro as fecha_retiro, m.estado, m.fecha_matricula, m.nuevo, IF(m.nuevo, "SI", "NO") as es_nuevo, m.repitente, m.fecha_pension,
 				a.has_sisben, a.nro_sisben, a.has_sisben_3, a.nro_sisben_3, m.programar, m.descripcion_recomendacion, m.efectuar_una, m.descripcion_efectuada 
 			FROM alumnos a 
 			inner join matriculas m on a.id=m.alumno_id and a.id=:alumno_id 
 			INNER JOIN grupos g ON g.id=m.grupo_id AND g.year_id=:year_id and g.deleted_at is null
+			left join llevo_formulario l on l.alumno_id=a.id and l.year=:year_next
 			left join users u on a.user_id=u.id and u.deleted_at is null
 			left join images i on i.id=u.imagen_id and i.deleted_at is null
 			left join tipos_documentos t1 on t1.id=a.tipo_doc and t1.deleted_at is null
@@ -412,7 +414,7 @@ class AlumnosController extends Controller {
 			order by a.apellidos, a.nombres';
 			
 		// \Log::info('Año '.$this->user->year_id);
-		$alumno = DB::select($consulta, [ ':alumno_id' => $id, ':year_id' => $this->user->year_id ]);
+		$alumno = DB::select($consulta, [ ':alumno_id' => $id, ':year_id' => $this->user->year_id, ':year_next' => $this->user->year+1 ]);
 		
 		if( count($alumno) > 0){
 			
@@ -427,11 +429,12 @@ class AlumnosController extends Controller {
 					a.direccion, a.barrio, a.is_urbana, a.estrato, a.ciudad_resid, c3.ciudad as ciudad_resid_nombre, c3.departamento as departamento_resid_nombre, a.religion, a.email, a.facebook, a.created_by, a.updated_by,
 					a.pazysalvo, a.deuda, a.is_urbana, IF(a.is_urbana, "SI", "NO") as es_urbana,
 					u.imagen_id, IFNULL(i.nombre, IF(a.sexo="F","default_female.png", "default_male.png")) as imagen_nombre, 
-					u.username, u.is_active,
+					u.username, u.is_active, l.llevo_formulario,
 					a.foto_id, IFNULL(i2.nombre, IF(a.sexo="F","default_female.png", "default_male.png")) as foto_nombre,
 					a.has_sisben, a.nro_sisben, a.has_sisben_3, a.nro_sisben_3
 				FROM alumnos a 
 				left join users u on a.user_id=u.id and u.deleted_at is null
+				left join llevo_formulario l on l.alumno_id=a.id and l.year=:year_next
 				left join images i on i.id=u.imagen_id and i.deleted_at is null
 				left join tipos_documentos t1 on t1.id=a.tipo_doc and t1.deleted_at is null
 				left join images i2 on i2.id=a.foto_id and i2.deleted_at is null
@@ -441,7 +444,7 @@ class AlumnosController extends Controller {
 				where a.id=:alumno_id and a.deleted_at is null
 				order by a.apellidos, a.nombres';
 				
-			$alumno = DB::select($consulta, [ ':alumno_id' => $id ]);
+			$alumno = DB::select($consulta, [ ':alumno_id' => $id , ':year_next' => $this->user->year+1 ]);
 			
 			if( count($alumno) > 0){
 				
@@ -459,15 +462,36 @@ class AlumnosController extends Controller {
 		$grados_sig = [];
 		$tipos_doc 	= [];
 		
-		$consulta = 'SELECT m.id as matricula_id, m.alumno_id, a.no_matricula, a.nombres, a.apellidos, g.nombre as grupo_nombre, g.abrev as grupo_abrev, m.*
+		$consulta = 'SELECT y.id, y.id as year_id, y.year, y.actual FROM years y WHERE y.deleted_at is null ORDER BY y.year desc limit 1';
+		$year_ult = DB::select($consulta)[0];
+		
+		$consulta = 'SELECT m.id as matricula_id, m.alumno_id, a.no_matricula, a.nombres, a.apellidos, g.nombre as grupo_nombre, g.abrev as grupo_abrev, 
+				m.*, y.year, g.year_id, m.estado
 			FROM alumnos a 
 			inner join matriculas m on a.id=m.alumno_id and a.id=:alumno_id 
 			INNER JOIN grupos g ON g.id=m.grupo_id AND g.deleted_at is null
 			INNER JOIN years y ON y.id=g.year_id AND y.deleted_at is null
 			where a.deleted_at is null and m.deleted_at is null
-			order by y.year, g.orden';
+			order by y.year desc, g.orden';
 
 		$matriculas = DB::select($consulta, [ ':alumno_id' => $alumno->alumno_id ] );
+		
+		// Requisitos de cada año
+		for ($i=0; $i < count($matriculas); $i++) { 
+			
+			// Verifico si el último año, está en las matrículas de este alumno
+			if ($year_ult->id == $matriculas[$i]->year_id) {
+				$year_ult->entrado = true;
+			}
+			
+			$matriculas[$i]->requisitos = $this->traer_requisitos_detalle($alumno->alumno_id, $matriculas[$i]);
+		}
+		
+
+		if (!isset($year_ult->entrado)) {
+			$year_ult->requisitos = $this->traer_requisitos_detalle($alumno->alumno_id, $year_ult);
+			array_unshift($matriculas, $year_ult);
+		}
 			
 	
 		// Matrícula del siguiente año
@@ -514,6 +538,32 @@ class AlumnosController extends Controller {
 		}
 		return [ 'alumno' => $alumno, 'grupos' => $grados, 'grupos_siguientes' => $grados_sig, 
 			'tipos_doc' => $tipos_doc, 'matriculas' => $matriculas ];
+	}
+	public function traer_requisitos_detalle($alumno_id, $matricula){
+		
+			// Traemos los requisitos de cada año y su detalle si ya lo tiene
+			$consulta_requisitos = 'SELECT m.*, m.descripcion as descripcion_titulo, a.id as requisito_alumno_id, a.estado, a.descripcion FROM requisitos_matricula m
+				LEFT JOIN requisitos_alumno a ON a.requisito_id=m.id
+				WHERE m.year_id=?';
+
+			$requisitos_year = DB::select($consulta_requisitos, [ $matricula->year_id ] );
+			
+			$now 	= Carbon::parse(Request::input('fecha_matricula'));
+			
+			for ($j=0; $j < count($requisitos_year); $j++) { 
+				if (!$requisitos_year[$j]->requisito_alumno_id) {
+					
+					$consulta = 'INSERT INTO requisitos_alumno(alumno_id, requisito_id, estado, created_at) 
+						VALUES(?, ?, "falta", ?)';
+		
+					DB::insert($consulta, [ $alumno_id, $requisitos_year[$j]->id, $now ] );
+					
+				}
+			}
+			
+			// Ejecutamos otra vez para traer con los nuevos requisitos_alumnos ingresados
+			$requisitos_year = DB::select($consulta_requisitos, [ $matricula->year_id ] );
+			return $requisitos_year;
 	}
 
 

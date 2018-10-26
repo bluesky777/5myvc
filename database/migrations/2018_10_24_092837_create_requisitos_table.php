@@ -29,13 +29,15 @@ class CreateRequisitosTable extends Migration {
 			$table->engine = "InnoDB";
 			$table->increments('id');
 			$table->integer('alumno_id')->unsigned();
-			$table->string('estado');
+			$table->integer('requisito_id')->unsigned();
+			$table->string('estado')->default('Falta');
 			$table->text('descripcion')->nullable(); 
 			$table->integer('updated_by')->unsigned()->nullable();
 			$table->timestamps();
 		});
 		Schema::table('requisitos_alumno', function(Blueprint $table) {
             $table->foreign('alumno_id')->references('id')->on('alumnos')->onDelete('cascade');
+            $table->foreign('requisito_id')->references('id')->on('requisitos_matricula')->onDelete('cascade');
             $table->foreign('updated_by')->references('id')->on('users')->onDelete('cascade');
 		});
 
