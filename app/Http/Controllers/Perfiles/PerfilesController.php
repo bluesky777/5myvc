@@ -528,15 +528,13 @@ class PerfilesController extends Controller {
 		$users = DB::select($consulta, [':year_id' => $year_id]);
 		
 		$cons = 'SELECT ac.id as persona_id, ac.nombres, ac.apellidos, ac.user_id, u.username, u.tipo, 
-						ac.sexo, u.email, ac.fecha_nac, ac.ciudad_nac, 
-						u.imagen_id, IFNULL(i.nombre, IF(ac.sexo="F","default_female.png", "default_male.png")) as imagen_nombre, 
-						ac.foto_id, IFNULL(i2.nombre, IF(ac.sexo="F","default_female.png", "default_male.png")) as foto_nombre, 
-						"N/A" as grupo_id, ("N/A") as nombre_grupo, ("N/A") as abrev_grupo, "N/A" as year_id
-				from acudientes ac 
-				left join users u on ac.user_id=u.id
-				left join images i on i.id=u.imagen_id
-				left join images i2 on i2.id=ac.foto_id
-				where ac.deleted_at is null';
+					ac.sexo, u.email, ac.fecha_nac, ac.ciudad_nac, 
+					u.imagen_id, IFNULL(i.nombre, IF(ac.sexo="F","default_female.png", "default_male.png")) as imagen_nombre, 
+					"N/A" as grupo_id, ("N/A") as nombre_grupo, ("N/A") as abrev_grupo, "N/A" as year_id
+			from acudientes ac 
+			inner join users u on ac.user_id=u.id
+			left join images i on i.id=u.imagen_id
+			where ac.deleted_at is null and u.tipo is not null';
 				
 		$users_acuds = DB::select($cons);
 		

@@ -420,32 +420,44 @@ class MatriculasController extends Controller {
 		if (($this->user->roles[0]->name == 'Profesor' && $this->user->profes_can_edit_alumnos) || $this->user->roles[0]->name == 'Admin') {
 			$alumno_id 		= Request::input('alumno_id');
 			$grupo_id 		= Request::input('grupo_id');
+			$estado 		= Request::input('estado');
+			$year_id 		= Request::input('year_id');
 			$now 			= Carbon::now('America/Bogota');
-
-			$consulta = 'SELECT m.id, m.alumno_id, m.grupo_id, m.estado 
-				FROM matriculas m 
-				where m.alumno_id = :alumno_id and m.grupo_id=:grupo_id and m.deleted_at is null';
-
-			$matriculas = DB::select($consulta, ['alumno_id'=>$alumno_id, 'grupo_id'=>$grupo_id]);
-
-			if (count($matriculas) > 0) {
-				$matri = Matricula::where('id', $matriculas[0]->id)->first();
-				$matri->estado 			= 'PREM'; // Matriculado, Asistente o Retirado o Prematriculado
-				$matri->prematriculado 	= $now;
-				$matri->grupo_id 		= $grupo_id;
-				$matri->updated_by		= $this->user->user_id;
-				$matri->save();
-				return ['matricula' => $matri];
-			}
 			
+			
+			// Traigo matriculas del alumno este año aunque estén borradas
+			$consulta = 'SELECT m.id, m.alumno_id, m.grupo_id, m.estado, g.year_id 
+				FROM matriculas m 
+				inner join grupos g 
+					on m.alumno_id = :alumno_id and g.year_id = :year_id and m.grupo_id=g.id and m.deleted_at is null';
 
-			$matri 	= new Matricula;
-			$matri->estado 			= 'PREM';
-			$matri->alumno_id 		= $alumno_id;
-			$matri->grupo_id		= $grupo_id;
-			$matri->prematriculado 	= $now;
-			$matri->created_by 		= $this->user->user_id;
-			$matri->save();
+			$matriculas = DB::select($consulta, ['alumno_id'=>$alumno_id, 'year_id'=>$year_id]);
+			
+			if ( count($matriculas) == 0 ) {
+				if($estado=='FORM' || $estado=='ASIS'){
+					DB::insert('INSERT INTO matriculas(alumno_id, grupo_id, estado, created_by, created_at, updated_at) VALUES(?,?,?,?,?,?)', [$alumno_id, $grupo_id, $estado, $this->user->user_id, $now, $now]);
+				}
+				if($estado=='PREM'){
+					DB::insert('INSERT INTO matriculas(alumno_id, grupo_id, estado, prematriculado, created_by, created_at, updated_at) VALUES(?,?,?,?,?,?,?)', [$alumno_id, $grupo_id, $estado, $now, $this->user->user_id, $now, $now]);
+				}
+				if($estado=='MATR'){
+					DB::insert('INSERT INTO matriculas(alumno_id, grupo_id, estado, fecha_matricula, created_by, created_at, updated_at) VALUES(?,?,?,?,?,?,?)', [$alumno_id, $grupo_id, $estado, $now, $this->user->user_id, $now, $now]);
+				}
+				
+			}else{
+				$matric = $matriculas[0];
+				if($estado=='FORM' || $estado=='ASIS'){
+					DB::update('UPDATE matriculas SET alumno_id=?, grupo_id=?, estado=?, updated_by=?, updated_at=? WHERE id=?', [$alumno_id, $grupo_id, $estado, $this->user->user_id, $now, $matric->id]);
+				}
+				if($estado=='PREM'){
+					DB::update('UPDATE matriculas SET alumno_id=?, grupo_id=?, estado=?, prematriculado=?, updated_by=?, updated_at=? WHERE id=?', [$alumno_id, $grupo_id, $estado, $now, $this->user->user_id, $now, $matric->id]);
+				}
+				if($estado=='MATR'){
+					DB::update('UPDATE matriculas SET alumno_id=?, grupo_id=?, estado=?, fecha_matricula=?, updated_by=?, updated_at=? WHERE id=?', [$alumno_id, $grupo_id, $estado, $now, $this->user->user_id, $now, $matric->id]);
+				}
+				
+			}
+
 			
 			$consulta = 'SELECT m.id as matricula_id, m.alumno_id, a.no_matricula, a.nombres, a.apellidos, g.nombre as grupo_nombre, g.abrev as grupo_abrev, m.estado, m.repitente, m.prematriculado, y.id as year_id, y.year as year 
 				FROM alumnos a 
@@ -464,7 +476,7 @@ class MatriculasController extends Controller {
 	}
 
 	
-
+	// Inutil:
 	public function putQuitarPrematricula()
 	{
 		if (($this->user->roles[0]->name == 'Profesor' && $this->user->profes_can_edit_alumnos) || $this->user->roles[0]->name == 'Admin') {

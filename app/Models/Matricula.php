@@ -107,7 +107,7 @@ class Matricula extends Model {
 					$matri->save();
 					$matri->delete();
 				}else{
-					$matri->estado 			= 'MATR'; // Matriculado, Asistente o Retirado
+					$matri->estado 			= 'MATR'; // Matriculado, Asistente o Retirado , Prem, Form
 					$matri->fecha_retiro 	= null;
 					$matri->grupo_id 		= $grupo_id;
 					$matri->updated_by		= $user_id;

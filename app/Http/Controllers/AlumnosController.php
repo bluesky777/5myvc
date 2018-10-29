@@ -281,6 +281,8 @@ class AlumnosController extends Controller {
 					if (Request::input('prematricula')) {
 						$matricula->estado			=	"PREM";
 						$matricula->prematriculado 	= 	$now;
+					}else if (Request::input('llevo_formulario')) {
+						$matricula->estado			=	"FORM";
 					}else{
 						$matricula->estado			=	"MATR";
 						$matricula->fecha_matricula = 	$now;
@@ -395,14 +397,13 @@ class AlumnosController extends Controller {
 				a.direccion, a.barrio, a.is_urbana, a.estrato, a.ciudad_resid, c3.ciudad as ciudad_resid_nombre, c3.departamento as departamento_resid_nombre, a.religion, a.email, a.facebook, a.created_by, a.updated_by,
 				a.pazysalvo, a.deuda, m.grupo_id, a.is_urbana, IF(a.is_urbana, "SI", "NO") as es_urbana,
 				u.imagen_id, IFNULL(i.nombre, IF(a.sexo="F","default_female.png", "default_male.png")) as imagen_nombre, 
-				u.username, u.is_active, l.llevo_formulario,
+				u.username, u.is_active,
 				a.foto_id, IFNULL(i2.nombre, IF(a.sexo="F","default_female.png", "default_male.png")) as foto_nombre,
 				m.fecha_retiro as fecha_retiro, m.estado, m.fecha_matricula, m.nuevo, IF(m.nuevo, "SI", "NO") as es_nuevo, m.repitente, m.fecha_pension,
 				a.has_sisben, a.nro_sisben, a.has_sisben_3, a.nro_sisben_3, m.programar, m.descripcion_recomendacion, m.efectuar_una, m.descripcion_efectuada 
 			FROM alumnos a 
 			inner join matriculas m on a.id=m.alumno_id and a.id=:alumno_id 
 			INNER JOIN grupos g ON g.id=m.grupo_id AND g.year_id=:year_id and g.deleted_at is null
-			left join llevo_formulario l on l.alumno_id=a.id and l.year=:year_next
 			left join users u on a.user_id=u.id and u.deleted_at is null
 			left join images i on i.id=u.imagen_id and i.deleted_at is null
 			left join tipos_documentos t1 on t1.id=a.tipo_doc and t1.deleted_at is null
@@ -414,7 +415,7 @@ class AlumnosController extends Controller {
 			order by a.apellidos, a.nombres';
 			
 		// \Log::info('Año '.$this->user->year_id);
-		$alumno = DB::select($consulta, [ ':alumno_id' => $id, ':year_id' => $this->user->year_id, ':year_next' => $this->user->year+1 ]);
+		$alumno = DB::select($consulta, [ ':alumno_id' => $id, ':year_id' => $this->user->year_id ]);
 		
 		if( count($alumno) > 0){
 			
@@ -429,12 +430,11 @@ class AlumnosController extends Controller {
 					a.direccion, a.barrio, a.is_urbana, a.estrato, a.ciudad_resid, c3.ciudad as ciudad_resid_nombre, c3.departamento as departamento_resid_nombre, a.religion, a.email, a.facebook, a.created_by, a.updated_by,
 					a.pazysalvo, a.deuda, a.is_urbana, IF(a.is_urbana, "SI", "NO") as es_urbana,
 					u.imagen_id, IFNULL(i.nombre, IF(a.sexo="F","default_female.png", "default_male.png")) as imagen_nombre, 
-					u.username, u.is_active, l.llevo_formulario,
+					u.username, u.is_active,
 					a.foto_id, IFNULL(i2.nombre, IF(a.sexo="F","default_female.png", "default_male.png")) as foto_nombre,
 					a.has_sisben, a.nro_sisben, a.has_sisben_3, a.nro_sisben_3
 				FROM alumnos a 
 				left join users u on a.user_id=u.id and u.deleted_at is null
-				left join llevo_formulario l on l.alumno_id=a.id and l.year=:year_next
 				left join images i on i.id=u.imagen_id and i.deleted_at is null
 				left join tipos_documentos t1 on t1.id=a.tipo_doc and t1.deleted_at is null
 				left join images i2 on i2.id=a.foto_id and i2.deleted_at is null
@@ -444,7 +444,7 @@ class AlumnosController extends Controller {
 				where a.id=:alumno_id and a.deleted_at is null
 				order by a.apellidos, a.nombres';
 				
-			$alumno = DB::select($consulta, [ ':alumno_id' => $id , ':year_next' => $this->user->year+1 ]);
+			$alumno = DB::select($consulta, [ ':alumno_id' => $id ]);
 			
 			if( count($alumno) > 0){
 				
@@ -495,7 +495,7 @@ class AlumnosController extends Controller {
 			
 	
 		// Matrícula del siguiente año
-		$consulta = 'SELECT m.id as matricula_id, m.alumno_id, a.no_matricula, a.nombres, a.apellidos, g.nombre as grupo_nombre, g.abrev as grupo_abrev, m.estado, m.repitente, m.prematriculado, y.id as year_id, y.year as year 
+		$consulta = 'SELECT m.id as matricula_id, m.alumno_id, a.no_matricula, a.nombres, a.apellidos, g.nombre as grupo_nombre, g.abrev as grupo_abrev, m.grupo_id, m.estado, m.repitente, m.prematriculado, y.id as year_id, y.year as year 
 			FROM alumnos a 
 			inner join matriculas m on a.id=m.alumno_id and a.id=:alumno_id 
 			INNER JOIN grupos g ON g.id=m.grupo_id AND g.deleted_at is null
@@ -728,7 +728,8 @@ class AlumnosController extends Controller {
 	public function putPersonasCheck()
 	{
 		$texto = Request::input('texto');
-		$todos_anios = Request::input('todos_anios');
+		//$todos_anios = Request::input('todos_anios');
+		$todos_anios = true;
 		
 		if ($todos_anios) {
 				$consulta = 'SELECT a.id as alumno_id, a.nombres, a.apellidos, "alumno" as tipo, 
@@ -748,7 +749,7 @@ class AlumnosController extends Controller {
 				INNER JOIN grupos g on g.year_id=:anio and g.id=m.grupo_id and g.deleted_at is null
 				LEFT JOIN images i2 on i2.id=a.foto_id and i2.deleted_at is null
 				WHERE nombres like :texto or apellidos like :texto2
-				GROUP BY m.alumno_id order by g.orden';
+				GROUP BY m.alumno_id, m.id order by g.orden';
 			
 			$res = DB::select($consulta, [':anio' => $this->user->year_id, ':texto' => '%'.$texto.'%', ':texto2' => '%'.$texto.'%']);
 			return [ 'personas' => $res ];
