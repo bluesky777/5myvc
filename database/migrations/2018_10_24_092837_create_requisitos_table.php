@@ -47,7 +47,6 @@ class CreateRequisitosTable extends Migration {
 
 	public function down()
 	{
-		Schema::drop('llevo_formulario');
 		Schema::drop('requisitos_alumno');
 		Schema::drop('requisitos_matricula');
 	}

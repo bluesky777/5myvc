@@ -276,6 +276,8 @@ class AlumnosController extends Controller {
 					$matricula = new Matricula;
 					$matricula->alumno_id		=	$alumno->id;
 					$matricula->grupo_id		=	$grupo_id;
+					$matricula->nuevo			=	Request::input('nuevo');
+					$matricula->repitente		=	Request::input('repitente');
 					$matricula->created_by 		= 	$this->user->user_id;
 					
 					if (Request::input('prematricula')) {
@@ -495,7 +497,7 @@ class AlumnosController extends Controller {
 			
 	
 		// Matrícula del siguiente año
-		$consulta = 'SELECT m.id as matricula_id, m.alumno_id, a.no_matricula, a.nombres, a.apellidos, g.nombre as grupo_nombre, g.abrev as grupo_abrev, m.grupo_id, m.estado, m.repitente, m.prematriculado, y.id as year_id, y.year as year 
+		$consulta = 'SELECT m.id as matricula_id, m.alumno_id, a.no_matricula, a.nombres, a.apellidos, g.nombre as grupo_nombre, g.abrev as grupo_abrev, m.grupo_id, m.estado, m.nuevo, m.repitente, m.prematriculado, y.id as year_id, y.year as year 
 			FROM alumnos a 
 			inner join matriculas m on a.id=m.alumno_id and a.id=:alumno_id 
 			INNER JOIN grupos g ON g.id=m.grupo_id AND g.deleted_at is null
@@ -690,12 +692,14 @@ class AlumnosController extends Controller {
 	 *************************************************************/
 	public function putGuardarValor()
 	{
+		$year_id = Request::input('year_id', $this->user->year_id);
+		Log::info('Year_id: '. $year_id);
 		if ($this->user->roles[0]->name == 'Profesor' && $this->user->profes_can_edit_alumnos) {
 			$consulta 	= 'SELECT a.id, a.user_id, g.id as grupo_id, g.titular_id, m.id as matricula_id FROM alumnos a
 							INNER JOIN matriculas m ON m.alumno_id=a.id
 							INNER JOIN grupos g ON g.id=m.grupo_id AND g.year_id=? AND g.titular_id=?
 							WHERE a.id=?';
-			$alumno 	= DB::select($consulta, [ $this->user->year_id, $this->user->persona_id, Request::input('alumno_id') ]);
+			$alumno 	= DB::select($consulta, [ $year_id, $this->user->persona_id, Request::input('alumno_id') ]);
 			
 			if (count($alumno)>0) {
 				$alumno = $alumno[0];
@@ -708,9 +712,10 @@ class AlumnosController extends Controller {
 		} else if($this->user->roles[0]->name == 'Admin'){
 			$consulta 	= 'SELECT a.id, a.user_id, g.id as grupo_id, g.titular_id, m.id as matricula_id FROM alumnos a
 							INNER JOIN matriculas m ON m.alumno_id=a.id
-							LEFT JOIN grupos g ON g.id=m.grupo_id AND g.year_id=?
-							WHERE a.id=?';
-			$alumno 	= DB::select($consulta, [ $this->user->year_id, Request::input('alumno_id') ]);
+							INNER JOIN grupos g ON g.id=m.grupo_id AND g.year_id=?
+							WHERE a.id=?'; // Tengo confusión con INNER o LEFT grupos
+			$alumno 	= DB::select($consulta, [ $year_id, Request::input('alumno_id') ]);
+			Log::info(json_decode(json_encode($alumno[0]), true));
 			if (count($alumno)>0) {
 				$alumno = $alumno[0];
 				$guardarAlumno = new GuardarAlumno();

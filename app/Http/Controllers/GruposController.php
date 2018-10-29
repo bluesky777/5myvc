@@ -102,20 +102,21 @@ class GruposController extends Controller {
 				$res['grupos'][$i]->sin_matricular = 0;
 			}
 		
-			/*
-			// Contamos los que llevaron formularios
-			$consulta = 'SELECT count(l.id) as formularios FROM llevo_formulario l
-				INNER JOIN alumnos a ON a.id=l.alumno_id and a.deleted_at is null and l.year=:year_next 
-				GROUP BY l.id;';
 			
-			$forms = DB::select($consulta, [ ':year_next'=> $user->year+1 ] );
+			// Contamos los que llevaron formularios
+			$consulta = 'SELECT count(m.id) as formularios FROM matriculas m
+				INNER JOIN grupos g ON g.id=m.grupo_id and m.estado="FORM" AND m.grupo_id=:grupo_id and m.deleted_at is null and g.deleted_at is null
+				INNER JOIN years y ON y.id=g.year_id AND y.deleted_at is null and y.year=:year_next 
+				GROUP BY m.id;';
+			
+			$forms = DB::select($consulta, [ ':grupo_id'=> $res['grupos'][$i]->id, ':year_next'=> $user->year+1 ] );
 			
 			if(count($forms) > 0){
 				$res['grupos'][$i]->cant_formularios = $forms[0]->formularios;
 			}else{
 				$res['grupos'][$i]->cant_formularios = 0;
 			}
-			*/
+			
 		
 		}
 		

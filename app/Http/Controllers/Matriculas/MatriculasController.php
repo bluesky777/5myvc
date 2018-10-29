@@ -459,7 +459,7 @@ class MatriculasController extends Controller {
 			}
 
 			
-			$consulta = 'SELECT m.id as matricula_id, m.alumno_id, a.no_matricula, a.nombres, a.apellidos, g.nombre as grupo_nombre, g.abrev as grupo_abrev, m.estado, m.repitente, m.prematriculado, y.id as year_id, y.year as year 
+			$consulta = 'SELECT m.id as matricula_id, m.alumno_id, a.no_matricula, a.nombres, a.apellidos, g.nombre as grupo_nombre, g.abrev as grupo_abrev, m.estado, m.nuevo, m.repitente, m.prematriculado, y.id as year_id, y.year as year 
 				FROM alumnos a 
 				inner join matriculas m on a.id=m.alumno_id and a.id=:alumno_id 
 				INNER JOIN grupos g ON g.id=m.grupo_id AND g.deleted_at is null
