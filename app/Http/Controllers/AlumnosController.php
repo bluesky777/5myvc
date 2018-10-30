@@ -393,6 +393,39 @@ class AlumnosController extends Controller {
 		$id 		= Request::input('id');
 		$con_grupos = Request::input('con_grupos');
 		
+		if ($this->user->tipo == 'Acudiente') {
+			
+			$consulta 		= 'SELECT distinct(a.id) as alumno_id, a.no_matricula, a.nombres, a.apellidos, a.sexo, a.user_id, 
+								a.fecha_nac, a.tipo_doc, a.documento, a.tipo_sangre, a.eps, a.telefono, a.celular, 
+								a.direccion, a.barrio, a.estrato, a.religion, a.email, a.facebook, a.created_by, a.updated_by,
+								a.pazysalvo, a.deuda, 
+								u.username, u.is_superuser, u.is_active,
+								u.imagen_id, IFNULL(i.nombre, IF(a.sexo="F","default_female.png", "default_male.png")) as imagen_nombre, 
+								a.foto_id, IFNULL(i2.nombre, IF(a.sexo="F","default_female.png", "default_male.png")) as foto_nombre,
+								p.parentesco, p.observaciones, g.nombre as nombre_grupo, g.orden
+							FROM alumnos a 
+							inner join parentescos p on p.alumno_id=a.id and p.acudiente_id=?
+							left join users u on a.user_id=u.id and u.deleted_at is null
+							left join images i on i.id=u.imagen_id and i.deleted_at is null
+							left join images i2 on i2.id=a.foto_id and i2.deleted_at is null
+							left join matriculas m on m.alumno_id=a.id and m.deleted_at is null and (m.estado="ASIS" or m.estado="MATR")
+							left join grupos g on g.id=m.grupo_id and g.deleted_at is null and g.year_id=?
+							where a.deleted_at is null and p.deleted_at is null  and g.nombre is not null
+							order by g.orden, a.apellidos, a.nombres';
+							
+			$alumnos 	= DB::select($consulta, [ $this->user->persona_id, $this->user->year_id ]);	
+			$encontrado = false;
+			for ($i=0; $i < count($alumnos); $i++) { 
+				if ($alumnos[$i]->alumno_id == $id) {
+					$encontrado = true;
+				}
+			}
+			if (!$encontrado) {
+				return response()->json([ 'autorizado'=> false, 'msg'=> 'No es tu acudido' ], 400);
+			}
+		}
+		
+		
 		$consulta = 'SELECT m.id as matricula_id, m.alumno_id, a.no_matricula, a.nombres, a.apellidos, a.sexo, a.user_id, g.nombre as grupo_nombre, g.abrev as grupo_abrev, 
 				a.fecha_nac, a.ciudad_nac, c1.departamento as departamento_nac_nombre, c1.ciudad as ciudad_nac_nombre, a.tipo_doc, t1.tipo as tipo_doc_name, a.documento, a.ciudad_doc, 
 				c2.ciudad as ciudad_doc_nombre, c2.departamento as departamento_doc_nombre, a.tipo_sangre, a.eps, a.telefono, a.celular, a.egresado,
@@ -694,6 +727,10 @@ class AlumnosController extends Controller {
 	{
 		$year_id = Request::input('year_id', $this->user->year_id);
 		Log::info('Year_id: '. $year_id);
+		if ($this->user->tipo == 'Acudiente') {
+			return response()->json([ 'autorizado'=> false, 'msg'=> 'No puedes cambiar a un alumno' ], 400);
+		}
+		
 		if ($this->user->roles[0]->name == 'Profesor' && $this->user->profes_can_edit_alumnos) {
 			$consulta 	= 'SELECT a.id, a.user_id, g.id as grupo_id, g.titular_id, m.id as matricula_id FROM alumnos a
 							INNER JOIN matriculas m ON m.alumno_id=a.id
@@ -740,9 +777,11 @@ class AlumnosController extends Controller {
 				$consulta = 'SELECT a.id as alumno_id, a.nombres, a.apellidos, "alumno" as tipo, 
 						a.foto_id, IFNULL(i2.nombre, IF(a.sexo="F","default_female.png", "default_male.png")) as foto_nombre
 					FROM alumnos a
+					INNER JOIN matriculas m on a.id=m.alumno_id and m.deleted_at is null
 					LEFT JOIN images i2 on i2.id=a.foto_id and i2.deleted_at is null
-					WHERE nombres like :texto or apellidos like :texto2
+					WHERE a.deleted_at is null and nombres like :texto or apellidos like :texto2
 					GROUP BY a.id order by a.nombres, a.apellidos';
+					// INNER JOIN matriculas para evitar que se repita. Sólo traerá los que tengan alguna matricula en el sistema.
 			
 			$res = DB::select($consulta, [':texto' => '%'.$texto.'%', ':texto2' => '%'.$texto.'%']);
 			return [ 'personas' => $res ];
