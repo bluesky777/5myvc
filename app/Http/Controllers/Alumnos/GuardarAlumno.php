@@ -16,12 +16,13 @@ use App\Models\Periodo;
 class GuardarAlumno {
 
 
-	public function valor($user, $alumno, $propiedad, $valor, $user_id)
+	public function valor($user, $propiedad, $valor, $user_id, $year_id)
 	{
 
 		$consulta 	= '';
 		$datos 		= [];
 		$now 		= Carbon::now('America/Bogota');
+		$alumno_id 	= Request::input('alumno_id');
 
 		if ($propiedad == 'fecha_nac' || $propiedad == 'fecha_retiro' || $propiedad == 'prematriculado')
 			$valor = Carbon::parse($valor);
@@ -39,6 +40,19 @@ class GuardarAlumno {
 			case 'razon_retiro':
 			case 'repitente':
 			case 'prematriculado':
+			
+				$consulta 	= 'SELECT a.id, a.user_id, g.id as grupo_id, g.titular_id, m.id as matricula_id FROM alumnos a
+								INNER JOIN matriculas m ON m.alumno_id=a.id
+								INNER JOIN grupos g ON g.id=m.grupo_id AND g.year_id=?
+								WHERE a.id=?'; // Tengo confusión con INNER o LEFT grupos
+				$alumno 	= DB::select($consulta, [ $year_id, $alumno_id ]);
+				
+				if (count($alumno)>0) {
+					$alumno = $alumno[0];
+				}else{
+					return response()->json([ 'No encontrado'=> false, 'msg'=> 'Alumno no encontrado' ], 400);
+				}
+
 				$consulta = 'UPDATE matriculas SET '.$propiedad.'=:valor, updated_by=:modificador, updated_at=:fecha WHERE id=:matricula_id';
 				$datos 		= [
 					':valor'		=> $valor, 
@@ -49,12 +63,13 @@ class GuardarAlumno {
 			break;
 			
 			default:
+				
 				$consulta = 'UPDATE alumnos SET '.$propiedad.'=:valor, updated_by=:modificador, updated_at=:fecha WHERE id=:alumno_id';
 				$datos 		= [
 					':valor'		=> $valor, 
 					':modificador'	=> $user_id, 
 					':fecha' 		=> $now,
-					':alumno_id'	=> $alumno->id
+					':alumno_id'	=> $alumno_id
 				];
 			break;
 		}

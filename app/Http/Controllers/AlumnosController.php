@@ -741,25 +741,16 @@ class AlumnosController extends Controller {
 			if (count($alumno)>0) {
 				$alumno = $alumno[0];
 				$guardarAlumno = new GuardarAlumno();
-				return $guardarAlumno->valor($this->user, $alumno, Request::input('propiedad'), Request::input('valor'), $this->user->user_id);
+				return $guardarAlumno->valor($this->user, Request::input('propiedad'), Request::input('valor'), $this->user->user_id, $year_id);
 			}else{
 				return response()->json([ 'autorizado'=> false, 'msg'=> 'No eres el titular' ], 400);
 			}
 			
 		} else if($this->user->roles[0]->name == 'Admin'){
-			$consulta 	= 'SELECT a.id, a.user_id, g.id as grupo_id, g.titular_id, m.id as matricula_id FROM alumnos a
-							INNER JOIN matriculas m ON m.alumno_id=a.id
-							INNER JOIN grupos g ON g.id=m.grupo_id AND g.year_id=?
-							WHERE a.id=?'; // Tengo confusión con INNER o LEFT grupos
-			$alumno 	= DB::select($consulta, [ $year_id, Request::input('alumno_id') ]);
-			Log::info(json_decode(json_encode($alumno[0]), true));
-			if (count($alumno)>0) {
-				$alumno = $alumno[0];
-				$guardarAlumno = new GuardarAlumno();
-				return $guardarAlumno->valor($this->user, $alumno, Request::input('propiedad'), Request::input('valor'), $this->user->user_id);
-			}else{
-				return response()->json([ 'No encontrado'=> false, 'msg'=> 'Alumno no encontrado' ], 400);
-			}
+			
+			$guardarAlumno = new GuardarAlumno();
+			return $guardarAlumno->valor($this->user, Request::input('propiedad'), Request::input('valor'), $this->user->user_id, $year_id);
+			
 		} else {
 			return abort('400', 'No tiene permisos');
 		}
