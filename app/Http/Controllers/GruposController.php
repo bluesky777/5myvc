@@ -107,7 +107,7 @@ class GruposController extends Controller {
 			$consulta = 'SELECT count(m.id) as formularios FROM matriculas m
 				INNER JOIN grupos g ON g.id=m.grupo_id and m.estado="FORM" AND m.grupo_id=:grupo_id and m.deleted_at is null and g.deleted_at is null
 				INNER JOIN years y ON y.id=g.year_id AND y.deleted_at is null and y.year=:year_next 
-				GROUP BY m.id;';
+				GROUP BY g.id;';
 			
 			$forms = DB::select($consulta, [ ':grupo_id'=> $res['grupos'][$i]->id, ':year_next'=> $user->year+1 ] );
 			
