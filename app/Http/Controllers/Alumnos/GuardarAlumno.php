@@ -23,14 +23,16 @@ class GuardarAlumno {
 		$datos 		= [];
 		$now 		= Carbon::now('America/Bogota');
 		$alumno_id 	= Request::input('alumno_id');
+		$user_id 	= Request::input('user_id');
 
 		if ($propiedad == 'fecha_nac' || $propiedad == 'fecha_retiro' || $propiedad == 'prematriculado')
 			$valor = Carbon::parse($valor);
 
 		switch ($propiedad) {
 			case 'username':
-				$consulta 	= 'UPDATE users SET username=:valor, updated_by=:modificador, updated_at=:fecha WHERE id=:user_id';
-				$datos 		= [ ':valor' => $valor, ':modificador' => $user_id, ':fecha' => $now, ':user_id' => $alumno->user_id ];
+			case 'email':
+				$consulta 	= 'UPDATE users SET '.$propiedad.'=:valor, updated_by=:modificador, updated_at=:fecha WHERE id=:user_id';
+				$datos 		= [ ':valor' => $valor, ':modificador' => $user_id, ':fecha' => $now, ':user_id' => $user_id ];
 			break;
 			
 			case 'nuevo':
