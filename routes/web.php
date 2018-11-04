@@ -43,6 +43,7 @@ AdvancedRoute::controller('niveles_educativos', 'NivelesEducativosController');
 AdvancedRoute::controller('grados', 'GradosController');
 AdvancedRoute::controller('grupos', 'GruposController');
 AdvancedRoute::controller('matriculas', 'Matriculas\MatriculasController');
+AdvancedRoute::controller('enfermeria', 'Matriculas\EnfermeriaController');
 AdvancedRoute::controller('prematriculas', 'Matriculas\PrematriculasController');
 AdvancedRoute::controller('requisitos', 'Matriculas\RequisitosController');
 AdvancedRoute::controller('cartera', 'CarteraController');
