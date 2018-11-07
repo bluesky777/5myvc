@@ -25,7 +25,7 @@ class EnfermeriaController extends Controller {
 	public function putDatos()
 	{
         
-        $consulta           = 'SELECT * FROM antecedentes WHERE alumno_id=?';
+        $consulta          = 'SELECT * FROM antecedentes WHERE alumno_id=?';
         $antecedentes      = DB::select($consulta, [Request::input('alumno_id')]);
         
         

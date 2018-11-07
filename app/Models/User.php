@@ -19,6 +19,7 @@ use Tymon\JWTAuth\Exceptions\JWTException;
 
 use Request;
 use DB;
+use App;
 
 
 
@@ -228,6 +229,9 @@ class User extends Authenticatable implements AuthenticatableUserContract
 			}
 
 
+			if (count($usuario) == 0) {
+				abort(400, 'user_inactivo');
+			}
 			
 			$usuario = (array)$usuario[0];
 			$userTemp = (array)$userTemp['attributes'];

@@ -15,7 +15,7 @@ class CreateEnfermeriaTable extends Migration {
 			$table->increments('id');
 			$table->integer('alumno_id')->unsigned();
             $table->string('cirugias')->nullable();
-            $table->string('varicela')->nullable();
+            $table->boolean('varicela')->nullable();
             $table->string('medicamento_diario')->nullable();
             
             $table->boolean('vac_influenza')->default(0);
