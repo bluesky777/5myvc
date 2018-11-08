@@ -16,17 +16,17 @@ use App\Models\Periodo;
 class GuardarAlumno {
 
 
-	public function valor($user, $propiedad, $valor, $user_id, $year_id, $alumno_id)
+	public function valor($user, $propiedad, $valor, $user_id, $year_id, $alumno_id=false)
 	{
 
 		$consulta 	= '';
 		$datos 		= [];
 		$now 		= Carbon::now('America/Bogota');
 		
-		if (!isset($alumno_id)) {
+		if (!$alumno_id) {
 			$alumno_id 	= Request::input('alumno_id');
 		}
-		if (!isset($user_id)) {
+		if (!$user_id) {
 			$user_id 	= Request::input('user_id');
 		}
 
