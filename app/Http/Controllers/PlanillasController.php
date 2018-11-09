@@ -284,4 +284,51 @@ class PlanillasController extends Controller {
 
 
 
+	public function getListasPersonalizadas()
+	{
+		$user 		= User::fromToken();
+
+
+
+		$consulta = 'SELECT g.id, g.nombre, g.abrev, g.orden, gra.orden as orden_grado, g.grado_id, g.year_id, g.titular_id,
+			p.nombres as nombres_titular, p.apellidos as apellidos_titular, p.titulo,
+			g.created_at, g.updated_at, gra.nombre as nombre_grado 
+			from grupos g
+			inner join grados gra on gra.id=g.grado_id and g.year_id=:year_id 
+			left join profesores p on p.id=g.titular_id
+			where g.deleted_at is null
+			order by g.orden';
+
+		$grupos = DB::select($consulta, [':year_id'=>$user->year_id] );
+
+
+		for ($i=0; $i < count($grupos); $i++) { 
+			
+			
+			$consulta = 'SELECT m.id as matricula_id, m.alumno_id, a.no_matricula, a.nombres, a.apellidos, a.sexo, a.user_id, 
+					a.fecha_nac, a.tipo_doc, a.documento, a.celular, 
+					a.direccion, a.barrio, a.religion, u.email, a.facebook,
+					a.pazysalvo, a.deuda, m.grupo_id, 
+					u.username, u.is_superuser, u.is_active,
+					a.foto_id, IFNULL(i2.nombre, IF(a.sexo="F","default_female.png", "default_male.png")) as foto_nombre,
+					m.estado 
+				FROM alumnos a 
+				inner join matriculas m on a.id=m.alumno_id and m.grupo_id=:grupo_id and (m.estado="ASIS" or m.estado="MATR")
+				left join users u on a.user_id=u.id and u.deleted_at is null
+				left join images i2 on i2.id=a.foto_id and i2.deleted_at is null
+				where a.deleted_at is null and m.deleted_at is null
+				order by a.apellidos, a.nombres';
+
+			$grupos[$i]->alumnos = DB::select($consulta, [':grupo_id' => $grupos[$i]->id]);
+
+
+		}
+
+
+		return $grupos;
+
+	}
+
+
+
 }
