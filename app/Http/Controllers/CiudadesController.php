@@ -65,18 +65,23 @@ class CiudadesController extends Controller {
 	public function getDatosciudad($ciudad_id)
 	{
 		$ciudad = Ciudad::find($ciudad_id);
-		$pais = $this->getPaisdeciudad($ciudad->id);
+		if ($ciudad) {
+			$pais = $this->getPaisdeciudad($ciudad->id);
 
-		$departamentos = $this->getDepartamentos($pais[0]->id);
-		$ciudades = Ciudad::where('departamento' , $ciudad->departamento)->get();
+			$departamentos = $this->getDepartamentos($pais[0]->id);
+			$ciudades = Ciudad::where('departamento' , $ciudad->departamento)->get();
 
-		$result = array('ciudad' => $ciudad, 
-						'ciudades' => $ciudades, 
-						'departamento' => array('departamento'=>$ciudad->departamento), 
-						'departamentos' => $departamentos,
-						'pais'=> $pais[0],
-						'paises' => Pais::all());
-		return $result;
+			$result = array('ciudad' => $ciudad, 
+							'ciudades' => $ciudades, 
+							'departamento' => array('departamento'=>$ciudad->departamento), 
+							'departamentos' => $departamentos,
+							'pais'=> $pais[0],
+							'paises' => Pais::all());
+			return $result;
+		}else{
+			return [];
+		}
+		
 	}
 
 

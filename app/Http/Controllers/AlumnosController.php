@@ -726,7 +726,7 @@ class AlumnosController extends Controller {
 	public function putGuardarValor()
 	{
 		$year_id = Request::input('year_id', $this->user->year_id);
-		Log::info('Year_id: '. $year_id);
+
 		if ($this->user->tipo == 'Acudiente') {
 			return response()->json([ 'autorizado'=> false, 'msg'=> 'No puedes cambiar a un alumno' ], 400);
 		}
@@ -741,7 +741,7 @@ class AlumnosController extends Controller {
 			if (count($alumno)>0) {
 				$alumno = $alumno[0];
 				$guardarAlumno = new GuardarAlumno();
-				return $guardarAlumno->valor($this->user, Request::input('propiedad'), Request::input('valor'), $this->user->user_id, $year_id);
+				return $guardarAlumno->valor($this->user, Request::input('propiedad'), Request::input('valor'), Request::input('user_id'), $year_id, Request::input('alumno_id'));
 			}else{
 				return response()->json([ 'autorizado'=> false, 'msg'=> 'No eres el titular' ], 400);
 			}
@@ -749,7 +749,7 @@ class AlumnosController extends Controller {
 		} else if($this->user->roles[0]->name == 'Admin'){
 			
 			$guardarAlumno = new GuardarAlumno();
-			return $guardarAlumno->valor($this->user, Request::input('propiedad'), Request::input('valor'), $this->user->user_id, $year_id);
+			return $guardarAlumno->valor($this->user, Request::input('propiedad'), Request::input('valor'), Request::input('user_id'), $year_id, Request::input('alumno_id'));
 			
 		} else {
 			return abort('400', 'No tiene permisos');
@@ -799,7 +799,6 @@ class AlumnosController extends Controller {
 	public function putGuardarValorVarios()
 	{
 		$year_id = Request::input('year_id', $this->user->year_id);
-		Log::info('Year_id: '. $year_id);
 		
 		if ($this->user->roles[0]->name == 'Profesor' && $this->user->profes_can_edit_alumnos) {
 			
@@ -816,7 +815,7 @@ class AlumnosController extends Controller {
 				if (count($alumno)>0) {
 					$alumno = $alumno[0];
 					$guardarAlumno = new GuardarAlumno();
-					return $guardarAlumno->valor($this->user, $alumno, Request::input('propiedad'), Request::input('valor'), $this->user->user_id);
+					return $guardarAlumno->valor($this->user, Request::input('propiedad'), Request::input('valor'), Request::input('user_id'), $year_id, $alumnos[$i]['alumno_id']);
 				}else{
 					return response()->json([ 'autorizado'=> false, 'msg'=> 'No eres el titular' ], 400);
 				}
@@ -831,7 +830,7 @@ class AlumnosController extends Controller {
 			for ($i=0; $i < $cant; $i++) { 
 
 				$guardarAlumno = new GuardarAlumno();
-				$guardarAlumno->valor($this->user, Request::input('propiedad'), Request::input('valor'), $this->user->user_id, $year_id, $alumnos[$i]['alumno_id']);
+				$guardarAlumno->valor($this->user, Request::input('propiedad'), Request::input('valor'), false, $year_id, $alumnos[$i]['alumno_id']);
 				
 			}
 			return 'Cambios realizados';

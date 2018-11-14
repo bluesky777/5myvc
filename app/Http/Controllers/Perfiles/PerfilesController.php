@@ -105,7 +105,7 @@ class PerfilesController extends Controller {
 	{
 		$consulta = 'SELECT * FROM (
 				SELECT p.id as persona_id, p.nombres, p.apellidos, p.user_id, u.username, "" as pazysalvo, "" as deuda, p.tipo_doc, p.num_doc as documento, 
-					("Pr") as tipo, p.sexo, u.email as email_restore, p.email as email_persona, p.fecha_nac, p.ciudad_nac, 
+					("Pr") as tipo, p.sexo, u.email as email_restore, p.email as email_persona, p.fecha_nac, p.ciudad_nac, p.ciudad_doc,
 					u.imagen_id, IFNULL(i.nombre, IF(p.sexo="F","default_female.png", "default_male.png")) as imagen_nombre, 
 					p.foto_id, IFNULL(i2.nombre, IF(p.sexo="F","default_female.png", "default_male.png")) as foto_nombre, 
 					"N/A" as grupo_id, ("N/A") as nombre_grupo, ("N/A") as abrev_grupo, "N/A" as year_id  
@@ -116,7 +116,7 @@ class PerfilesController extends Controller {
 					where p.deleted_at is null
 				union
 				SELECT a.id as persona_id, a.nombres, a.apellidos, a.user_id, u.username, a.pazysalvo, a.deuda, a.tipo_doc, a.documento, 
-					("Al") as tipo, a.sexo, u.email as email_restore, a.email as email_persona, a.fecha_nac, a.ciudad_nac, 
+					("Al") as tipo, a.sexo, u.email as email_restore, a.email as email_persona, a.fecha_nac, a.ciudad_nac, a.ciudad_doc,
 					u.imagen_id, IFNULL(i.nombre, IF(a.sexo="F","default_female.png", "default_male.png")) as imagen_nombre, 
 					a.foto_id, IFNULL(i2.nombre, IF(a.sexo="F","default_female.png", "default_male.png")) as foto_nombre, 
 					g.id as grupo_id, g.nombre as nombre_grupo, g.abrev as abrev_grupo, g.year_id
@@ -130,7 +130,7 @@ class PerfilesController extends Controller {
 				
 				union
 				SELECT u.id as persona_id, "" as nombres, "" as apellidos, u.id as user_id, u.username, "" as pazysalvo, "" as deuda, "" as tipo_doc, "" as documento,
-					("Us") as tipo, u.sexo, u.email as email_restore, "N/A" as email_persona, "N/A" as fecha_nac, "N/A" as ciudad_nac, 
+					("Us") as tipo, u.sexo, u.email as email_restore, "N/A" as email_persona, "N/A" as fecha_nac, "N/A" as ciudad_nac, "N/A" as ciudad_doc, 
 					u.imagen_id, IFNULL(i.nombre, IF(u.sexo="F","default_female.png", "default_male.png")) as imagen_nombre, 
 					u.imagen_id as foto_id, IFNULL(i.nombre, IF(u.sexo="F","default_female.png", "default_male.png")) as foto_nombre, 
 					"N/A" as grupo_id, ("N/A") as nombre_grupo, ("N/A") as abrev_grupo, "N/A" as year_id  
@@ -156,7 +156,7 @@ class PerfilesController extends Controller {
 			return $user;
 		}else{
 			$consulta = 'SELECT ac.id as persona_id, ac.nombres, ac.apellidos, ac.user_id, u.username, "" as pazysalvo, "" as deuda, ac.tipo_doc, ac.documento, 
-					("Pr") as tipo, ac.sexo, u.email as email_restore, ac.email as email_persona, ac.fecha_nac, ac.ciudad_nac, 
+					("Pr") as tipo, ac.sexo, u.email as email_restore, ac.email as email_persona, ac.fecha_nac, ac.ciudad_nac, ac.ciudad_doc, 
 					u.imagen_id, IFNULL(i.nombre, IF(ac.sexo="F","default_female.png", "default_male.png")) as imagen_nombre, 
 					ac.foto_id, IFNULL(i2.nombre, IF(ac.sexo="F","default_female.png", "default_male.png")) as foto_nombre, 
 					"N/A" as grupo_id, ("N/A") as nombre_grupo, ("N/A") as abrev_grupo, "N/A" as year_id

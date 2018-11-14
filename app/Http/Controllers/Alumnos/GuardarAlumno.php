@@ -10,13 +10,14 @@ use Carbon\Carbon;
 use App\Models\User;
 use App\Models\Year;
 use App\Models\Periodo;
+use \Log;
 
 
 
 class GuardarAlumno {
 
 
-	public function valor($user, $propiedad, $valor, $user_id, $year_id, $alumno_id=false)
+	public function valor($user, $propiedad, $valor, $user_id=false, $year_id=false, $alumno_id=false)
 	{
 
 		$consulta 	= '';
@@ -26,9 +27,7 @@ class GuardarAlumno {
 		if (!$alumno_id) {
 			$alumno_id 	= Request::input('alumno_id');
 		}
-		if (!$user_id) {
-			$user_id 	= Request::input('user_id');
-		}
+		
 
 		if ($propiedad == 'fecha_nac' || $propiedad == 'fecha_retiro' || $propiedad == 'prematriculado')
 			$valor = Carbon::parse($valor);
@@ -36,8 +35,13 @@ class GuardarAlumno {
 		switch ($propiedad) {
 			case 'username':
 			case 'email':
+				
+				if (!$user_id) {
+					$user_id 	= Request::input('user_id');
+				}
 				$consulta 	= 'UPDATE users SET '.$propiedad.'=:valor, updated_by=:modificador, updated_at=:fecha WHERE id=:user_id';
-				$datos 		= [ ':valor' => $valor, ':modificador' => $user_id, ':fecha' => $now, ':user_id' => $user_id ];
+				$datos 		= [ ':valor' => $valor, ':modificador' => $user->user_id, ':fecha' => $now, ':user_id' => $user_id ];
+
 			break;
 			
 			case 'nuevo':
@@ -63,7 +67,7 @@ class GuardarAlumno {
 				$consulta = 'UPDATE matriculas SET '.$propiedad.'=:valor, updated_by=:modificador, updated_at=:fecha WHERE id=:matricula_id';
 				$datos 		= [
 					':valor'		=> $valor, 
-					':modificador'	=> $user_id, 
+					':modificador'	=> $user->user_id, 
 					':fecha' 		=> $now,
 					':matricula_id'	=> $alumno->matricula_id
 				];
@@ -74,7 +78,7 @@ class GuardarAlumno {
 				$consulta = 'UPDATE alumnos SET '.$propiedad.'=:valor, updated_by=:modificador, updated_at=:fecha WHERE id=:alumno_id';
 				$datos 		= [
 					':valor'		=> $valor, 
-					':modificador'	=> $user_id, 
+					':modificador'	=> $user->user_id, 
 					':fecha' 		=> $now,
 					':alumno_id'	=> $alumno_id
 				];

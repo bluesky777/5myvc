@@ -231,7 +231,7 @@ class LoginController extends Controller {
 					<table cellpadding="0" cellspacing="0">
 						<tr>
 							<td class="hero">
-								<img src="http://lalvirtual.com/up/images/Logo_MyVc_Header.gif" alt="Mi Colegio Virtual" style="display: block; border: 0;" />
+								<img src="https://lalvirtual.edu.co/up/images/Logo_MyVc_Header.gif" alt="Mi Colegio Virtual" style="display: block; border: 0;" />
 							</td>
 						</tr>
 						<tr>
