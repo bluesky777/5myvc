@@ -23,7 +23,8 @@ class CreateEnfermeriaTable extends Migration {
             $table->boolean('vac_tetano')->default(0);
             $table->boolean('vac_sarampion')->default(0);
             $table->boolean('vac_hepatitis_b')->default(0);
-            $table->string('vac_otra')->nullable();
+            $table->boolean('vac_otra')->nullable();
+            $table->string('vac_cual')->nullable();
             
             $table->boolean('patol_asma')->default(0);
             $table->boolean('patol_bronquis')->default(0);
@@ -32,7 +33,8 @@ class CreateEnfermeriaTable extends Migration {
             $table->boolean('patol_hipertension')->default(0);
             $table->boolean('patol_dermatitis')->default(0);
             $table->boolean('patol_depresion')->default(0);
-            $table->string('patol_otro')->nullable();
+            $table->boolean('patol_otro')->nullable();
+            $table->string('patol_cual')->nullable();
             
             $table->boolean('fami_hipertension_arterial')->default(0);
             $table->boolean('fami_diabetes')->default(0);
@@ -40,7 +42,8 @@ class CreateEnfermeriaTable extends Migration {
             $table->boolean('fami_cancer')->default(0);
             $table->boolean('fami_artritis')->default(0);
             $table->boolean('fami_hipotiroidismo')->default(0);
-            $table->string('fami_otro')->nullable();
+            $table->boolean('fami_otro')->nullable();
+            $table->string('fami_cual')->nullable();
             
 			$table->text('observaciones')->nullable(); 
 			$table->integer('updated_by')->unsigned()->nullable();

@@ -35,6 +35,7 @@ class GuardarAlumno {
 		switch ($propiedad) {
 			case 'username':
 			case 'email':
+			case 'is_active':
 				
 				if (!$user_id) {
 					$user_id 	= Request::input('user_id');
