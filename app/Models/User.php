@@ -20,6 +20,7 @@ use Tymon\JWTAuth\Exceptions\JWTException;
 use Request;
 use DB;
 use App;
+use \Log;
 
 
 
@@ -55,6 +56,7 @@ class User extends Authenticatable implements AuthenticatableUserContract
 	public static $images = '';
 	public static $perfilPath = '';
 	public static $imgSharedPath = '';
+	public static $intentoLogueoPorActive = 0;
 
 
 	public static function fromToken($already_parsed=false, $request = false)
@@ -157,7 +159,7 @@ class User extends Authenticatable implements AuthenticatableUserContract
 									y.unidad_displayname, y.subunidad_displayname, y.unidades_displayname, y.subunidades_displayname, 
 									y.genero_unidad, y.genero_subunidad, per.fecha_plazo, y.mostrar_nota_comport_boletin, y.si_recupera_materia_recup_indicador, y.year_pasado_en_bol, y.alumnos_can_see_notas, y.logo_id
 								from alumnos a 
-								inner join matriculas m on m.alumno_id=a.id and (m.estado="MATR" or m.estado="ASIS")
+								inner join matriculas m on m.alumno_id=a.id and (m.estado="MATR" or m.estado="ASIS" or m.estado="PREM")
 								inner join grupos g on g.id=m.grupo_id
 								left join images i on i.id=:imagen_id
 								left join images i2 on i2.id=a.foto_id
@@ -230,7 +232,41 @@ class User extends Authenticatable implements AuthenticatableUserContract
 
 
 			if (count($usuario) == 0) {
-				abort(400, 'user_inactivo');
+				if ($userTemp->is_active) {
+					if (User::$intentoLogueoPorActive == 1) {
+						abort(400, 'user_inactivo_por_mucho_logueo');
+					}else{
+						User::$intentoLogueoPorActive = 1;
+						
+						$consulta = 'SELECT p.*
+							from alumnos a 
+							inner join matriculas m on m.alumno_id=a.id and (m.estado="MATR" or m.estado="ASIS" or m.estado="PREM")
+							inner join grupos g on g.id=m.grupo_id and g.deleted_at is null
+							inner join years y on g.year_id=y.id and y.deleted_at is null
+							inner join periodos p on p.year_id=y.id and p.deleted_at is null
+							left join users u on u.id=a.user_id
+							where a.deleted_at is null and a.user_id=:user_id ORDER BY id DESC LIMIT 1';
+
+						$periodos = DB::select($consulta, [
+							':user_id'		=> $userTemp->id
+							]);
+							
+						if (count($periodos) > 0) {
+							
+							$consulta = 'UPDATE users SET periodo_id=? WHERE id=?';
+							$periodos = DB::select($consulta, [ $periodos[0]->id, $userTemp->id ]);
+							USER::fromToken($already_parsed);
+							return;
+						}else{
+							abort(400, 'user_inactivo_por_falta_periodos');
+						}
+						
+					}
+					
+				}else{
+					abort(400, 'user_inactivo');
+				}
+				
 			}
 			
 			$usuario = (array)$usuario[0];
