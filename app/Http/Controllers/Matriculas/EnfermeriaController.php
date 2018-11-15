@@ -38,7 +38,7 @@ class EnfermeriaController extends Controller {
 			
 		}
         
-        return ['antecedentes'=>$antecedentes];
+        return ['antecedentes'=>$antecedentes[0] ];
 	}
 	
 
@@ -47,19 +47,13 @@ class EnfermeriaController extends Controller {
 	{
 		if($this->user->roles[0]->name == 'Admin' || $this->user->roles[0]->name == 'Enfermero'){
 			$now 				= Carbon::now('America/Bogota');
+			$propiedad 			= Request::input('propiedad');
 			
-			$consulta 			= 'SELECT * FROM antecedentes WHERE alumno_id=?';
-			$antecedentes		= DB::select($consulta, [Request::input('alumno_id')]);
-			
-			if (count($antecedentes) == 0) {
-				$consulta          = 'INSERT INTO antecedentes(alumno_id, updated_by, created_at, updated_at) VALUES(?,?,?,?)';
-				$antecedentes      = DB::select($consulta, [Request::input('alumno_id'), $this->user->user_id, $now, $now ]);
+			$consulta          = 'UPDATE antecedentes SET '.$propiedad.'=:valor, updated_by=:modificador, updated_at=:fecha WHERE id=:antec_id';
+			$antecedentes      = DB::select($consulta, [':valor'=>Request::input('valor'), ':modificador'=>$this->user->user_id, ':fecha'=>$now, ':antec_id'=>Request::input('antec_id')]);
 				
-				$consulta          = 'SELECT * FROM antecedentes WHERE alumno_id=?';
-				$antecedentes      = DB::select($consulta, [Request::input('alumno_id')]);
-				
-			}
-			return [ 'Cambios guardados' ];
+
+			return 'Cambios guardados';
 		}else{
 			return abort(401, 'No puedes cambiar');
 		}

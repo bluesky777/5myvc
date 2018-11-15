@@ -56,12 +56,43 @@ class CreateEnfermeriaTable extends Migration {
 
 
 
+		Schema::create('registros_enfermeria', function(Blueprint $table) {
+			$table->engine = "InnoDB";
+			$table->increments('id');
+			$table->integer('alumno_id')->unsigned();
+            $table->dateTime('fecha_suceso')->nullable();
+            $table->integer('signo_fc')->nullable(); // ppm frecuencia cardiaca
+            $table->integer('signo_fr')->nullable(); // rpm Frecuencia respiratoria
+            $table->decimal('signo_t', 4, 1)->nullable(); // grados C Temperatura
+            $table->integer('signo_glu')->nullable(); // mg/dl -Glucometría - 
+            $table->integer('signo_spo2')->nullable(); // SPO2 - Saturación de oxígeno - %
+            $table->integer('signo_pa_dia')->nullable(); // Presión arterial - mmhg (120/80) diastólica
+            $table->integer('signo_pa_sis')->nullable(); // Presión arterial - mmhg (120/80) sistólica
+            $table->string('asignatura')->nullable();
+            $table->string('motivo_consulta')->nullable();
+            $table->text('descripcion_suceso')->nullable(); // Enfermedad actual / Lesión / Sintoma
+            $table->text('tratamiento')->nullable(); // qué tratamiento se le realizó
+			$table->text('observaciones')->nullable(); 
+			$table->text('insumos_utilizados')->nullable(); 
+			$table->integer('created_by')->unsigned()->nullable();
+			$table->integer('updated_by')->unsigned()->nullable();
+			$table->timestamps();
+		});
+		Schema::table('registros_enfermeria', function(Blueprint $table) {
+			$table->foreign('alumno_id')->references('id')->on('alumnos')->onDelete('cascade');
+			$table->foreign('created_by')->references('id')->on('users')->onDelete('cascade');
+			$table->foreign('updated_by')->references('id')->on('users')->onDelete('cascade');
+		});
+
+
+
 
 
 	}
 
 	public function down()
 	{
+		Schema::drop('registros_enfermeria');
 		Schema::drop('antecedentes');
 	}
 

@@ -52,6 +52,10 @@ class GuardarAlumno {
 			case 'razon_retiro':
 			case 'repitente':
 			case 'prematriculado':
+			case 'programar':
+			case 'descripcion_recomendacion':
+			case 'efectuar_una':
+			case 'descripcion_efectuada':
 			
 				$consulta 	= 'SELECT a.id, a.user_id, g.id as grupo_id, g.titular_id, m.id as matricula_id FROM alumnos a
 								INNER JOIN matriculas m ON m.alumno_id=a.id

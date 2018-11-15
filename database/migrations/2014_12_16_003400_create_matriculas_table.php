@@ -25,10 +25,11 @@ class CreateMatriculasTable extends Migration {
 			$table->date('fecha_matricula')->nullable(); // Cuando por fin lo matricularon
 			$table->date('fecha_pension')->nullable(); // Fecha hasta la que vale su deuda
 			$table->string('razon_retiro')->default('')->nullable(); // Razón por la cual se retira o es expulsado
-			$table->string('programar')->nullable(); // 'MATRIC CONDICIONAL', 'COMPROM ACADÉMICO', 'COMPROM DISCIPLINARIO', 'PERDIDA DE CUPO', 'CAMBIO INSTITUCI'     == Lo que se recomienda 
-			$table->string('descripcion_recomendacion')->nullable(); // Descripción del compromiso o por qué perdió cupo...
+			$table->string('programar')->nullable(); // 'MATRIC CONDICIONAL', 'COMPROM ACADÉMICO', 'COMPROM DISCIPLINARIO', 'PERDIDA DE CUPO', 'CAMBIO INSTITUCIÓN', 'OTRO'     == Lo que se recomienda 
+			//$table->string('programar_estado')->nullable(); // 'SUPERADA', 'EN PROCESO', 'NO CUMPLIDA'
+			$table->text('descripcion_recomendacion')->nullable(); // Descripción del compromiso o por qué perdió cupo...
 			$table->string('efectuar_una')->default('')->nullable(); // 'MATR CONDICIONAL', 'COMPR ACADEM' 
-			$table->string('descripcion_efectuada')->nullable(); 
+			$table->text('descripcion_efectuada')->nullable(); 
 			$table->boolean('profes_editar_notas')->nullable(); // Si true, los profes pueden editar sus notas
 			$table->boolean('nuevo')->nullable(); // Si true, fue creado este año
 			$table->boolean('repitente')->default(0); // Si true, es porque perdió el año pasado aquí en la institución   

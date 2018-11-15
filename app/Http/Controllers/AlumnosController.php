@@ -138,9 +138,9 @@ class AlumnosController extends Controller {
 								WHERE p.deleted_at is null and p.year_id=?', [ $alumno_id, $years[$i]->year_id ]);
 								
 				$years[$i]->grupos[$j]->periodos = $periodos;
-				array_push($res, $years[$i]);
 
 			}
+			array_push($res, $years[$i]);
 		}
 		
 		
@@ -530,7 +530,8 @@ class AlumnosController extends Controller {
 			
 	
 		// Matrícula del siguiente año
-		$consulta = 'SELECT m.id as matricula_id, m.alumno_id, a.no_matricula, a.nombres, a.apellidos, g.nombre as grupo_nombre, g.abrev as grupo_abrev, m.grupo_id, m.estado, m.nuevo, m.repitente, m.prematriculado, y.id as year_id, y.year as year 
+		$consulta = 'SELECT m.id as matricula_id, m.alumno_id, a.no_matricula, a.nombres, a.apellidos, g.nombre as grupo_nombre, g.abrev as grupo_abrev, m.grupo_id, m.estado, m.nuevo, m.repitente, m.prematriculado, y.id as year_id, y.year as year,
+				m.programar, m.descripcion_recomendacion, m.efectuar_una, m.descripcion_efectuada 
 			FROM alumnos a 
 			inner join matriculas m on a.id=m.alumno_id and a.id=:alumno_id 
 			INNER JOIN grupos g ON g.id=m.grupo_id AND g.deleted_at is null
