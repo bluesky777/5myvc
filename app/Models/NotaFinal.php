@@ -23,6 +23,7 @@ class NotaFinal extends Model {
 							nf2.nota as nota_final_per2, nf2.id as nf_id_2, nf2.recuperada as recuperada_2, nf2.manual as manual_2, nf2.updated_by as updated_by_2, nf2.created_at as created_at_2, nf2.updated_at as updated_at_2,
 							nf3.nota as nota_final_per3, nf3.id as nf_id_3, nf3.recuperada as recuperada_3, nf3.manual as manual_3, nf3.updated_by as updated_by_3, nf3.created_at as created_at_3, nf3.updated_at as updated_at_3,
 							nf4.nota as nota_final_per4, nf4.id as nf_id_4, nf4.recuperada as recuperada_4, nf4.manual as manual_4, nf4.updated_by as updated_by_4, nf4.created_at as created_at_4, nf4.updated_at as updated_at_4,
+                            rf.id as recu_id, rf.year as recu_year, rf.nota as recu_nota, rf.updated_at as recu_updated_at, rf.updated_by as recu_updated_by,
                             
                             cast(r1.DefMateria as decimal(4,1)) as def_materia_auto_1, r1.updated_at as updated_at_def_1, IF(nf1.updated_at > r1.updated_at, FALSE, TRUE) AS nfinal1_desactualizada, r1.periodo_id as periodo_id1, 
                             cast(r2.DefMateria as decimal(4,1)) as def_materia_auto_2, r2.updated_at as updated_at_def_2, IF(nf2.updated_at > r2.updated_at, FALSE, TRUE) AS nfinal2_desactualizada, r2.periodo_id as periodo_id2, 
@@ -105,6 +106,8 @@ class NotaFinal extends Model {
                             group by df1.alumno_id, df1.periodo_id
 						)r4 ON r4.alumno_id=a.id
                         
+                        left join recuperacion_final rf ON rf.alumno_id=a.id
+                        
 						where a.deleted_at is null and m.deleted_at is null
 						order by a.apellidos, a.nombres';
 
@@ -117,7 +120,7 @@ class NotaFinal extends Model {
 
         $alumnos = DB::select($consulta, [':grupo_id'=>$grupo_id, ':asign_id1'=>$asignatura_id, ':asign_id2'=>$asignatura_id, ':asign_id3'=>$asignatura_id, ':asign_id4'=>$asignatura_id, 
                                             ':asign_id5'=>$asignatura_id, ':asign_id6'=>$asignatura_id, ':asign_id7'=>$asignatura_id, ':asign_id8'=>$asignatura_id ]);
-        Debugging::pin('alumnos_grupo_nota_final', $grupo_id, $asignatura_id );
+
         $per_desact = ['per1' => false, 'per2' => false, 'per3' => false, 'per4' => false];
         
         $now 		= Carbon::now('America/Bogota');
@@ -131,7 +134,7 @@ class NotaFinal extends Model {
                 $per_desact['per1'] = true;
                 
                 if (!$alumnos[$i]->manual_1 && !$alumnos[$i]->recuperada_1) {
-                    Debugging::pin('if (!$alumnos[$i]->manual_1 && !$alumnos[$i]->recuperada_1)', $alumnos[$i]->periodo_id1 );
+                    
                     DB::delete('DELETE FROM notas_finales WHERE asignatura_id=? and (manual is null or manual=0) and (recuperada is null or recuperada=0) and periodo=? and alumno_id=?', [ $asignatura_id, 1, $alumnos[$i]->alumno_id ]);
                     
                     $consulta = 'INSERT INTO notas_finales(alumno_id, asignatura_id, periodo_id, periodo, nota, recuperada, manual, updated_by, created_at, updated_at) 
@@ -177,7 +180,7 @@ class NotaFinal extends Model {
                 $per_desact['per4'] = true;
                 
                 if (!$alumnos[$i]->manual_4 && !$alumnos[$i]->recuperada_4) {
-                    Debugging::pin('alumnos[$i]->manual_2)', $alumnos[$i]->periodo_id4 );
+                    
                     DB::delete('DELETE FROM notas_finales WHERE asignatura_id=? and (manual is null or manual=0) and (recuperada is null or recuperada=0) and periodo_id=? and alumno_id=?', [ $asignatura_id, $alumnos[$i]->periodo_id4, $alumnos[$i]->alumno_id ]);
                     
                     $consulta = 'INSERT INTO notas_finales(alumno_id, asignatura_id, periodo_id, periodo, nota, recuperada, manual, updated_by, created_at, updated_at) 
@@ -201,6 +204,55 @@ class NotaFinal extends Model {
         return ['alumnos' => $alumnos, 'per_desact' => $per_desact];
 
     }
+
+
+    
+    
+
+	public static function calcularAsignaturaPeriodo($asignatura_id, $periodo_id, $num_periodo)
+	{
+		$user 			= User::fromToken();
+		$now 			= Carbon::now('America/Bogota');
+
+		DB::delete('DELETE nf FROM notas_finales nf
+					WHERE (nf.manual is null or nf.manual=0) and (nf.recuperada is null or nf.recuperada=0) and nf.asignatura_id=? and nf.periodo_id=?', 
+					[ $asignatura_id, $periodo_id ]);
+		
+		$consulta = 'SELECT r1.alumno_id,
+			    cast(r1.DefMateria as decimal(4,0)) as def_materia_auto, r1.updated_at, r1.periodo_id
+			FROM (
+				SELECT df1.alumno_id, df1.periodo_id, MAX(df1.updated_at) as updated_at, df1.numero_periodo, sum( df1.ValorUnidad ) DefMateria 
+				FROM(
+					SELECT n.alumno_id, u.periodo_id, u.id as unidad_id, p1.numero as numero_periodo, MAX(n.updated_at) as updated_at, 
+						sum( ((u.porcentaje/100)*((s.porcentaje/100)*n.nota)) ) ValorUnidad
+					FROM asignaturas asi 
+					inner join unidades u on u.asignatura_id=asi.id and u.deleted_at is null
+					inner join subunidades s on s.unidad_id=u.id and s.deleted_at is null
+					inner join notas n on n.subunidad_id=s.id and n.deleted_at is null
+					inner join periodos p1 on p1.numero=:num_periodo and p1.id=u.periodo_id and p1.deleted_at is null
+					where asi.deleted_at is null and asi.id=:asignatura_id
+					group by n.alumno_id, s.unidad_id, s.id
+				)df1
+				group by df1.alumno_id, df1.periodo_id
+			)r1';
+		
+		$defi_autos = DB::select($consulta, [ ':num_periodo'=>$num_periodo, ':asignatura_id'=>$asignatura_id ]);
+		$cant_def = count($defi_autos);
+					
+		for ($i=0; $i < $cant_def; $i++) { 
+			
+			$consulta = 'INSERT INTO notas_finales(alumno_id, asignatura_id, periodo_id, periodo, nota, recuperada, manual, created_at, updated_at) 
+						SELECT * FROM (SELECT '.$defi_autos[$i]->alumno_id.' as alumno_id, '.$asignatura_id.' as asignatura_id, '.$periodo_id.' as periodo_id, '.$num_periodo.' as periodo, '.$defi_autos[$i]->def_materia_auto.' as nota_asignatura, 0 as recuperada, 0 as manual, '.$user->user_id.' as crea, "'.$now.'" as fecha) AS tmp
+						WHERE NOT EXISTS (
+							SELECT id FROM notas_finales WHERE alumno_id='.$defi_autos[$i]->alumno_id.' and asignatura_id='.$asignatura_id.' and periodo_id='.$periodo_id.'
+						) LIMIT 1';
+
+			DB::select($consulta);
+			
+		}
+		
+		return 'Calculado';
+	}
 
 
 

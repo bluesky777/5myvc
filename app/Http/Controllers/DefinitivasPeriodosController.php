@@ -127,6 +127,7 @@ class DefinitivasPeriodosController extends Controller {
 
 	
 	
+	
 	public function putUpdate()
 	{
 		$user 			= User::fromToken();
@@ -184,6 +185,56 @@ class DefinitivasPeriodosController extends Controller {
 	}
 
 
+	
+	
+	public function putUpdateRecuperacion()
+	{
+		$user 			= User::fromToken();
+		User::pueden_modificar_definitivas($user);
+		
+		$now 		= Carbon::now('America/Bogota');
+		
+		if (Request::input('rf_id')) {
+			$rf_id 		= Request::input('rf_id');
+			
+			$consulta 	= 'SELECT n.*, h.id as history_id FROM recuperacion_final n, 
+								(select * from historiales where user_id=? and deleted_at is null order by id desc limit 1 ) h 
+							WHERE n.id=? ';
+
+			$nota 		= DB::select($consulta, [$user->user_id, $rf_id])[0];
+
+			$bit_by 	= $user->user_id;
+			$bit_hist 	= $nota->history_id;
+			$bit_old 	= $nota->nota; 				// Guardo la nota antigua
+			$bit_new 	= Request::input('nota'); 	// Guardo la nota nueva
+
+			
+			$consulta 	= 'UPDATE recuperacion_final SET nota=?, updated_by=?, updated_at=? WHERE id=?';
+			DB::update($consulta, [ Request::input('nota'), $user->user_id, $now, $rf_id ]);
+			
+			$consulta 	= 'INSERT INTO bitacoras (created_by, historial_id, affected_user_id, affected_person_type, affected_element_type, affected_element_id, affected_element_new_value_int, affected_element_old_value_int, created_at) 
+						VALUES (?, ?, ?, "Al", "RF_UPDATE", ?, ?, ?, ?)';
+
+			DB::insert($consulta, [$bit_by, $bit_hist, $nota->alumno_id, $rf_id, $bit_new, $bit_old, $now]);
+
+			return 'Cambiada';
+		}else{
+
+
+			$consulta = 'INSERT INTO recuperacion_final(alumno_id, asignatura_id, year, nota, updated_by, created_at, updated_at) 
+				VALUES(:alumno_id, :asignatura_id, :year, :nota, :updated_by, :created_at, :updated_at)';
+	
+			DB::insert($consulta, [':alumno_id' => Request::input('alumno_id'), ':asignatura_id' => Request::input('asignatura_id'), 
+							':year' => $user->year, ':nota' => Request::input('nota'), ':updated_by' => $user->user_id, ':created_at' => $now, ':updated_at' => $now ]);
+			
+			$last_id = DB::getPdo()->lastInsertId();
+			return (array)DB::select('SELECT * FROM recuperacion_final WHERE id=?', [$last_id])[0];
+		}
+		
+		
+	}
+
+
 	public function putToggleRecuperada()
 	{
 		$user 			= User::fromToken();
@@ -206,6 +257,25 @@ class DefinitivasPeriodosController extends Controller {
 		}
 		
 		return 'Cambiada';
+	}
+
+
+	public function putEliminarRecuperada()
+	{
+		$user 			= User::fromToken();
+		User::pueden_modificar_definitivas($user);
+		
+		if ($user->roles[0]->name == 'Profesor' || ($user->roles[0]->name == 'Admin' && $user->is_superuser)) {
+			// No pasa nada
+		}else{
+			return App::abort(400, 'No tienes privilegios.');
+		}
+		
+		$consulta 	= 'DELETE FROM recuperacion_final WHERE id=?';
+		DB::update($consulta, [ Request::input('rf_id') ]);
+
+		
+		return 'Eliminada';
 	}
 
 

@@ -37,8 +37,17 @@ class EnfermeriaController extends Controller {
 			$antecedentes      = DB::select($consulta, [Request::input('alumno_id')]);
 			
 		}
+		
+		
+        $consulta = 'SELECT r.*, u.username as created_by_name, u2.username as updated_by_name FROM registros_enfermeria r
+			INNER JOIN users u ON u.id=r.created_by and u.deleted_at is null
+			INNER JOIN users u2 ON u2.id=r.updated_by and u2.deleted_at is null
+			WHERE alumno_id=?';
+			
+        $registros_enfermeria 		= DB::select($consulta, [Request::input('alumno_id')]);
+		
         
-        return ['antecedentes'=>$antecedentes[0] ];
+        return [ 'antecedentes'=>$antecedentes[0], 'registros_enfermeria'=>$registros_enfermeria ];
 	}
 	
 
@@ -60,6 +69,52 @@ class EnfermeriaController extends Controller {
 			
 	}
 	
+
+	public function postCrearSuceso()
+	{
+		if($this->user->roles[0]->name == 'Admin' || $this->user->roles[0]->name == 'Enfermero'){
+			$now 				= Carbon::now('America/Bogota');
+			$fecha_creacion 	= Carbon::parse(Request::input('fecha_suceso'));
+			
+			$consulta          = 'INSERT INTO registros_enfermeria
+				(alumno_id, fecha_suceso, signo_fc, signo_fr, signo_t, signo_glu, signo_spo2, signo_pa_dia, signo_pa_sis, asignatura, motivo_consulta, descripcion_suceso, created_by, created_at, updated_at) 
+				VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)';
+			$antecedentes      = DB::select($consulta, [ Request::input('alumno_id'), Request::input('fecha_suceso'), Request::input('signo_fc'), 
+				Request::input('signo_fr'), Request::input('signo_t'), Request::input('signo_glu'), Request::input('signo_spo2'), 
+				Request::input('signo_pa_dia'), Request::input('signo_pa_sis'), Request::input('asignatura'), Request::input('motivo_consulta'), Request::input('descripcion_suceso'), $this->user->user_id, $now, $now ]);
+				
+			$last_id 	    = DB::getPdo()->lastInsertId();
+
+			
+			$consulta          = 'SELECT * FROM registros_enfermeria WHERE id=?';
+			$registro_enfermeria      = DB::select($consulta, [ $last_id]);
+				
+			return (array)$registro_enfermeria[0];
+		}else{
+			return abort(401, 'No puedes cambiar');
+		}
+			
+	}
+	
+
+	public function putGuardarValorSuceso()
+	{
+		if($this->user->roles[0]->name == 'Admin' || $this->user->roles[0]->name == 'Enfermero'){
+			$now 				= Carbon::now('America/Bogota');
+			$propiedad 			= Request::input('propiedad');
+			
+			$consulta          = 'UPDATE registros_enfermeria SET '.$propiedad.'=:valor, updated_by=:modificador, updated_at=:fecha WHERE id=:suceso_id';
+			$antecedentes      = DB::select($consulta, [':valor'=>Request::input('valor'), ':modificador'=>$this->user->user_id, ':fecha'=>$now, ':suceso_id'=>Request::input('suceso_id')]);
+				
+
+			return 'Cambios guardados';
+		}else{
+			return abort(401, 'No puedes cambiar');
+		}
+			
+	}
+	
+
 
 
 

@@ -120,13 +120,8 @@ class NotasController extends Controller {
 			$consulta = 'INSERT INTO notas_finales(alumno_id, asignatura_id, periodo_id, periodo, nota, recuperada, manual, updated_by, created_at, updated_at) 
 				VALUES(:alumno_id, :asignatura_id, :periodo_id, :periodo, :nota, :recuperada, :manual, :updated_by, :created_at, :updated_at)';
 		
-			if ($nota_final->nfinal_desactualizada && $nota_final->updated_at_def && !$nota_final->manual && !$nota_final->recuperada) {
+			if (!$nota_final->manual && !$nota_final->recuperada) {
 				DB::delete('DELETE FROM notas_finales WHERE id=?', [ $nota_final->nf_id ]);
-				
-				DB::insert($consulta, [':alumno_id' => $alumno->alumno_id, ':asignatura_id' => $asignatura_id, ':periodo_id' => $user->periodo_id, 
-					':periodo' => $user->numero_periodo, ':nota' => round($nota_final->def_materia_auto), ':recuperada' => 0, ':manual' => 0, ':updated_by' => $user->user_id, ':created_at' => $now, ':updated_at' => $now ]);
-
-			}else if($nota_final->nfinal_desactualizada && !$nota_final->updated_at_def){
 				
 				DB::insert($consulta, [':alumno_id' => $alumno->alumno_id, ':asignatura_id' => $asignatura_id, ':periodo_id' => $user->periodo_id, 
 					':periodo' => $user->numero_periodo, ':nota' => round($nota_final->def_materia_auto), ':recuperada' => 0, ':manual' => 0, ':updated_by' => $user->user_id, ':created_at' => $now, ':updated_at' => $now ]);

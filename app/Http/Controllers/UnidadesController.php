@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Models\Unidad;
 use App\Models\Subunidad;
 use App\Models\Profesor;
+use App\Models\NotaFinal;
 
 use Carbon\Carbon;
 
@@ -150,7 +151,17 @@ class UnidadesController extends Controller {
 		$unidad->porcentaje		= Request::input('porcentaje');
 		$unidad->updated_by		= $user->user_id;
 		$unidad->save();
+		
+		
+		if (Request::input('asignatura_id')) {
+			$asignatura_id 	= Request::input('asignatura_id');
+			$periodo_id 	= Request::input('periodo_id');
+			$num_periodo 	= Request::input('num_periodo');
+			
+			NotaFinal::calcularAsignaturaPeriodo($asignatura_id, $periodo_id, $num_periodo);
 
+		}
+		
 		return $unidad;
 	}
 

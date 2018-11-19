@@ -6,6 +6,7 @@ use DB;
 use App\Models\User;
 use App\Models\Unidad;
 use App\Models\Subunidad;
+use App\Models\NotaFinal;
 
 
 class SubunidadesController extends Controller {
@@ -130,8 +131,17 @@ class SubunidadesController extends Controller {
 			$subunidad->orden	= Request::input('orden');
 		}
 		
-
 		$subunidad->save();
+		
+		
+		if (Request::input('asignatura_id')) {
+			$asignatura_id 	= Request::input('asignatura_id');
+			$periodo_id 	= Request::input('periodo_id');
+			$num_periodo 	= Request::input('num_periodo');
+			
+			NotaFinal::calcularAsignaturaPeriodo($asignatura_id, $periodo_id, $num_periodo);
+
+		}
 
 		return $subunidad;
 	}
