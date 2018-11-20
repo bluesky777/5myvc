@@ -153,9 +153,6 @@ class SubunidadesController extends Controller {
 	{
 		$user = User::fromToken();
 		$subunidad = Subunidad::find($id);
-		//$queries = DB::getQueryLog();
-		//$last_query = end($queries);
-		//return $last_query;
 
 		if ($subunidad) {
 			$subunidad->deleted_by = $user->user_id;
@@ -164,6 +161,17 @@ class SubunidadesController extends Controller {
 		}else{
 			return App::abort(400, 'Subunidad no existe o está en Papelera.');
 		}
+		
+		
+		if (Request::input('asignatura_id')) {
+			$asignatura_id 	= Request::input('asignatura_id');
+			$periodo_id 	= Request::input('periodo_id');
+			$num_periodo 	= Request::input('num_periodo');
+			
+			NotaFinal::calcularAsignaturaPeriodo($asignatura_id, $periodo_id, $num_periodo);
+
+		}
+		
 		return $subunidad;
 	
 	}	

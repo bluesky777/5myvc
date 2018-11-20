@@ -179,6 +179,17 @@ class UnidadesController extends Controller {
 		}else{
 			return App::abort(400, 'Unidad no existe o está en Papelera.');
 		}
+		
+		
+		if (Request::input('asignatura_id')) {
+			$asignatura_id 	= Request::input('asignatura_id');
+			$periodo_id 	= Request::input('periodo_id');
+			$num_periodo 	= Request::input('num_periodo');
+			
+			NotaFinal::calcularAsignaturaPeriodo($asignatura_id, $periodo_id, $num_periodo);
+
+		}
+		
 		return $unidad;
 	
 	}	
