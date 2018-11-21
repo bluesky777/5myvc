@@ -78,17 +78,18 @@ class Grupo extends Model {
 			}
 		}
 
-		$consulta = 'SELECT a.id as asignatura_id, a.grupo_id, a.profesor_id, a.creditos, a.orden,
-				m.materia, m.alias as alias_materia, 
-				p.id as profesor_id, p.nombres as nombres_profesor, p.apellidos as apellidos_profesor,
+		$consulta = 'SELECT @rownum:=@rownum+1 AS indice, r.*
+			FROM(SELECT a.id as asignatura_id, a.grupo_id, a.profesor_id, a.creditos, ar.orden as orden_area, m.orden as orden_materia, a.orden as orden_asignatura,
+				m.materia, m.alias as alias_materia, m.area_id,
+				p.nombres as nombres_profesor, p.apellidos as apellidos_profesor,
 				p.foto_id, IFNULL(i.nombre, IF(p.sexo="F","default_female.png", "default_male.png")) as foto_nombre
-			FROM asignaturas a 
+			FROM (SELECT @rownum:=0) r, asignaturas a 
 			inner join materias m on m.id=a.materia_id and m.deleted_at is null
 			left join areas ar on ar.id=m.area_id and ar.deleted_at is null
-			inner join profesores p on p.id=a.profesor_id and p.deleted_at is null' . $complemento .
-			' left join images i on p.foto_id=i.id and i.deleted_at is null
+			inner join profesores p on p.id=a.profesor_id and p.deleted_at is null
+			left join images i on p.foto_id=i.id and i.deleted_at is null
 			where a.grupo_id=:grupo_id and a.deleted_at is null
-			order by ar.orden, m.orden, a.orden';
+			order by ar.orden, m.orden, a.orden)r';
 
 		$asignaturas = DB::select($consulta, [':grupo_id' => $grupo_id]);
 

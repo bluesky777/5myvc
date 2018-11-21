@@ -20,6 +20,7 @@ use App\Models\ConfigCertificado;
 use App\Models\EscalaDeValoracion;
 use App\Models\Debugging;
 use App\Models\NotaComportamiento;
+use App\Models\Area;
 use \Log;
 
 
@@ -92,7 +93,6 @@ class BolfinalesController extends Controller {
 		$periodo_a_calcular = Request::input('periodo_a_calcular');
 		
 		if ($periodo_a_calcular) {
-			Log::info('detailedNotasGrupo: ' . $periodo_a_calcular);
 			$year->periodos = Periodo::where('year_id', $user->year_id)->where('numero', '<=', $periodo_a_calcular)->get();
 		}else{
 			$year->periodos = Periodo::where('year_id', $user->year_id)->get();
@@ -143,9 +143,9 @@ class BolfinalesController extends Controller {
 				$alumno->notas_perdidas_year = 0;
 				
 				if ($periodo_a_calcular) {
-					$alumno->periodos_con_perdidas = Periodo::where('year_id', $user->year_id)->where('numero', '<=', $periodo_a_calcular)->get();
+					$alumno->periodos_con_perdidas = DB::select('SELECT * FROM periodos WHERE year_id=? and numero<=? and deleted_at is null', [$user->year_id, $periodo_a_calcular]);
 				}else{
-					$alumno->periodos_con_perdidas = Periodo::where('year_id', $user->year_id)->get();
+					$alumno->periodos_con_perdidas = DB::select('SELECT * FROM periodos WHERE year_id=? and deleted_at is null', [$user->year_id]);
 				}
 
 				foreach ($alumno->periodos_con_perdidas as $keyPerA => $periodoAlone) {
@@ -156,7 +156,7 @@ class BolfinalesController extends Controller {
 
 						foreach ($asignatura_perdida->periodos as $keyPer => $periodo) {
 
-							if ($periodoAlone->periodo_id == $periodo->periodo_id) {
+							if ($periodoAlone->id == $periodo->id) {
 								if ($periodo->id == $periodoAlone->id) {
 									$periodoAlone->cant_perdidas += $periodo->cantNotasPerdidas;
 								}
@@ -194,7 +194,7 @@ class BolfinalesController extends Controller {
 		}
 
 
-		return array($grupo, $year, $response_alumnos);
+		return array($grupo, $year, $response_alumnos, $this->escalas_val);
 	}
 
 	public function definitivasMateriasXPeriodo(&$alumno, $grupo_id, $year_id, $periodos, $per_calcular=null)
@@ -302,10 +302,11 @@ class BolfinalesController extends Controller {
 					$notas_perd += $definitiva->notas_perdidas;
 				}
 			}
-			$asignatura->promedio = $suma_def / count($asignatura->definitivas);
-			$asignatura->ausencias = $suma_aus;
-			$asignatura->tardanzas = $suma_tar;
-			$asignatura->notas_perdidas = $notas_perd;
+			$asignatura->promedio 			= $suma_def / count($asignatura->definitivas);
+			$asignatura->nota_asignatura 	= $asignatura->promedio;
+			$asignatura->ausencias 			= $suma_aus;
+			$asignatura->tardanzas 			= $suma_tar;
+			$asignatura->notas_perdidas 	= $notas_perd;
 
 			$escala = $this->valoracion($asignatura->promedio);
 
@@ -341,6 +342,10 @@ class BolfinalesController extends Controller {
 		// Nota promedio de comportamiento
 		$alumno->nota_comportamiento_year = NotaComportamiento::nota_promedio_year($alumno->alumno_id);
 		
+		
+		// Agrupamos por áreas
+		$alumno->areas = Area::agrupar_asignaturas($grupo_id, $alumno->asignaturas, $this->escalas_val);		
+
 
 		return $alumno;
 	}
@@ -373,10 +378,9 @@ class BolfinalesController extends Controller {
 			$periodo_a_calcular = Request::input('periodo_a_calcular');
 			
 			if ($periodo_a_calcular) {
-				//Log::info('$periodo_a_calcular ' . $periodo_a_calcular);
-				$asignatura->periodos = Periodo::where('year_id', $year_id)->where('numero', '<=', $periodo_a_calcular)->get();
+				$asignatura->periodos = DB::select('SELECT * FROM periodos WHERE year_id=? and numero<=? and deleted_at is null', [$year_id, $periodo_a_calcular]);
 			}else{
-				$asignatura->periodos = Periodo::where('year_id', $year_id)->get();
+				$asignatura->periodos = DB::select('SELECT * FROM periodos WHERE year_id=? and deleted_at is null', [$year_id]);;
 			}
 			
 			

@@ -27,6 +27,7 @@ use App\Models\ImageModel;
 use App\Models\EscalaDeValoracion;
 use App\Models\Area;
 use App\Models\Debugging;
+use \Log;
 
 use Carbon\Carbon;
 
@@ -139,7 +140,7 @@ class Boletines3Controller extends Controller {
 			}
 			
 
-		}
+		}		
 
 		return array($grupo, $year, $response_alumnos);
 	}

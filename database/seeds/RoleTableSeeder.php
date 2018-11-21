@@ -64,6 +64,11 @@ class RoleTableSeeder extends Seeder {
 		$Asistente->id = 9;
 		$Asistente->name = 'Coord académico';
 		$Asistente->save();
+		
+		$Asistente = new Role();
+		$Asistente->id = 10;
+		$Asistente->name = 'Rector';
+		$Asistente->save();
 
 
 
