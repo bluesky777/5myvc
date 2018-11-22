@@ -343,6 +343,10 @@ class BolfinalesController extends Controller {
 		$alumno->nota_comportamiento_year 	= NotaComportamiento::nota_promedio_year($alumno->alumno_id, $year_id);
 		$alumno->notas_comportamiento 		= NotaComportamiento::todas_year($alumno->alumno_id, $year_id);
 		
+		$escala = $this->valoracion($alumno->nota_comportamiento_year);
+		if ($escala) {
+			$alumno->nota_comportamiento_year_desempenio = $escala->desempenio;
+		}
 		
 		// Agrupamos por áreas
 		$alumno->areas = Area::agrupar_asignaturas($grupo_id, $alumno->asignaturas, $this->escalas_val);		
