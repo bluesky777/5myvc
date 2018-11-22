@@ -340,7 +340,8 @@ class BolfinalesController extends Controller {
 
 
 		// Nota promedio de comportamiento
-		$alumno->nota_comportamiento_year = NotaComportamiento::nota_promedio_year($alumno->alumno_id);
+		$alumno->nota_comportamiento_year 	= NotaComportamiento::nota_promedio_year($alumno->alumno_id, $year_id);
+		$alumno->notas_comportamiento 		= NotaComportamiento::todas_year($alumno->alumno_id, $year_id);
 		
 		
 		// Agrupamos por áreas

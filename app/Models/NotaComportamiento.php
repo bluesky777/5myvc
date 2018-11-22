@@ -45,10 +45,11 @@ class NotaComportamiento extends Model {
 	}
 
 
-	public static function nota_promedio_year($alumno_id){
+	public static function nota_promedio_year($alumno_id, $year_id){
 		
-		$consulta 	= 'SELECT avg(nota) as nota_comportamiento_year FROM nota_comportamiento n WHERE n.alumno_id=:alumno_id and n.deleted_at is null';
-		$nota 		= DB::select($consulta, [ ':alumno_id' =>$alumno_id ]);
+		$consulta 	= 'SELECT avg(n.nota) as nota_comportamiento_year FROM nota_comportamiento n INNER JOIN periodos p ON p.id=n.periodo_id AND p.deleted_at is null AND p.year_id=:year_id
+			WHERE n.alumno_id=:alumno_id and n.deleted_at is null';
+		$nota 		= DB::select($consulta, [ ':year_id' =>$year_id, ':alumno_id' =>$alumno_id ]);
 		
 		if(count($nota) > 0){
 			return (int)$nota[0]->nota_comportamiento_year;
@@ -56,6 +57,17 @@ class NotaComportamiento extends Model {
 			return 0;
 		}
 
+		 
+	}
+	
+	
+	public static function todas_year($alumno_id, $year_id){
+		
+		$consulta 	= 'SELECT n.nota as nota_comportamiento FROM nota_comportamiento n INNER JOIN periodos p ON p.id=n.periodo_id AND p.deleted_at is null AND p.year_id=:year_id
+			WHERE n.alumno_id=:alumno_id and n.deleted_at is null';
+		$notas 		= DB::select($consulta, [ ':year_id' =>$year_id, ':alumno_id' =>$alumno_id ]);
+		
+		return $notas;
 		 
 	}
 
