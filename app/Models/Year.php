@@ -31,7 +31,7 @@ class Year extends Model {
 	public static function datos($year_id, $actual=true)
 	{
 		if ($actual) {
-			$consulta = 'SELECT y.id as year_id, y.year, y.nombre_colegio, y.abrev_colegio, y.ciudad_id, c.ciudad, c.departamento, y.resolucion, y.codigo_dane, y.mostrar_puesto_boletin, y.show_fortaleza_bol, 
+			$consulta = 'SELECT y.id as year_id, y.year, y.nombre_colegio, y.abrev_colegio, y.ciudad_id, c.ciudad, c.departamento, y.resolucion, y.codigo_dane, y.mostrar_puesto_boletin, y.show_fortaleza_bol, y.mostrar_nota_comport_boletin,
 							y.logo_id, iL.nombre as logo, y.img_encabezado_id, iE.nombre as img_encabezado, y.nota_minima_aceptada, y.encabezado_certificado, y.config_certificado_estudio_id, y.si_recupera_materia_recup_indicador,
 
 							y.secretario_id, pSec.nombres as nombres_secretario, pSec.apellidos as apellidos_secretario, pSec.sexo as sexo_secretario,
@@ -61,7 +61,7 @@ class Year extends Model {
 
 			return $datos;
 		}else{
-			$consulta = 'SELECT y.id as year_id, y.year, y.nombre_colegio, y.abrev_colegio, y.ciudad_id, c.ciudad, c.departamento, y.resolucion, y.codigo_dane, y.mostrar_puesto_boletin, y.show_fortaleza_bol, 
+			$consulta = 'SELECT y.id as year_id, y.year, y.nombre_colegio, y.abrev_colegio, y.ciudad_id, c.ciudad, c.departamento, y.resolucion, y.codigo_dane, y.mostrar_puesto_boletin, y.show_fortaleza_bol, y.mostrar_nota_comport_boletin, 
 							y.logo_id, iL.nombre as logo, y.img_encabezado_id, y.nota_minima_aceptada, iE.nombre as img_encabezado, y.encabezado_certificado, y.config_certificado_estudio_id, 
 
 							y.secretario_id, pSec.nombres as nombres_secretario, pSec.apellidos as apellidos_secretario, pSec.sexo as sexo_secretario,
@@ -70,7 +70,7 @@ class Year extends Model {
 
 							y.rector_id, pRec.nombres as nombres_rector, pRec.apellidos as apellidos_rector, pRec.sexo as sexo_rector,
 							pRec.foto_id as rector_foto_id, IFNULL(iRec.nombre, IF(pRec.sexo="F","default_female.png", "default_male.png")) as rector_foto_nombre,
-							pRec.firma_id as rector_firma_id, iFS.nombre as rector_firma
+							pRec.firma_id as rector_firma_id, iFR.nombre as rector_firma
 
 						FROM years y
 						left join ciudades c on c.id=y.ciudad_id and c.deleted_at is null
@@ -81,9 +81,9 @@ class Year extends Model {
 						left join images iE on y.img_encabezado_id=iE.id and iE.deleted_at is null
 
 						left join images iFR on pRec.firma_id=iFR.id and iFR.deleted_at is null
-						left join images iFS on pRec.firma_id=iFS.id and iFS.deleted_at is null
+						left join images iFS on pSec.firma_id=iFS.id and iFS.deleted_at is null
 						left join images iRec on pRec.foto_id=iRec.id and iRec.deleted_at is null
-						left join images iSec on pRec.foto_id=iSec.id and iSec.deleted_at is null
+						left join images iSec on pSec.foto_id=iSec.id and iSec.deleted_at is null
 
 						where y.id=:year_id and y.deleted_at is null';
 

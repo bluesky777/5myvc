@@ -88,6 +88,7 @@ class BolfinalesController extends Controller {
 		
 		$grupo			= Grupo::datos($grupo_id);
 		$year			= Year::datos($user->year_id, $year_actual);
+		Log::info('firma secre '.$user->year_id . ' -- ' . $year_actual);
 		$alumnos		= Grupo::alumnos($grupo_id, $requested_alumnos);
 		
 		$periodo_a_calcular = Request::input('periodo_a_calcular');
