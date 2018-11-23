@@ -224,7 +224,7 @@ class BolfinalesController extends Controller {
 
 			$alumno->total_creditos += $asignatura->creditos;
 						
-			$consulta = 'SELECT nf.*, nf.nota as DefMateria, nf.manual, aus.cantidad_ausencia, tar.cantidad_tardanza
+			$consulta = 'SELECT nf.*, nf.nota as DefMateria, aus.cantidad_ausencia, tar.cantidad_tardanza
 						FROM notas_finales nf
 						INNER JOIN periodos p on p.year_id=:year_id and p.id=nf.periodo_id '.$sqlPeriodo.' and p.deleted_at is null
 						left join (
@@ -271,7 +271,7 @@ class BolfinalesController extends Controller {
 
 			if($per_faltantes > 0){
 				for($i=0; $i<$per_faltantes; $i++){
-					$prov = (object)['DefMateria'=>0,'cantidad_ausencia'=>0,'cantidad_tardanza'=>0,'periodo_id'=>-1];
+					$prov = (object)['DefMateria'=>0,'cantidad_ausencia'=>0,'cantidad_tardanza'=>0,'periodo_id'=>-1,'manual'=>0];
 					array_push($asignatura->definitivas, $prov);
 				}
 			}
@@ -291,7 +291,7 @@ class BolfinalesController extends Controller {
 				$suma_tar += (int)$definitiva->cantidad_tardanza;
 				
 				
-				if(($si_recupera_materia_recup_indicador && $definitiva->DefMateria >= User::$nota_minima_aceptada) || ($definitiva->manual==1 && $definitiva->DefMateria >= User::$nota_minima_aceptada)){
+				if(($si_recupera_materia_recup_indicador && $definitiva->DefMateria >= User::$nota_minima_aceptada) || ( $definitiva->manual==1 && $definitiva->DefMateria >= User::$nota_minima_aceptada)){
 					// No se cuentan las notas perdidas
 				}else{
 					
