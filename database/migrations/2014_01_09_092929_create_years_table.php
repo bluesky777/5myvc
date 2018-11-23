@@ -59,6 +59,8 @@ class CreateYearsTable extends Migration {
 			$table->boolean('show_fortaleza_bol')->default(true); // Mostrar Fortaleza o Debilida en Unidades en vez de el desempeño normal(Superior, Bajo...)
 
 			$table->integer('config_certificado_estudio_id')->unsigned()->nullable();
+			$table->integer('cant_areas_pierde_year')->nullable()->default(0); // Cantidad de áreas con las que se pierde un año
+			$table->integer('cant_asignatura_pierde_year')->nullable()->default(0); // Cantidad de asignaturas con las que se pierde un año
 
 			$table->integer('created_by')->nullable();
 			$table->integer('updated_by')->nullable();

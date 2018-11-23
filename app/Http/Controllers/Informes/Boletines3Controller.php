@@ -148,12 +148,12 @@ class Boletines3Controller extends Controller {
 	public function allNotasAlumno(&$alumno, $grupo_id, $periodo_id, $comport_and_frases=false, $num_periodo=4)
 	{
 
-		$asignaturas			= Grupo::detailed_materias_notas_finales($alumno->alumno_id, $grupo_id, $this->user->year_id, $num_periodo);
-		$ausencias_total		= Ausencia::totalDeAlumno($alumno->alumno_id, $periodo_id);
-		$asignaturas_perdidas 	= [];
+		$asignaturas				= Grupo::detailed_materias_notas_finales($alumno->alumno_id, $grupo_id, $this->user->year_id, $num_periodo);
+		$ausencias_total			= Ausencia::totalDeAlumno($alumno->alumno_id, $periodo_id);
+		$asignaturas_perdidas 		= [];
 	
-		$sumatoria_asignaturas = 0;
-		$alumno->ausencias_total = $ausencias_total;
+		$sumatoria_asignaturas 		= 0;
+		$alumno->ausencias_total 	= $ausencias_total;
 
 		foreach ($asignaturas as $asignatura) {
 			

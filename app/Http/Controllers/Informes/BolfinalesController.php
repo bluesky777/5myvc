@@ -61,9 +61,6 @@ class BolfinalesController extends Controller {
 
 		$boletines = $this->detailedNotasGrupo($grupo_id, $user, $requested_alumnos);
 
-		//$grupo->alumnos = $alumnos;
-		//$grupo->asignaturas = $asignaturas;
-		//return (array)$grupo;
 
 		return $boletines;
 
@@ -88,15 +85,22 @@ class BolfinalesController extends Controller {
 		
 		$grupo			= Grupo::datos($grupo_id);
 		$year			= Year::datos($user->year_id, $year_actual);
-		Log::info('firma secre '.$user->year_id . ' -- ' . $year_actual);
 		$alumnos		= Grupo::alumnos($grupo_id, $requested_alumnos);
+		
+		
+		$year_notas		= Year::datos($user->year_id);
+		$year->cant_areas_pierde_year 		= $year_notas->cant_areas_pierde_year;
+		$year->cant_asignatura_pierde_year 	= $year_notas->cant_asignatura_pierde_year;
+		
 		
 		$periodo_a_calcular = Request::input('periodo_a_calcular');
 		
 		if ($periodo_a_calcular) {
-			$year->periodos = Periodo::where('year_id', $user->year_id)->where('numero', '<=', $periodo_a_calcular)->get();
+			$year->periodos = DB::select('SELECT * FROM periodos WHERE year_id=? and numero<=? and deleted_at is null', [$user->year_id, $periodo_a_calcular]);
+			//$year->periodos = Periodo::where('year_id', $user->year_id)->where('numero', '<=', $periodo_a_calcular)->get();
 		}else{
-			$year->periodos = Periodo::where('year_id', $user->year_id)->get();
+			$year->periodos = DB::select('SELECT * FROM periodos WHERE year_id=? and deleted_at is null', [$user->year_id]);
+			//$year->periodos = Periodo::where('year_id', $user->year_id)->get();
 		}
 
 		$cons = 'SELECT c.*, i.nombre as encabezado_nombre, i2.nombre as piepagina_nombre 
@@ -133,7 +137,7 @@ class BolfinalesController extends Controller {
 		foreach ($alumnos as $alumno) {
 
 			// Todas las materias con sus unidades y subunides
-			$this->definitivasMateriasXPeriodo($alumno, $grupo_id, $user->year_id, $year->periodos, $periodo_a_calcular);
+			$this->definitivasMateriasXPeriodo($alumno, $grupo_id, $user->year_id, $year->periodos, $periodo_a_calcular, $user->si_recupera_materia_recup_indicador );
 
 
 			$asignaturas_perdidas = $this->asignaturasPerdidasDeAlumno($alumno, $grupo_id, $user->year_id);
@@ -198,7 +202,7 @@ class BolfinalesController extends Controller {
 		return array($grupo, $year, $response_alumnos, $this->escalas_val);
 	}
 
-	public function definitivasMateriasXPeriodo(&$alumno, $grupo_id, $year_id, $periodos, $per_calcular=null)
+	public function definitivasMateriasXPeriodo(&$alumno, $grupo_id, $year_id, $periodos, $per_calcular=null, $si_recupera_materia_recup_indicador=false)
 	{
 
 		$alumno->asignaturas	= Grupo::detailed_materias($grupo_id);
@@ -280,28 +284,36 @@ class BolfinalesController extends Controller {
 			$notas_perd = 0;
 			
 			foreach ($asignatura->definitivas as $keydef => $definitiva) {
+				
+				
 				$suma_def += (float)$definitiva->DefMateria;
 				$suma_aus += (int)$definitiva->cantidad_ausencia;
 				$suma_tar += (int)$definitiva->cantidad_tardanza;
+				
+				
+				if(($si_recupera_materia_recup_indicador && $definitiva->DefMateria >= User::$nota_minima_aceptada) || ($definitiva->manual==1 && $definitiva->DefMateria >= User::$nota_minima_aceptada)){
+					// No se cuentan las notas perdidas
+				}else{
+					
+					// Cuantas notas tiene perdidas por cada definitiva
+					$consul = 'SELECT COUNT(n.id) as notas_perdidas
+						from notas n
+						inner join subunidades s on s.id=n.subunidad_id and s.deleted_at is null
+						inner join unidades u on u.id=s.unidad_id and u.periodo_id=:periodo_id and u.asignatura_id=:asignatura_id and u.deleted_at is null
+						where n.nota < :nota_minima and n.alumno_id=:alumno_id;';
 
+					$definitiva->notas_perdidas = DB::select(DB::raw($consul), array(
+											':periodo_id'	=> $definitiva->periodo_id,
+											':asignatura_id'=> $asignatura->asignatura_id,
+											':nota_minima'	=> User::$nota_minima_aceptada,
+											':alumno_id'	=> $alumno->alumno_id ));
 
-				// Cuantas notas tiene perdidas por cada definitiva
-				$consul = 'SELECT COUNT(n.id) as notas_perdidas
-							from notas n
-							inner join subunidades s on s.id=n.subunidad_id and s.deleted_at is null
-							inner join unidades u on u.id=s.unidad_id and u.periodo_id=:periodo_id and u.asignatura_id=:asignatura_id and u.deleted_at is null
-							where n.nota < :nota_minima and n.alumno_id=:alumno_id;';
-
-				$definitiva->notas_perdidas = DB::select(DB::raw($consul), array(
-										':periodo_id'	=> $definitiva->periodo_id,
-										':asignatura_id'=> $asignatura->asignatura_id,
-										':nota_minima'	=> User::$nota_minima_aceptada,
-										':alumno_id'	=> $alumno->alumno_id ));
-
-				if (count($definitiva->notas_perdidas) > 0) {
-					$definitiva->notas_perdidas = $definitiva->notas_perdidas[0]->notas_perdidas;
-					$notas_perd += $definitiva->notas_perdidas;
+					if (count($definitiva->notas_perdidas) > 0) {
+						$definitiva->notas_perdidas = $definitiva->notas_perdidas[0]->notas_perdidas;
+						$notas_perd += $definitiva->notas_perdidas;
+					}
 				}
+				
 			}
 			$asignatura->promedio 			= $suma_def / count($asignatura->definitivas);
 			$asignatura->nota_asignatura 	= $asignatura->promedio;
