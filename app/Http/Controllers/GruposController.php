@@ -73,33 +73,57 @@ class GruposController extends Controller {
 		$res 	= [];
 		
 		// Con los prematriculados
+		/*
 		$consulta = 'SELECT g.id, g.nombre, g.abrev, gra.orden as orden_grado, g.orden, g.grado_id, g.year_id, gra.orden as orden_grado, g.titular_id, g.created_at, g.updated_at, count(m.id) as cantidad, g.cupo, (g.cupo - count(m.id)) as cant_faltantes
 			from grupos g
 			inner join years y on y.id=g.year_id and y.year=:anio and y.deleted_at is null
 			inner join grados gra on gra.id=g.grado_id and g.year_id=y.id 
 			left join matriculas m on m.grupo_id=g.id and m.deleted_at is null and (m.estado="MATR" or m.estado="ASIS" or m.estado="PREM")
+			left join alumnos a on m.alumno_id=a.id and a.deleted_at is null
 			where g.deleted_at is null 
 			group by g.id
 			order by g.orden';
-		
+		*/
+		$consulta = 'SELECT g.id, g.nombre, g.abrev, gra.orden as orden_grado, g.orden, g.grado_id, g.year_id, gra.orden as orden_grado, g.titular_id, g.created_at, g.updated_at, g.cupo, count(g.id) as cantidad, (g.cupo - count(g.id)) as cant_faltantes
+			from grupos g
+			inner join years y on y.id=g.year_id and y.year=:anio and y.deleted_at is null
+			inner join grados gra on gra.id=g.grado_id and g.year_id=y.id 
+			left join (select m.grupo_id from matriculas m inner join alumnos a ON m.alumno_id=a.id and a.deleted_at is null and m.deleted_at is null and (m.estado="PREM")
+			) r on r.grupo_id=g.id 
+			where g.deleted_at is null 
+			group by g.id
+			order by g.orden';
+			
 		$res['grupos'] = DB::select($consulta, [':anio'=> ($user->year+1) ] );
 		
 		for ($i=0; $i < count($res['grupos']); $i++) { 
 			
 			// Contamos los disponibles del grupo anterior
+			/*
 			$consulta = 'SELECT m.grupo_id, count(m.id) as sin_matricular FROM matriculas m
 				INNER JOIN alumnos a ON a.id=m.alumno_id and a.deleted_at is null and m.deleted_at is null 
 				INNER JOIN grupos g ON g.id=m.grupo_id and g.deleted_at is null and g.year_id=:year_id
 				INNER JOIN grados gra ON gra.id=g.grado_id and gra.deleted_at is null and gra.orden=:orden_grado
 				WHERE (m.estado="MATR" or m.estado="ASIS" or m.estado="PREM")
 				GROUP BY m.grupo_id;';
-			
-			$sin_matr = DB::select($consulta, [ ':year_id'=> $user->year_id, ':orden_grado'=> ($res['grupos'][$i]->orden_grado-1) ] );
+			*/
+			$consulta = 'SELECT m.grupo_id, count(m.id) as sin_matricular FROM matriculas m
+				INNER JOIN alumnos a ON a.id=m.alumno_id and a.deleted_at is null and m.deleted_at is null 
+				INNER JOIN grupos g ON g.id=m.grupo_id and g.deleted_at is null and g.year_id=:year_id
+				INNER JOIN grados gra ON gra.id=g.grado_id and gra.deleted_at is null and gra.orden=:orden_grado
+				INNER JOIN matriculas m2 ON m2.alumno_id=a.id and m2.deleted_at is null
+				INNER JOIN grupos g2 ON g2.id=m2.grupo_id and g2.deleted_at is null 
+				INNER JOIN years y ON y.id=g2.year_id and y.deleted_at is null and y.year=:year_next
+				INNER JOIN grados gra2 ON gra2.id=g2.grado_id and gra2.deleted_at is null and gra2.orden=:orden_next
+				WHERE (m.estado="MATR" or m.estado="ASIS" or m.estado="PREM") and (m2.estado="MATR" or m2.estado="ASIS" or m2.estado="PREM")
+				GROUP BY m.grupo_id;';
+		
+			$sin_matr = DB::select($consulta, [ ':year_id'=> $user->year_id, ':orden_grado'=> ($res['grupos'][$i]->orden_grado-1), ':year_next'=> $user->year+1, ':orden_next'=> $res['grupos'][$i]->orden_grado ] );
 			
 			if(count($sin_matr) > 0){
-				$res['grupos'][$i]->sin_matricular = $sin_matr[0]->sin_matricular;
+				$res['grupos'][$i]->sin_matricular = $res['grupos'][$i]->cantidad - $sin_matr[0]->sin_matricular;
 			}else{
-				$res['grupos'][$i]->sin_matricular = 0;
+				$res['grupos'][$i]->sin_matricular = $res['grupos'][$i]->cantidad;
 			}
 		
 			

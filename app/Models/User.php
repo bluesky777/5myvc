@@ -219,7 +219,7 @@ class User extends Authenticatable implements AuthenticatableUserContract
 								from users u
 								left join periodos per on per.id=u.periodo_id
 								left join years y on y.id=per.year_id
-								left join images i on i.id=u.imagen_id 
+								left join images i on i.id=u.imagen_id and i.deleted_at is null
 								where u.id=:user_id and u.deleted_at is null';
 
 					$usuario = DB::select($consulta, array(

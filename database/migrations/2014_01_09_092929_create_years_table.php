@@ -34,6 +34,7 @@ class CreateYearsTable extends Migration {
 			$table->integer('psicorientador_id')->nullable(); // Código del profesor que es secretario
 			
 			$table->string('nota_minima_aceptada', 3)->default(70);
+			$table->integer('minu_hora_clase', 2)->default(50);
 			$table->string('unidad_displayname')->default('Unidad');
 			$table->string('unidades_displayname')->default('Unidades');
 			$table->string('genero_unidad', 1)->default('F');

@@ -71,7 +71,7 @@ class BolfinalesController extends Controller {
 	{
 
 		$this->escalas_val = DB::select('SELECT * FROM escalas_de_valoracion WHERE year_id=? AND deleted_at is null', [$user->year_id]);
-		
+
 		$year_actual = true;
 		if (Request::has('year_selected')) {
 			if (Request::input('year_selected') == true || Request::input('year_selected') == 'true') {
@@ -91,6 +91,7 @@ class BolfinalesController extends Controller {
 		$year_notas		= Year::datos($user->year_id);
 		$year->cant_areas_pierde_year 		= $year_notas->cant_areas_pierde_year;
 		$year->cant_asignatura_pierde_year 	= $year_notas->cant_asignatura_pierde_year;
+		$year->minu_hora_clase 				= $year_notas->minu_hora_clase;
 		
 		
 		$periodo_a_calcular = Request::input('periodo_a_calcular');
@@ -362,8 +363,17 @@ class BolfinalesController extends Controller {
 		}
 		
 		// Agrupamos por áreas
-		$alumno->areas = Area::agrupar_asignaturas($grupo_id, $alumno->asignaturas, $this->escalas_val);		
-
+		$areas = Area::agrupar_asignaturas($grupo_id, $alumno->asignaturas, $this->escalas_val);		
+		$cant_lost_areas = 0;
+		
+		for ($k=0; $k < count($areas); $k++) { 
+			if ($areas[$k]->area_nota < User::$nota_minima_aceptada){
+				$cant_lost_areas = $cant_lost_areas + 1;
+			}
+		}
+		
+		$alumno->areas 				= $areas;
+		$alumno->cant_lost_areas 	= $cant_lost_areas;
 
 		return $alumno;
 	}

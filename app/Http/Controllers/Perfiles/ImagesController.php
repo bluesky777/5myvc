@@ -144,6 +144,18 @@ class ImagesController extends Controller {
 	}
 
 
+	public function postStoreFirma()
+	{
+		$user = User::fromToken();
+		
+		$newImg = $this->guardar_imagen($user);
+		$newImg->publica = false;
+		$newImg->save();
+
+		return $newImg;
+	}
+
+
 	public function postStoreIntactaPrivada()
 	{
 		$user = User::fromToken();
