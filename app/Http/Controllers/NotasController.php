@@ -292,10 +292,17 @@ class NotasController extends Controller {
 						VALUES (?, ?, ?, "Al", "Nota", ?, ?, ?, ?)';
 
 			DB::insert($consulta, [$bit_by, $bit_hist, $nota->alumno_id, $id, $bit_new, $bit_old, $now]);
-
+			
 		} catch (Exception $e) {
 			return abort(400, 'No se pudo guardar la nota');
 		}
+		
+		
+		if (Request::has('asignatura_id')) {
+			# code...
+		}
+
+		
 	
 		return (array)$nota;
 	}

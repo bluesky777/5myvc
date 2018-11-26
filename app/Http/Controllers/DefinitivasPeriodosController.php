@@ -14,6 +14,7 @@ use App\Models\Grupo;
 use App\Models\NotaFinal;
 use App\Models\Debugging;
 use App\Http\Controllers\Alumnos\Definitivas;
+use \Log;
 
 use App\Http\Controllers\Alumnos\Solicitudes;
 
@@ -110,9 +111,9 @@ class DefinitivasPeriodosController extends Controller {
 		$cant_def = count($defi_autos);
 					
 		for ($i=0; $i < $cant_def; $i++) { 
-			
-			$consulta = 'INSERT INTO notas_finales(alumno_id, asignatura_id, periodo_id, periodo, nota, recuperada, manual, created_at, updated_at) 
-						SELECT * FROM (SELECT '.$defi_autos[$i]->alumno_id.' as alumno_id, '.$defi_autos[$i]->asignatura_id.' as asignatura_id, '.$defi_autos[$i]->periodo_id.' as periodo_id, '.$num_periodo.' as periodo, '.$defi_autos[$i]->nota_asignatura.' as nota_asignatura, 0 as recuperada, 0 as manual, '.$user->user_id.' as crea, "'.$now.'" as fecha) AS tmp
+
+			$consulta = 'INSERT INTO notas_finales(alumno_id, asignatura_id, periodo_id, periodo, nota, recuperada, manual, updated_by, created_at, updated_at) 
+						SELECT * FROM (SELECT '.$defi_autos[$i]->alumno_id.' as alumno_id, '.$defi_autos[$i]->asignatura_id.' as asignatura_id, '.$defi_autos[$i]->periodo_id.' as periodo_id, '.$num_periodo.' as periodo, '.$defi_autos[$i]->nota_asignatura.' as nota_asignatura, 0 as recuperada, 0 as manual, '.$user->user_id.' as crea, "'.$now.'" as fecha, "'.$now.'" as fecha2) AS tmp
 						WHERE NOT EXISTS (
 							SELECT id FROM notas_finales WHERE alumno_id='.$defi_autos[$i]->alumno_id.' and asignatura_id='.$defi_autos[$i]->asignatura_id.' and periodo_id='.$periodo_id.'
 						) LIMIT 1';

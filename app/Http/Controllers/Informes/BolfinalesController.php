@@ -244,8 +244,7 @@ class BolfinalesController extends Controller {
 						)as tar on tar.alumno_id=nf.alumno_id and tar.asignatura_id=nf.asignatura_id and tar.periodo_id=nf.periodo_id
 						WHERE nf.alumno_id=:alumno_id and nf.asignatura_id=:asignatura_id
 						ORDER BY nf.periodo';
-						
-						
+					
 			if ($per_calcular) {
 				$paramentros = [
 					':year_id'		=> $year_id,
@@ -260,7 +259,7 @@ class BolfinalesController extends Controller {
 					':asignatura_id'=> $asignatura->asignatura_id
 				];
 			}
-			
+				
 			
 			$asignatura->definitivas = DB::select($consulta, $paramentros);
 
