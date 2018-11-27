@@ -794,6 +794,21 @@ class AlumnosController extends Controller {
 	}
 
 
+	
+	public function putDocumentoCheck()
+	{
+		$texto = Request::input('texto');
+
+		$consulta = 'SELECT a.id as alumno_id, a.documento, a.nombres, a.apellidos, "alumno" as tipo, a.deleted_at
+			FROM alumnos a
+			WHERE documento like :texto';
+			
+		$res = DB::select($consulta, [':texto' => '%'.$texto.'%']);
+		return [ 'personas' => $res ];
+
+	}
+
+
 
 
 

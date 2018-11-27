@@ -106,7 +106,7 @@ class GruposController extends Controller {
 				INNER JOIN grados gra ON gra.id=g.grado_id and gra.deleted_at is null and gra.orden=:orden_grado
 				WHERE (m.estado="MATR" or m.estado="ASIS" or m.estado="PREM")
 				GROUP BY m.grupo_id;';
-			*/
+			
 			$consulta = 'SELECT m.grupo_id, count(m.id) as sin_matricular FROM matriculas m
 				INNER JOIN alumnos a ON a.id=m.alumno_id and a.deleted_at is null and m.deleted_at is null 
 				INNER JOIN grupos g ON g.id=m.grupo_id and g.deleted_at is null and g.year_id=:year_id
@@ -117,13 +117,33 @@ class GruposController extends Controller {
 				INNER JOIN grados gra2 ON gra2.id=g2.grado_id and gra2.deleted_at is null and gra2.orden=:orden_next
 				WHERE (m.estado="MATR" or m.estado="ASIS" or m.estado="PREM") and (m2.estado="MATR" or m2.estado="ASIS" or m2.estado="PREM")
 				GROUP BY m.grupo_id;';
-		
-			$sin_matr = DB::select($consulta, [ ':year_id'=> $user->year_id, ':orden_grado'=> ($res['grupos'][$i]->orden_grado-1), ':year_next'=> $user->year+1, ':orden_next'=> $res['grupos'][$i]->orden_grado ] );
+			*/
+				
+			// Alumnos del grado anterior que no se han matriculado en este grupo
+			$consulta = 'SELECT m.id as matricula_id, m.alumno_id, a.no_matricula, a.nombres, a.apellidos, a.sexo, a.user_id, 
+					a.fecha_nac, a.ciudad_nac, a.celular, a.direccion, a.religion,
+					m.grupo_id, 
+					m.fecha_retiro as fecha_retiro, m.estado, m.fecha_matricula 
+				FROM alumnos a 
+				inner join matriculas m on a.id=m.alumno_id 
+				inner join grupos gru on gru.id=m.grupo_id and gru.year_id=:year_id
+				inner join grados gra on gra.orden=:orden_grado and gru.grado_id=gra.id
+				where a.deleted_at is null and m.deleted_at is null and (m.estado="PREM" or m.estado="MATR" or m.estado="ASIS")
+					and m.alumno_id not in (SELECT m.alumno_id FROM alumnos a 
+						inner join matriculas m on a.id=m.alumno_id and m.grupo_id=:grupo_id 
+						where a.deleted_at is null and m.deleted_at is null and (m.estado="PREM" or m.estado="MATR" or m.estado="ASIS") )
+				order by a.apellidos, a.nombres';
+
+			//$sin_matr = DB::select($consulta, [ ':year_id' => $this->user->year_id, ':grado_id' => $grado_ant_id, ':grupo_id'	=> $grupo_actual['id'] ]);
+
+
+
+			$sin_matr = DB::select($consulta, [ ':year_id'=> $user->year_id, ':orden_grado'=> ($res['grupos'][$i]->orden_grado-1), ':grupo_id'=> $res['grupos'][$i]->id ] );
 			
 			if(count($sin_matr) > 0){
-				$res['grupos'][$i]->sin_matricular = $res['grupos'][$i]->cantidad - $sin_matr[0]->sin_matricular;
+				$res['grupos'][$i]->sin_matricular = count($sin_matr);
 			}else{
-				$res['grupos'][$i]->sin_matricular = $res['grupos'][$i]->cantidad;
+				$res['grupos'][$i]->sin_matricular = count($sin_matr);
 			}
 		
 			
