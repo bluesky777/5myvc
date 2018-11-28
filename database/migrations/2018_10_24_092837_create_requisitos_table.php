@@ -14,8 +14,10 @@ class CreateRequisitosTable extends Migration {
 			$table->engine = "InnoDB";
 			$table->increments('id');
 			$table->integer('year_id')->unsigned();
+			$table->integer('orden')->unsigned()->nullable()->default('0');
 			$table->string('requisito');
 			$table->text('descripcion')->nullable(); 
+			$table->integer('editable_por_profe_id')->unsigned()->nullable();
 			$table->integer('updated_by')->unsigned()->nullable();
 			$table->softDeletes();
 			$table->timestamps();

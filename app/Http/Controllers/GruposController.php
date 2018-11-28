@@ -134,9 +134,6 @@ class GruposController extends Controller {
 						where a.deleted_at is null and m.deleted_at is null and (m.estado="PREM" or m.estado="MATR" or m.estado="ASIS") )
 				order by a.apellidos, a.nombres';
 
-			//$sin_matr = DB::select($consulta, [ ':year_id' => $this->user->year_id, ':grado_id' => $grado_ant_id, ':grupo_id'	=> $grupo_actual['id'] ]);
-
-
 
 			$sin_matr = DB::select($consulta, [ ':year_id'=> $user->year_id, ':orden_grado'=> ($res['grupos'][$i]->orden_grado-1), ':grupo_id'=> $res['grupos'][$i]->id ] );
 			
