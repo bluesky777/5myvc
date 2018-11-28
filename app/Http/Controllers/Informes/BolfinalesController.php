@@ -140,7 +140,19 @@ class BolfinalesController extends Controller {
 			// Todas las materias con sus unidades y subunides
 			$this->definitivasMateriasXPeriodo($alumno, $grupo_id, $user->year_id, $year->periodos, $periodo_a_calcular, $user->si_recupera_materia_recup_indicador );
 
+			
+			
+			$consulta = 'SELECT r.*, m.materia, m.alias FROM recuperacion_final r 
+				INNER JOIN asignaturas a ON a.id=r.asignatura_id and a.deleted_at is null
+				INNER JOIN materias m ON m.id=a.materia_id and m.deleted_at is null
+				WHERE alumno_id=? and year=?';
+				
+			$alumno->recuperaciones = DB::select($consulta, [$alumno->alumno_id, $user->year]);
 
+	
+	
+
+	
 			$asignaturas_perdidas = $this->asignaturasPerdidasDeAlumno($alumno, $grupo_id, $user->year_id);
 
 			if (count($asignaturas_perdidas) > 0) {
@@ -220,7 +232,8 @@ class BolfinalesController extends Controller {
 			$sqlPeriodo = 'and nf.periodo<=:periodo';
 		}
 		
-
+		
+		
 		foreach ($alumno->asignaturas as $asignatura) {
 
 			$alumno->total_creditos += $asignatura->creditos;

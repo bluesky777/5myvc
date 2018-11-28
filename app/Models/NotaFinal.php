@@ -106,7 +106,7 @@ class NotaFinal extends Model {
                             group by df1.alumno_id, df1.periodo_id
 						)r4 ON r4.alumno_id=a.id
                         
-                        left join recuperacion_final rf ON rf.alumno_id=a.id
+                        left join recuperacion_final rf ON rf.alumno_id=a.id and rf.asignatura_id=nf1.asignatura_id
                         
 						where a.deleted_at is null and m.deleted_at is null
 						order by a.apellidos, a.nombres';
