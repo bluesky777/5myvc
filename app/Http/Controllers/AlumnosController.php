@@ -575,25 +575,42 @@ class AlumnosController extends Controller {
 		return [ 'alumno' => $alumno, 'grupos' => $grados, 'grupos_siguientes' => $grados_sig, 
 			'tipos_doc' => $tipos_doc, 'matriculas' => $matriculas ];
 	}
+	
+	
 	public function traer_requisitos_detalle($alumno_id, $matricula){
 		
 			// Traemos los requisitos de cada año y su detalle si ya lo tiene
+			$consulta_requisitos = 'SELECT m.*, m.descripcion as descripcion_titulo FROM requisitos_matricula m
+				WHERE m.year_id=?';
+
+			$requisitos_year = DB::select($consulta_requisitos, [ $matricula->year_id ] );
+			
 			$consulta_requisitos = 'SELECT m.*, m.descripcion as descripcion_titulo, a.id as requisito_alumno_id, a.estado, a.descripcion FROM requisitos_matricula m
 				LEFT JOIN requisitos_alumno a ON a.requisito_id=m.id
-				WHERE m.year_id=? and a.alumno_id=?';
+				WHERE m.year_id=? and a.alumno_id='.$alumno_id;
 
-			$requisitos_year = DB::select($consulta_requisitos, [ $matricula->year_id, $alumno_id ] );
+			$requisitos_alumno = DB::select($consulta_requisitos, [ $matricula->year_id ] );
+			
 			
 			$now 	= Carbon::parse(Request::input('fecha_matricula'));
 			
 			for ($j=0; $j < count($requisitos_year); $j++) { 
-				if (!$requisitos_year[$j]->requisito_alumno_id) {
+				$requi_year = $requisitos_year[$j];
+				$found = false;
+				
+				for ($k=0; $k < count($requisitos_alumno); $k++) { 
 					
+					if ($requi_year->id == $requisitos_alumno[$k]->id) {
+						$found = true;
+					}
+				}
+				
+				if (!$found) {
 					$consulta = 'INSERT INTO requisitos_alumno(alumno_id, requisito_id, estado, created_at) 
 						VALUES(?, ?, "falta", ?)';
-		
+			
 					DB::insert($consulta, [ $alumno_id, $requisitos_year[$j]->id, $now ] );
-					
+						
 				}
 			}
 			
