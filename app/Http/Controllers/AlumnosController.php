@@ -530,7 +530,7 @@ class AlumnosController extends Controller {
 			
 	
 		// Matrícula del siguiente año
-		$consulta = 'SELECT m.id as matricula_id, m.alumno_id, a.no_matricula, a.nombres, a.apellidos, g.nombre as grupo_nombre, g.abrev as grupo_abrev, m.grupo_id, m.estado, m.nuevo, m.repitente, m.prematriculado, y.id as year_id, y.year as year,
+		$consulta = 'SELECT m.id as matricula_id, m.alumno_id, a.no_matricula, a.nombres, a.apellidos, g.nombre as grupo_nombre, g.abrev as grupo_abrev, m.grupo_id, m.estado, m.nuevo, m.repitente, m.prematriculado, m.fecha_matricula, y.id as year_id, y.year as year,
 				m.programar, m.descripcion_recomendacion, m.efectuar_una, m.descripcion_efectuada 
 			FROM alumnos a 
 			inner join matriculas m on a.id=m.alumno_id and a.id=:alumno_id 
