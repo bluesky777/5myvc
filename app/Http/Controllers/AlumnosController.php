@@ -580,9 +580,9 @@ class AlumnosController extends Controller {
 			// Traemos los requisitos de cada año y su detalle si ya lo tiene
 			$consulta_requisitos = 'SELECT m.*, m.descripcion as descripcion_titulo, a.id as requisito_alumno_id, a.estado, a.descripcion FROM requisitos_matricula m
 				LEFT JOIN requisitos_alumno a ON a.requisito_id=m.id
-				WHERE m.year_id=?';
+				WHERE m.year_id=? and a.alumno_id=?';
 
-			$requisitos_year = DB::select($consulta_requisitos, [ $matricula->year_id ] );
+			$requisitos_year = DB::select($consulta_requisitos, [ $matricula->year_id, $alumno_id ] );
 			
 			$now 	= Carbon::parse(Request::input('fecha_matricula'));
 			
