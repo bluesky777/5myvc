@@ -149,8 +149,8 @@ class BolfinalesController extends Controller {
 				
 			$alumno->recuperaciones = DB::select($consulta, [$alumno->alumno_id, $user->year]);
 
-	
-	
+			
+			$alumno->cant_lost_asig = $alumno->cant_lost_asig - count($alumno->recuperaciones);
 
 	
 			$asignaturas_perdidas = $this->asignaturasPerdidasDeAlumno($alumno, $grupo_id, $user->year_id);
