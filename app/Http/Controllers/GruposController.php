@@ -98,26 +98,7 @@ class GruposController extends Controller {
 		
 		for ($i=0; $i < count($res['grupos']); $i++) { 
 			
-			// Contamos los disponibles del grupo anterior
-			/*
-			$consulta = 'SELECT m.grupo_id, count(m.id) as sin_matricular FROM matriculas m
-				INNER JOIN alumnos a ON a.id=m.alumno_id and a.deleted_at is null and m.deleted_at is null 
-				INNER JOIN grupos g ON g.id=m.grupo_id and g.deleted_at is null and g.year_id=:year_id
-				INNER JOIN grados gra ON gra.id=g.grado_id and gra.deleted_at is null and gra.orden=:orden_grado
-				WHERE (m.estado="MATR" or m.estado="ASIS" or m.estado="PREM")
-				GROUP BY m.grupo_id;';
 			
-			$consulta = 'SELECT m.grupo_id, count(m.id) as sin_matricular FROM matriculas m
-				INNER JOIN alumnos a ON a.id=m.alumno_id and a.deleted_at is null and m.deleted_at is null 
-				INNER JOIN grupos g ON g.id=m.grupo_id and g.deleted_at is null and g.year_id=:year_id
-				INNER JOIN grados gra ON gra.id=g.grado_id and gra.deleted_at is null and gra.orden=:orden_grado
-				INNER JOIN matriculas m2 ON m2.alumno_id=a.id and m2.deleted_at is null
-				INNER JOIN grupos g2 ON g2.id=m2.grupo_id and g2.deleted_at is null 
-				INNER JOIN years y ON y.id=g2.year_id and y.deleted_at is null and y.year=:year_next
-				INNER JOIN grados gra2 ON gra2.id=g2.grado_id and gra2.deleted_at is null and gra2.orden=:orden_next
-				WHERE (m.estado="MATR" or m.estado="ASIS" or m.estado="PREM") and (m2.estado="MATR" or m2.estado="ASIS" or m2.estado="PREM")
-				GROUP BY m.grupo_id;';
-			*/
 				
 			// Alumnos del grado anterior que no se han matriculado en este grupo
 			$consulta = 'SELECT m.id as matricula_id, m.alumno_id, a.no_matricula, a.nombres, a.apellidos, a.sexo, a.user_id, 
@@ -156,6 +137,21 @@ class GruposController extends Controller {
 				$res['grupos'][$i]->cant_formularios = $forms[0]->formularios;
 			}else{
 				$res['grupos'][$i]->cant_formularios = 0;
+			}
+			
+		
+			// Contamos los que está 100% matriculados
+			$consulta = 'SELECT count(m.id) as matriculados FROM matriculas m
+				INNER JOIN grupos g ON g.id=m.grupo_id and m.estado="MATR" AND m.grupo_id=:grupo_id and m.deleted_at is null and g.deleted_at is null
+				INNER JOIN years y ON y.id=g.year_id AND y.deleted_at is null and y.year=:year_next 
+				GROUP BY g.id;';
+			
+			$matriculados = DB::select($consulta, [ ':grupo_id'=> $res['grupos'][$i]->id, ':year_next'=> $user->year+1 ] );
+			
+			if(count($matriculados) > 0){
+				$res['grupos'][$i]->cant_matriculados = $matriculados[0]->matriculados;
+			}else{
+				$res['grupos'][$i]->cant_matriculados = 0;
 			}
 			
 		
