@@ -526,10 +526,18 @@ class BolfinalesController extends Controller {
 
 	
 	
-	public function putCambiarContadorCertificado()
+	public function putCambiarContadorCertificados()
 	{
 		if (Request::input('contador') == true) {
 			DB::update('UPDATE years SET contador_certificados=? WHERE actual=1 and deleted_at is null', [ Request::input('contador'), Request::input('year_id') ]);
+		}
+		return 'Cambiado';
+	}
+
+	public function putCambiarContadorFolios()
+	{
+		if (Request::input('contador') == true) {
+			DB::update('UPDATE years SET contador_folios=? WHERE actual=1 and deleted_at is null', [ Request::input('contador'), Request::input('year_id') ]);
 		}
 		return 'Cambiado';
 	}
