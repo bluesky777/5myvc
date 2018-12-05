@@ -24,45 +24,28 @@ use App\Models\Area;
 use \Log;
 
 
-class BolfinalesController extends Controller {
+class CertificadosPersonaController extends Controller {
 
 
 	private $escalas_val = [];
 
 
 
-	public function putDetailedNotasYearGroup($grupo_id)
-	{
-		$user = User::fromToken();
-
-		$boletines = $this->detailedNotasGrupo($grupo_id, $user);
-
-		//$grupo->alumnos = $alumnos;
-		//$grupo->asignaturas = $asignaturas;
-		//return (array)$grupo;
-
-		return $boletines;
 
 
-	}
-
-
-
-	public function putDetailedNotasYear($grupo_id)
+	public function putIndex()
 	{
 		$user = User::fromToken();
 
 		
-		$requested_alumnos = '';
+		$alumno_id = Request::get('alumno_id');
 
-		if (Request::has('requested_alumnos')) {
-			$requested_alumnos = Request::get('requested_alumnos');
-		}
-
-		$boletines = $this->detailedNotasGrupo($grupo_id, $user, $requested_alumnos);
+		$matriculas = DB::select('SELECT * FROM matriculas m 
+			INNER JOIN grupos g ON g.id=m.grupo_id and g.deleted_at is null
+			WHERE m.deleted_at is null and m.alumno_id=?', [$alumno_id]);
 
 
-		return $boletines;
+		return $matriculas;
 
 
 	}
@@ -80,12 +63,6 @@ class BolfinalesController extends Controller {
 		}
 		
 		
-		if (Request::has('aumentar_contador')) {
-			if (Request::input('aumentar_contador') == true) {
-				$contador = DB::select('SELECT id, contador_certificados FROM years WHERE deleted_at is null and actual=1')[0];
-				DB::update('UPDATE years SET contador_certificados=? WHERE year_id=?', [$contador->contador_certificados+1, $contador->id]);
-			}
-		}
 		
 		
 		
@@ -524,15 +501,6 @@ class BolfinalesController extends Controller {
 
 
 
-	
-	
-	public function putCambiarContadorCertificado()
-	{
-		if (Request::input('contador') == true) {
-			DB::update('UPDATE years SET contador_certificados=? WHERE actual=1 and deleted_at is null', [ Request::input('contador'), Request::input('year_id') ]);
-		}
-		return 'Cambiado';
-	}
 
 
 

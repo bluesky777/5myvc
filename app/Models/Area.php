@@ -33,11 +33,15 @@ class Area extends Model {
 			$found = 0;
 			$areas[$i]->sumatoria 		= 0;
 			$areas[$i]->asignaturas 	= [];
+			$areas[$i]->creditos 		= 0;
 			
 			for ($j=0; $j < $cantAs; $j++) { 
 				if ($areas[$i]->area_id == $asignaturas[$j]->area_id) {
 					$found += 1;
 					$areas[$i]->sumatoria += $asignaturas[$j]->nota_asignatura;
+					if (isset($asignaturas[$j]->creditos)) {
+						$areas[$i]->creditos += $asignaturas[$j]->creditos;
+					}
 					array_push($areas[$i]->asignaturas, $asignaturas[$j]);
 				}
 			}
@@ -71,13 +75,14 @@ class Area extends Model {
 		$areas 		= DB::select($consulta, [ $grupo_id ]);
 		$cantAr 	= count($areas);
 		$cantAs 	= count($asignaturas);
-		
+
 		for ($i=0; $i < $cantAr; $i++) { 
 			$found = 0;
 			$areas[$i]->sumatoria_per1 	= 0;
 			$areas[$i]->sumatoria_per2 	= 0;
 			$areas[$i]->sumatoria_per3 	= 0;
 			$areas[$i]->sumatoria_per4 	= 0;
+			$areas[$i]->creditos 		= 0;
 			$areas[$i]->asignaturas 	= [];
 			
 			for ($j=0; $j < $cantAs; $j++) { 
@@ -95,6 +100,9 @@ class Area extends Model {
 					}
 					if (isset($asignaturas[$j]->nota_final_per4)) {
 						$areas[$i]->sumatoria_per4 += $asignaturas[$j]->nota_final_per4;
+					}
+					if (isset($asignaturas[$j]->creditos)) {
+						$areas[$i]->creditos += $asignaturas[$j]->creditos;
 					}
 					
 					array_push($areas[$i]->asignaturas, $asignaturas[$j]);

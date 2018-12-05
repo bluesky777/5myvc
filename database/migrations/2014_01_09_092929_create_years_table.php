@@ -44,6 +44,9 @@ class CreateYearsTable extends Migration {
 
 			$table->text('resolucion')->nullable();
 			$table->string('codigo_dane')->nullable();
+			$table->string('caracter')->nullable()->default('Privado'); // Público, Privado
+			$table->string('calendario')->nullable()->default('A'); // A B
+			$table->string('jornada')->nullable()->default('Mañana y tarde'); // "Mañana y tarde", "Única"
 			$table->text('encabezado_certificado')->nullable();
 			$table->text('frase_final_certificado')->nullable();
 			$table->boolean('actual')->default(0);
@@ -62,7 +65,8 @@ class CreateYearsTable extends Migration {
 			$table->integer('config_certificado_estudio_id')->unsigned()->nullable();
 			$table->integer('cant_areas_pierde_year')->nullable()->default(0); // Cantidad de áreas con las que se pierde un año
 			$table->integer('cant_asignatura_pierde_year')->nullable()->default(0); // Cantidad de asignaturas con las que se pierde un año
-
+			$table->integer('contador_certificados', 2)->default(0); // aumenta cada vez que se muestra un certificado
+			
 			$table->integer('created_by')->nullable();
 			$table->integer('updated_by')->nullable();
 			$table->integer('deleted_by')->nullable();

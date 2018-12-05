@@ -74,6 +74,7 @@ AdvancedRoute::controller('historiales', 'Historiales\HistorialesController');
 # Informes
 AdvancedRoute::controller('informes', 'Informes\InformesController');
 AdvancedRoute::controller('bolfinales', 'Informes\BolfinalesController');
+AdvancedRoute::controller('certificados-persona', 'Informes\CertificadosPersonaController');
 AdvancedRoute::controller('bolfinales-preescolar', 'Informes\BolfinalesPreescolarController');
 #AdvancedRoute::controller('puestos', 'Informes\PuestosAnualesController');
 AdvancedRoute::controller('puestos', 'Informes\PuestosController');
