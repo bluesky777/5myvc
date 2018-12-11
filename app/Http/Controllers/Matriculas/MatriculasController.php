@@ -300,13 +300,14 @@ class MatriculasController extends Controller {
 
 			$btGrid1 = '<a uib-tooltip="Cambiar" ng-show="row.entity.nombres" tooltip-placement="left" class="btn btn-default btn-xs shiny icon-only info" ng-click="grid.appScope.cambiarAcudiente(grid.parentRow.entity, row.entity)" tooltip-append-to-body="true"><i class="fa fa-edit "></i></a>';
 			$btGrid2 = '<a uib-tooltip="Quitar" ng-show="row.entity.nombres" tooltip-placement="right" class="btn btn-default btn-xs shiny icon-only danger" ng-click="grid.appScope.quitarAcudiente(grid.parentRow.entity, row.entity)" tooltip-append-to-body="true"><i class="fa fa-trash "></i></a>';
-			$btGrid3 = '<a uib-tooltip="Seleccionar o crear acudiente para asignar a alumno" ng-show="!row.entity.nombres" class="btn btn-info btn-xs" ng-click="grid.appScope.agregarAcudiente(grid.parentRow.entity)" tooltip-append-to-body="true">Agregar...</a>';
-			$btEdit = '<span style="padding-left: 2px; padding-top: 4px;" class="btn-group">' . $btGrid1 . $btGrid2 . $btGrid3 . '</span>';
+			$btGrid3 = '<a uib-tooltip="Asignar también a otro alumno" ng-show="row.entity.nombres" class="btn btn-default btn-xs shiny" ng-click="grid.appScope.asignarAOtro(row.entity)" tooltip-append-to-body="true" style="height: 24px;">Compartir</a>';
+			$btGrid4 = '<a uib-tooltip="Seleccionar o crear acudiente para asignar a alumno" ng-show="!row.entity.nombres" class="btn btn-info btn-xs" ng-click="grid.appScope.agregarAcudiente(grid.parentRow.entity)" tooltip-append-to-body="true">Agregar...</a>';
+			$btEdit = '<span style="padding-left: 2px; padding-top: 4px;" class="btn-group">' . $btGrid1 . $btGrid2 . $btGrid3 . $btGrid4 . '</span>';
 
 			$subGridOptions 	= [
 				'enableCellEditOnFocus' => true,
 				'columnDefs' 	=> [
-					['name' => 'edicion', 'displayName' => 'Edici', 'width' => 54, 'enableSorting' => false, 'cellTemplate' => $btEdit, 'enableCellEdit' => false],
+					['name' => 'edicion', 'displayName' => 'Edici', 'width' => 123, 'enableSorting' => false, 'cellTemplate' => $btEdit, 'enableCellEdit' => false],
 					['name' => "Id", 'field' => "id", 'maxWidth' => 60, 'enableCellEdit' => false ],
 					['name' => "Nombres", 'field' => "nombres", 'maxWidth' => 120 ],
 					['name' => "Apellidos", 'field' => "apellidos", 'maxWidth' => 100],
