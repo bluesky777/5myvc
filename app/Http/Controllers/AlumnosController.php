@@ -270,9 +270,14 @@ class AlumnosController extends Controller {
 
 				$alumno->user = $usuario;
 
+				$grupo_id = false;
 				if (Request::input('grupo')['id']) {
 					$grupo_id = Request::input('grupo')['id'];
-
+				}elseif (Request::input('grupo_sig')['id']) {
+					$grupo_id = Request::input('grupo_sig')['id'];
+				}
+				
+				if ($grupo_id){
 					$matricula = new Matricula;
 					$matricula->alumno_id		=	$alumno->id;
 					$matricula->grupo_id		=	$grupo_id;
@@ -294,8 +299,8 @@ class AlumnosController extends Controller {
 
 					$grupo = Grupo::find($matricula->grupo_id);
 					$alumno->grupo = $grupo;
+				
 				}
-
 
 				return $alumno;
 
