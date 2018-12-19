@@ -188,6 +188,61 @@ class GruposController extends Controller {
 	}
 
 
+
+	
+	public function putConDisciplina()
+	{
+		$user 		= User::fromToken();
+		$year_id 	= Request::input('year_id', $user->year_id);
+		$res 		= [];
+		
+		
+		$consulta = 'SELECT g.id, g.nombre, g.abrev, g.orden, gra.orden as orden_grado, g.grado_id, g.year_id, g.titular_id, g.cupo, 
+						p.nombres as nombres_titular, p.apellidos as apellidos_titular, p.titulo, g.caritas, 
+						g.created_at, g.updated_at, gra.nombre as nombre_grado
+					from grupos g
+					inner join grados gra on gra.id=g.grado_id and g.year_id=:year_id
+					left join profesores p on p.id=g.titular_id
+					where g.deleted_at is null
+					order by g.orden';
+
+		$res['grupos'] = DB::select($consulta, [':year_id'=>$year_id] );
+		
+		
+		
+		// CONFIGURACIONES
+		$consulta = 'SELECT c.* FROM dis_configuraciones c
+			WHERE c.year_id=:year_id and c.deleted_at is null';
+			
+		$config = DB::select($consulta, [':year_id'		=> $year_id, ]);
+		
+		if (count($config) > 0) {
+			$config = $config[0];
+		}else{
+			$now 		= Carbon::now('America/Bogota');
+			$consulta 	= 'INSERT INTO dis_configuraciones(year_id, created_at, updated_at) VALUES(?,?,?)';
+			DB::insert($consulta, [$year_id, $now, $now]);
+			
+			$last_id 	= DB::getPdo()->lastInsertId();
+			
+			$consulta 	= 'SELECT c.* FROM dis_configuraciones c WHERE c.id=? and c.deleted_at is null';
+			$config 	= DB::select($consulta, [$last_id])[0];
+		
+		}
+		$res['config'] = $config;
+		
+		
+		// ORDINALES
+		$consulta = 'SELECT c.* FROM dis_ordinales c WHERE c.year_id=? and c.deleted_at is null';
+		$ordinales = DB::select($consulta, [ $year_id ]);
+		
+		$res['ordinales'] = $ordinales;
+		
+		
+		return $res;
+	}
+
+
 	public function getNextYear()
 	{
 		$user = User::fromToken();

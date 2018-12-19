@@ -88,8 +88,10 @@ AdvancedRoute::controller('simat', 'Informes\SimatController');
 AdvancedRoute::controller('acudientes-export', 'Informes\AcudientesExportController');
 AdvancedRoute::controller('excel-docentes', 'Informes\ExcelListadoDocentesController');
 AdvancedRoute::controller('observador', 'Informes\ObservadorController');
+AdvancedRoute::controller('ordinales', 'Disciplina\OrdinalesController');
+AdvancedRoute::controller('disciplina', 'Disciplina\DisciplinaController');
 
-# Pefiles
+# Perfiles
 AdvancedRoute::controller('perfiles', 'Perfiles\PerfilesController');
 AdvancedRoute::controller('myimages', 'Perfiles\ImagesController');
 AdvancedRoute::controller('images-users', 'Perfiles\ImagesUsuariosController');
