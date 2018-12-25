@@ -70,6 +70,8 @@ class UnidadesController extends Controller {
 
 		return $unidades;
 	}
+	
+	
 
 
 	// Un informe con todo lo del profe

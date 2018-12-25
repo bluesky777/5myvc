@@ -58,7 +58,7 @@ class AsistenciasController extends Controller {
                 $alumno->userData = $userData;
 
                 // Ausencias
-                $cons_aus = "SELECT  a.id, a.asignatura_id, a.alumno_id, a.periodo_id, a.cantidad_ausencia, a.cantidad_tardanza, a.entrada, a.fecha_hora, a.uploaded, a.created_by FROM ausencias a
+                $cons_aus = "SELECT  a.id, a.asignatura_id, a.alumno_id, a.periodo_id, a.cantidad_ausencia, a.cantidad_tardanza, a.entrada, a.fecha_hora, a.uploaded, a.created_by, a.tipo FROM ausencias a
                             inner join periodos p on p.id=a.periodo_id and p.id=:per_id
                             WHERE a.tipo='ausencia' and a.entrada=1 and a.alumno_id=:alumno_id and a.deleted_at is null;";
                 $ausencias = DB::select($cons_aus, [":per_id" => $user->periodo_id, ':alumno_id' => $alumno->alumno_id ]);
@@ -67,7 +67,7 @@ class AsistenciasController extends Controller {
 
                 
                 // Tardanzas
-                $cons_tar = "SELECT  a.id, a.asignatura_id, a.alumno_id, a.periodo_id, a.cantidad_ausencia, a.cantidad_tardanza, a.entrada, a.fecha_hora, a.uploaded, a.created_by FROM ausencias a
+                $cons_tar = "SELECT  a.id, a.asignatura_id, a.alumno_id, a.periodo_id, a.cantidad_ausencia, a.cantidad_tardanza, a.entrada, a.fecha_hora, a.uploaded, a.created_by, a.tipo FROM ausencias a
                             inner join periodos p on p.id=a.periodo_id and p.id=:per_id
                             WHERE a.tipo='tardanza' and a.entrada=1 and a.alumno_id=:alumno_id and a.deleted_at is null;";
                 $tardanzas = DB::select($cons_tar, [":per_id" => $user->periodo_id, ':alumno_id' => $alumno->alumno_id ]);
@@ -175,7 +175,7 @@ class AsistenciasController extends Controller {
 	{
 		$user = $this->user();
 
-		$dt = Carbon::now()->format('Y-m-d G:H:i');
+		$dt = Carbon::now('America/Bogota');
 
 		$consulta = 'INSERT INTO ausencias
 						(alumno_id, asignatura_id, cantidad_ausencia, cantidad_tardanza, entrada, tipo, fecha_hora, periodo_id, uploaded, created_by, created_at, updated_at)

@@ -15,6 +15,7 @@ use App\Models\Alumno;
 use App\Models\Bitacora;
 use App\Models\FraseAsignatura;
 use App\Http\Controllers\Informes\PuestosController;
+use \Log;
 
 
 class NotasController extends Controller {
@@ -63,7 +64,7 @@ class NotasController extends Controller {
 			$alumno->frases = $frases;
 
 			// Ausencias
-			$cons_aus = "SELECT  a.id, a.asignatura_id, a.alumno_id, a.periodo_id, a.cantidad_ausencia, a.cantidad_tardanza, a.entrada, a.fecha_hora, a.uploaded, a.created_by FROM ausencias a
+			$cons_aus = "SELECT  a.id, a.asignatura_id, a.alumno_id, a.periodo_id, a.cantidad_ausencia, a.cantidad_tardanza, a.entrada, a.fecha_hora, a.uploaded, a.created_by, a.tipo FROM ausencias a
 						inner join periodos p on p.id=a.periodo_id and p.id=:per_id
 						WHERE a.tipo='ausencia' and a.asignatura_id=:asignatura_id and a.alumno_id=:alumno_id and a.deleted_at is null;";
 			$ausencias = DB::select($cons_aus, [":per_id" => $user->periodo_id, ':asignatura_id' => $asignatura->asignatura_id, ':alumno_id' => $alumno->alumno_id ]);
@@ -71,7 +72,7 @@ class NotasController extends Controller {
 			$alumno->ausencias_count 	= count($ausencias);
 
 			// Tardanzas
-			$cons_tar = "SELECT  a.id, a.asignatura_id, a.alumno_id, a.periodo_id, a.cantidad_ausencia, a.cantidad_tardanza, a.entrada, a.fecha_hora, a.uploaded, a.created_by FROM ausencias a
+			$cons_tar = "SELECT  a.id, a.asignatura_id, a.alumno_id, a.periodo_id, a.cantidad_ausencia, a.cantidad_tardanza, a.entrada, a.fecha_hora, a.uploaded, a.created_by, a.tipo FROM ausencias a
 						inner join periodos p on p.id=a.periodo_id and p.id=:per_id
 						WHERE a.tipo='tardanza' and a.asignatura_id=:asignatura_id and a.alumno_id=:alumno_id and a.deleted_at is null;";
 			$tardanzas = DB::select($cons_tar, [":per_id" => $user->periodo_id, ':asignatura_id' => $asignatura->asignatura_id, ':alumno_id' => $alumno->alumno_id ]);
@@ -316,6 +317,85 @@ class NotasController extends Controller {
 		DB::delete($consulta, [$id]);
 
 		return 'Eliminada';
+	}
+	
+	
+	
+	// Para notas individuales en horario hoy
+	public function putSubunidad()
+	{
+		$user 			= User::fromToken();
+		$grupo_id 		= Request::input('grupo_id');
+		$subunidad 		= Request::input('subunidad');
+		$asignatura_id 	= Request::input('asignatura_id');
+		$sub_id 		= $subunidad["id"];
+		$nota_default 	= $subunidad["nota_default"];
+		$now 			= Carbon::now('America/Bogota');
+
+
+		$consulta = 'SELECT m.id as matricula_id, m.alumno_id, a.nombres, a.apellidos, a.sexo, a.user_id, a.fecha_nac, 
+				m.grupo_id, m.estado, 
+				u.imagen_id, IFNULL(i.nombre, IF(a.sexo="F","default_female.png", "default_male.png")) as imagen_nombre, 
+				a.foto_id, IFNULL(i2.nombre, IF(a.sexo="F","default_female.png", "default_male.png")) as foto_nombre,
+				m.fecha_retiro as fecha_retiro 
+			FROM alumnos a 
+			inner join matriculas m on a.id=m.alumno_id and m.grupo_id=? and m.deleted_at is null 
+			left join users u on a.user_id=u.id and u.deleted_at is null
+			left join images i on i.id=u.imagen_id and i.deleted_at is null
+			left join images i2 on i2.id=a.foto_id and i2.deleted_at is null
+			where a.deleted_at is null and m.deleted_at is null
+			order by a.apellidos, a.nombres';
+		
+		$alumnos = DB::select($consulta, [$grupo_id]);
+		
+		
+		foreach ($alumnos as $alumno) {
+			
+			
+			$consulta = "INSERT INTO notas(subunidad_id, alumno_id, nota, created_by, created_at, updated_at) 
+						SELECT * FROM 
+						(SELECT '.$sub_id.' as subunidad_id, '.$alumno->alumno_id.' as alumno_id, '.$nota_default.' as nota, '.$user->user_id.' as created_by, '.$now.' as created_at, '.$now.' as updated_at) AS tmp
+							WHERE NOT EXISTS (
+								SELECT * from notas WHERE subunidad_id=? and alumno_id=? and deleted_at is null
+							) LIMIT 1";
+								
+			DB::insert($consulta, [ $sub_id, $alumno->alumno_id ]);
+			
+			
+			$frases = FraseAsignatura::deAlumno($asignatura_id, $alumno->alumno_id, $user->periodo_id);
+			$alumno->frases = $frases;
+
+			// Ausencias
+			$cons_aus = "SELECT  a.id, a.asignatura_id, a.alumno_id, a.periodo_id, a.cantidad_ausencia, a.cantidad_tardanza, a.entrada, a.fecha_hora, a.uploaded, a.created_by, a.tipo FROM ausencias a
+					inner join periodos p on p.id=a.periodo_id and p.id=:per_id
+					WHERE a.tipo='ausencia' and a.asignatura_id=:asignatura_id and a.alumno_id=:alumno_id and a.deleted_at is null;";
+			$ausencias = DB::select($cons_aus, [":per_id" => $user->periodo_id, ':asignatura_id' => $asignatura_id, ':alumno_id' => $alumno->alumno_id ]);
+			$alumno->ausencias 			= $ausencias;
+			$alumno->ausencias_count 	= count($ausencias);
+
+			// Tardanzas
+			$cons_tar = "SELECT  a.id, a.asignatura_id, a.alumno_id, a.periodo_id, a.cantidad_ausencia, a.cantidad_tardanza, a.entrada, a.fecha_hora, a.uploaded, a.created_by, a.tipo FROM ausencias a
+					inner join periodos p on p.id=a.periodo_id and p.id=:per_id
+					WHERE a.tipo='tardanza' and a.asignatura_id=:asignatura_id and a.alumno_id=:alumno_id and a.deleted_at is null;";
+			$tardanzas = DB::select($cons_tar, [":per_id" => $user->periodo_id, ':asignatura_id' => $asignatura_id, ':alumno_id' => $alumno->alumno_id ]);
+			
+			// Notas
+			$cons = "SELECT n.id, n.nota, n.subunidad_id, n.alumno_id, n.created_by, n.updated_by, n.deleted_by, n.deleted_at, n.created_at, n.updated_at
+				FROM notas n
+				WHERE n.alumno_id=:alumno_id and n.subunidad_id=:subunidad_id;";
+			
+			$nota = DB::select($cons, [':alumno_id' => $alumno->alumno_id, ':subunidad_id' => $sub_id ]);
+			
+			
+
+			$alumno->nota 				= $nota[0];
+			$alumno->tardanzas 			= $tardanzas;
+			$alumno->tardanzas_count 	= count($tardanzas);
+
+		}
+		
+		
+		return [ 'alumnos'=> $alumnos ];
 	}
 
 }

@@ -101,7 +101,7 @@ class TSubirController extends Controller {
 
 			}else{
 
-				$dt = Carbon::now()->format('Y-m-d G:H:i');
+				$dt = Carbon::now('America/Bogota')->format('Y-m-d G:H:i');
 
 				$consulta = 'INSERT INTO ausencias
 								(alumno_id, asignatura_id, cantidad_ausencia, cantidad_tardanza, entrada, tipo, fecha_hora, periodo_id, uploaded, created_by, created_at, updated_at)
@@ -156,7 +156,7 @@ class TSubirController extends Controller {
 	{
 		$user = $this->user();
 
-		$dt = Carbon::now()->format('Y-m-d G:H:i');
+		$dt = Carbon::now('America/Bogota');
 
 		$consulta = 'INSERT INTO ausencias
 						(alumno_id, asignatura_id, cantidad_ausencia, cantidad_tardanza, entrada, tipo, fecha_hora, periodo_id, uploaded, created_by, created_at, updated_at)

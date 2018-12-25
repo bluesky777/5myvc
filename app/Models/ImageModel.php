@@ -5,6 +5,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 use DB;
 use File;
+use \Log;
 
 
 class ImageModel extends Model {
@@ -111,14 +112,14 @@ class ImageModel extends Model {
 	{
 		$img 		= ImageModel::findOrFail($imagen_id);
 		$filename 	= 'images/perfil/'.$img->nombre;
-
+		
 		if (File::exists($filename)) {
 			File::delete($filename);
-			$img->delete();
 		}else{
-			return 'No existe';
+			Log::info($imagen_id . ' -- Al parecer NO existe imagen: ' . $filename);
 		}
-
+		
+		$img->delete();
 
 		// Elimino cualquier referencia que otros tengan a esa imagen borrada.
 		$alumnos = Alumno::where('foto_id', $imagen_id)->get();

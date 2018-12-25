@@ -84,7 +84,7 @@ class CreateDisciplinaTable extends Migration {
 			$table->string('testigos')->nullable(); 
 			$table->string('descargo')->nullable(); 
 			$table->boolean('firma_alumno')->nullable()->default(0); // Si el alumno firmó
-			//$table->boolean('firma_acudiente')->nullable(); // Si el acudiente ya vino y firmó
+			$table->boolean('firma_acudiente')->nullable(); // Si el acudiente ya vino y firmó
 			
 			$table->integer('added_by')->unsigned()->nullable();
 			$table->integer('updated_by')->unsigned()->nullable();

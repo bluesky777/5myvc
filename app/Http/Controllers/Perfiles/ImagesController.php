@@ -264,7 +264,7 @@ class ImagesController extends Controller {
 				DB::update($consulta, [ ':foto_id'	=> $id, ':data_id'	=> $pedido->data_id ]);
 				$pedido = ChangeAsked::verificar_pedido_actual($user->user_id, $user->year_id, $user->tipo);
 			}else{
-				$dt = Carbon::now()->format('Y-m-d G:H:i');
+				$dt = Carbon::now('America/Bogota');
 				$consulta 	= 'INSERT INTO change_asked_data(image_to_delete_id, created_at, updated_at) VALUES(:foto_id, :created_at, :updated_at)';
 				DB::insert($consulta, [ ':foto_id'	=> $id, ':created_at'	=> $dt, ':updated_at'	=> $dt ]);
 				$last_id 	= DB::getPdo()->lastInsertId();

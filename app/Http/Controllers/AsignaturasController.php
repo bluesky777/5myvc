@@ -9,6 +9,7 @@ use App\Models\Year;
 use App\Models\Profesor;
 use App\Models\Asignatura;
 use App\Models\Unidad;
+use Carbon\Carbon;
 
 use App\Http\Controllers\Alumnos\Solicitudes;
 
@@ -19,7 +20,7 @@ class AsignaturasController extends Controller {
 	{
 		$user = User::fromToken();
 
-		$consulta = 'SELECT a.id, a.materia_id, a.grupo_id, a.profesor_id, a.creditos, a.orden,
+		$consulta = 'SELECT a.id, a.materia_id, a.grupo_id, a.profesor_id, a.creditos, a.orden, a.domingo, a.lunes, a.martes, a.miercoles, a.jueves, a.viernes, a.sabado,
 						a.created_by, a.updated_by, a.created_at, a.updated_at, ar.nombre as nombre_area, ar.alias as alias_area
 					FROM asignaturas a
 					inner join materias m on m.id=a.materia_id and m.deleted_at is null
@@ -100,6 +101,22 @@ class AsignaturasController extends Controller {
 		return $asignatura;
 	}
 
+
+	public function putToggleDia()
+	{
+		$user 			= User::fromToken();
+		$asignatura_id 	= Request::input('asignatura_id');
+		$dia 			= Request::input('dia');
+		$valor 			= Request::input('valor');
+		$now 			= Carbon::now('America/Bogota');
+		
+		$consulta 	= 'UPDATE asignaturas SET '.$dia.'=:valor, updated_by=:modificador, updated_at=:fecha WHERE id=:asignatura_id';
+		DB::update($consulta, [$valor, $user->user_id, $now, $asignatura_id]);
+		
+		return 'Cambiado';
+	}
+
+	
 	public function putUpdate($id)
 	{
 		$asignatura = Asignatura::findOrFail($id);

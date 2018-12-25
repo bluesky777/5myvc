@@ -22,6 +22,7 @@ use App\Http\Controllers\Perfiles\Publicaciones;
 
 use Carbon\Carbon;
 use \DateTime;
+use \Log;
 
 
 class ChangeAskedController extends Controller {
@@ -133,9 +134,24 @@ class ChangeAskedController extends Controller {
 							order by created_at desc limit 50', 
 							[ $user->username ]);
 
-			# Datos de los docentes de este año
-			$profes_actuales = $this->datos_de_docentes_este_anio($user, true);
 			
+							
+			# Datos de los docentes de este año
+			$profes_actuales = [];
+			if (Request::input('anchoWindow') > 500) {
+				$profes_actuales = $this->datos_de_docentes_este_anio($user, true);
+			}
+			
+			
+			
+			
+			
+			# Asignaturas hoy - horario
+			$now = Carbon::now('America/Bogota');
+			$dia = $now->dayOfWeek;
+			$horario_hoy 	= $this->asignaturas_dia($user->year_id, $user->persona_id, $user->periodo_id, $dia);
+			$horario_manana = $this->asignaturas_dia($user->year_id, $user->persona_id, $user->periodo_id, $dia+1);
+
 			
 			
 			# Mis publicaciones
@@ -155,7 +171,7 @@ class ChangeAskedController extends Controller {
 							
 			return [ 'alumnos'=>$cambios_alum, 'profesores'=>[], 'historial'=> $historial, 'intentos_fallidos'=> $intentos_fallidos, 
 				'profes_actuales' => $profes_actuales, 'mis_publicaciones' => $mis_publicaciones,
-				'publicaciones' => $publicaciones, 'eventos' => $eventos ];
+				'publicaciones' => $publicaciones, 'eventos' => $eventos, 'horario_hoy' => $horario_hoy, 'horario_manana' => $horario_manana ];
 		
 		
 		}elseif ($user->tipo == 'Alumno') {
@@ -589,7 +605,7 @@ class ChangeAskedController extends Controller {
 			) 
 		{
 			Debugging::pin('Pedido', 'ENTROOOOO');
-			$dt = Carbon::now()->format('Y-m-d G:H:i');
+			$dt = Carbon::now('America/Bogota')->format('Y-m-d G:H:i');
 			$consulta = 'UPDATE change_asked SET answered_by=:user_id, deleted_by=:user_id2, deleted_at=:dt WHERE id=:asked_id';
 			DB::update($consulta, [ ':user_id' => $user_id, ':user_id2' => $user_id, ':dt' => $dt, ':asked_id' => $pedido->asked_id ]);
 			return true;
@@ -781,6 +797,65 @@ class ChangeAskedController extends Controller {
 		return [ 'borrar' => $borrar ];
 	}
 
+	
+	
+	private function asignaturas_dia($year_id, $profesor_id, $periodo_id, $dia)
+	{
+		
+		switch ($dia) {
+			case 0:
+				$dia_cond = ' domingo=1 ';
+				break;
+			case 1:
+				$dia_cond = ' lunes=1 ';
+				break;
+			case 2:
+				$dia_cond = ' martes=1 ';
+				break;
+			case 3:
+				$dia_cond = ' miercoles=1 ';
+				break;
+			case 4:
+				$dia_cond = ' jueves=1 ';
+				break;
+			case 5:
+				$dia_cond = ' viernes=1 ';
+				break;
+			case 6:
+				$dia_cond = ' sabado=1 ';
+				break;
+			
+		}
+		
+			
+		$consulta = 'SELECT a.id as asignatura_id, a.grupo_id, a.profesor_id, a.creditos, a.orden,
+				m.materia, m.alias as alias_materia, g.nombre as nombre_grupo, g.abrev as abrev_grupo, g.titular_id, g.caritas
+			FROM asignaturas a
+			inner join materias m on m.id=a.materia_id and m.deleted_at is null
+			inner join grupos g on g.id=a.grupo_id and g.year_id=? and g.deleted_at is null
+			where a.profesor_id=? and a.deleted_at is null and '. $dia_cond .'
+			order by g.orden, a.orden, m.materia, m.alias, a.id';
+		
+		$asignaturas = DB::select($consulta, [$year_id, $profesor_id]);
+		
+		
+		for ($i=0; $i < count($asignaturas); $i++) { 
+			
+			$consulta 		= 'SELECT * FROM unidades WHERE asignatura_id=? and periodo_id=? and deleted_at is null';
+			$unidades 		= DB::select($consulta, [$asignaturas[$i]->asignatura_id, $periodo_id]);
+			
+			foreach ($unidades as $unidad) {
+
+				$subunidades 			= DB::select('SELECT * FROM subunidades WHERE unidad_id=? and deleted_at is null', [$unidad->id]);
+				$unidad->subunidades 	= $subunidades;
+	
+			}
+			
+			$asignaturas[$i]->unidades = $unidades;
+		}
+		
+		return $asignaturas;
+	}
 
 
 }

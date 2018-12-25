@@ -10,6 +10,7 @@ use App\Models\Alumno;
 use App\Models\Grupo;
 use App\Models\Ausencia;
 use App\Models\Asignatura;
+use Carbon\Carbon;
 
 
 class AusenciasController extends Controller {
@@ -82,6 +83,45 @@ class AusenciasController extends Controller {
 
 
 
+	public function postAgregarAusencia()
+	{
+		$user = User::fromToken();
+		
+		$aus = new Ausencia;
+		$aus->alumno_id 		= Request::input('alumno_id');
+		$aus->asignatura_id 	= Request::input('asignatura_id', null);
+		$aus->periodo_id		= $user->periodo_id;
+		$aus->cantidad_ausencia	= 1;
+		$aus->fecha_hora		= Carbon::parse(Request::input('now'));
+		$aus->entrada			= Request::input('entrada', 0);
+		$aus->created_by		= $user->user_id;
+		$aus->tipo 				= 'ausencia';
+
+		$aus->save();
+		return $aus;
+	}
+
+
+	public function postAgregarTardanza()
+	{
+		$user = User::fromToken();
+		
+		$aus = new Ausencia;
+		$aus->alumno_id 		= Request::input('alumno_id');
+		$aus->asignatura_id 	= Request::input('asignatura_id', null);
+		$aus->periodo_id		= $user->periodo_id;
+		$aus->cantidad_tardanza	= 1;
+		$aus->fecha_hora		= Carbon::parse(Request::input('now'));
+		$aus->entrada			= Request::input('entrada', 0);
+		$aus->created_by		= $user->user_id;
+		$aus->tipo 				= 'tardanza';
+
+		$aus->save();
+		return $aus;
+	}
+
+
+
 
 	public function putGuardarCambiosAusencia()
 	{
@@ -101,6 +141,33 @@ class AusenciasController extends Controller {
 		$aus->fecha_hora		= Request::input('fecha_hora', null);
 		$aus->updated_by		= $user->user_id;
 
+		$aus->save();
+		return $aus;
+	}
+
+
+
+
+	public function putCambiarTipoAusencia()
+	{
+		$user = User::fromToken();
+		User::pueden_editar_notas($user);
+		
+		$aus = Ausencia::findOrFail(Request::input('ausencia_id'));
+		
+		
+
+		if (Request::input('new_tipo') == 'tardanza') {
+			$aus->tipo					= 'tardanza';
+			$aus->cantidad_tardanza		= $aus->cantidad_ausencia;
+		}
+		
+		if (Request::input('new_tipo') == 'ausencia') {
+			$aus->tipo					= 'ausencia';
+			$aus->cantidad_ausencia		= $aus->cantidad_tardanza;
+		}
+		
+		$aus->updated_by		= $user->user_id;
 		$aus->save();
 		return $aus;
 	}

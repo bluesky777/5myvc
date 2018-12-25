@@ -23,6 +23,14 @@ class CreateAsignaturasTable extends Migration {
 			$table->integer('nuevo_responsable_id')->unsigned()->nullable(); // Profesor del nuevo año que va a recuperar las notas de esta asignatura
 			$table->integer('creditos')->nullable();
 			$table->integer('orden')->nullable();
+			
+			$table->boolean('domingo')->nullable(); // Días en que se da esta asignatura
+			$table->boolean('lunes')->nullable();
+			$table->boolean('martes')->nullable();
+			$table->boolean('miercoles')->nullable();
+			$table->boolean('jueves')->nullable();
+			$table->boolean('viernes')->nullable();
+			$table->boolean('sabado')->nullable();
 			$table->integer('created_by')->nullable();
 			$table->integer('updated_by')->nullable();
 			$table->integer('deleted_by')->nullable();
