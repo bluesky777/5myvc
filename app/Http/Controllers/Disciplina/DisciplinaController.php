@@ -72,7 +72,7 @@ class DisciplinaController extends Controller {
 		for ($j=0; $j < count($periodos); $j++) { 
 				
 			// Traigo tardanzas al colegio
-			$consulta 	= 'SELECT a.* FROM ausencias a WHERE a.alumno_id=? and a.periodo_id=? and a.entrada=1 and a.cantidad_tardanza>0 and a.deleted_at is null';
+			$consulta 	= 'SELECT a.* FROM ausencias a WHERE a.alumno_id=? and a.periodo_id=? and a.entrada=1 and (a.cantidad_tardanza>0 or a.cantidad_tardanza is null) and a.deleted_at is null';
 			$tardanzas 	= DB::select($consulta, [ $alumno->alumno_id, $periodos[$j]->id ]);
 			$name 		= 'tardanzas_per' . $periodos[$j]->numero;
 			$alumno->{$name} = $tardanzas;
@@ -99,11 +99,11 @@ class DisciplinaController extends Controller {
 				$alumno->per1_cant_t3 = 0;
 				
 				for ($k=0; $k < count($procesos); $k++) { 
-					if ($procesos[$k]->tipo_situacion == 1) {
+					if ($procesos[$k]->tipo_situacion == 1 && $procesos[$k]->become_id == null) {
 						$alumno->per1_cant_t1++;
-					}elseif($procesos[$k]->tipo_situacion == 2) {
+					}elseif($procesos[$k]->tipo_situacion == 2 && $procesos[$k]->become_id == null) {
 						$alumno->per1_cant_t2++;
-					}elseif($procesos[$k]->tipo_situacion == 3) {
+					}elseif($procesos[$k]->tipo_situacion == 3 && $procesos[$k]->become_id == null) {
 						$alumno->per1_cant_t3++;
 					}
 				}
@@ -115,11 +115,11 @@ class DisciplinaController extends Controller {
 				$alumno->per2_cant_t3 = 0;
 				
 				for ($k=0; $k < count($procesos); $k++) { 
-					if ($procesos[$k]->tipo_situacion == 1) {
+					if ($procesos[$k]->tipo_situacion == 1 && $procesos[$k]->become_id == null) {
 						$alumno->per2_cant_t1++;
-					}elseif($procesos[$k]->tipo_situacion == 2) {
+					}elseif($procesos[$k]->tipo_situacion == 2 && $procesos[$k]->become_id == null) {
 						$alumno->per2_cant_t2++;
-					}elseif($procesos[$k]->tipo_situacion == 3) {
+					}elseif($procesos[$k]->tipo_situacion == 3 && $procesos[$k]->become_id == null) {
 						$alumno->per2_cant_t3++;
 					}
 				}
@@ -131,11 +131,11 @@ class DisciplinaController extends Controller {
 				$alumno->per3_cant_t3 = 0;
 				
 				for ($k=0; $k < count($procesos); $k++) { 
-					if ($procesos[$k]->tipo_situacion == 1) {
+					if ($procesos[$k]->tipo_situacion == 1 && $procesos[$k]->become_id == null) {
 						$alumno->per3_cant_t1++;
-					}elseif($procesos[$k]->tipo_situacion == 2) {
+					}elseif($procesos[$k]->tipo_situacion == 2 && $procesos[$k]->become_id == null) {
 						$alumno->per3_cant_t2++;
-					}elseif($procesos[$k]->tipo_situacion == 3) {
+					}elseif($procesos[$k]->tipo_situacion == 3 && $procesos[$k]->become_id == null) {
 						$alumno->per3_cant_t3++;
 					}
 				}
@@ -147,11 +147,11 @@ class DisciplinaController extends Controller {
 				$alumno->per4_cant_t3 = 0;
 				
 				for ($k=0; $k < count($procesos); $k++) { 
-					if ($procesos[$k]->tipo_situacion == 1) {
+					if ($procesos[$k]->tipo_situacion == 1 && $procesos[$k]->become_id == null) {
 						$alumno->per4_cant_t1++;
-					}elseif($procesos[$k]->tipo_situacion == 2) {
+					}elseif($procesos[$k]->tipo_situacion == 2 && $procesos[$k]->become_id == null) {
 						$alumno->per4_cant_t2++;
-					}elseif($procesos[$k]->tipo_situacion == 3) {
+					}elseif($procesos[$k]->tipo_situacion == 3 && $procesos[$k]->become_id == null) {
 						$alumno->per4_cant_t3++;
 					}
 				}
@@ -194,25 +194,13 @@ class DisciplinaController extends Controller {
 		
 		// Traemos el alumno
 		$last_id = DB::getPdo()->lastInsertId();
-		/*
-		$consulta = 'SELECT c.* FROM dis_procesos c WHERE c.id=? and c.deleted_at is null';	
-		$elem = DB::select($consulta, [$last_id])[0];
-		$elem->alumno_id 			= $alumno_id;
-		$elem->proceso_ordinales 	= [];
-		*/
+		
 		
 		// Insertamos cada ordinal
 		$selected_ordinales = Request::input('selected_ordinales');
 		for ($i=0; $i < count($selected_ordinales); $i++) { 
 			$consulta = 'INSERT INTO dis_proceso_ordinales(ordinal_id, proceso_id, added_by, created_at, updated_at) VALUES(?,?,?,?,?)';
 			DB::insert($consulta, [ $selected_ordinales[$i]['id'], $last_id, $user->user_id, $now, $now ]);
-			
-			/*
-			// Traemos el ordinal insertado
-			$consulta 	= 'SELECT d.* FROM dis_proceso_ordinales d WHERE d.id=? ';
-			$ordi 		= DB::select($consulta, [ DB::getPdo()->lastInsertId() ])[0];
-			array_push($elem->proceso_ordinales, $ordi);
-			*/
 			
 		}
 		
@@ -222,7 +210,7 @@ class DisciplinaController extends Controller {
 		for ($i=0; $i < count($dependencias); $i++) { 
 			
 			$consulta = 'UPDATE dis_procesos SET become_id=? WHERE id=?';
-			DB::insert($consulta, [ $elem->id, $dependencias[$i]['id'] ]);
+			DB::update($consulta, [ $last_id, $dependencias[$i]['id'] ]);
 			
 		}
 		

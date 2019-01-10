@@ -79,6 +79,10 @@ class CreateDisciplinaTable extends Migration {
 			$table->integer('tipo_situacion')->unsigned()->nullable(); // 1, 2 o 3
 			$table->integer('become_id')->unsigned()->nullable(); // Situación en que se convirtió esta situación
 			$table->integer('profesor_id')->unsigned()->nullable(); 
+			
+			$table->boolean('deriva_de_tardanzas')->default(0); // Solo si es tipo 1 y deriva de tardanzas
+			$table->boolean('deriva_de_tipos1')->default(0); // Solo si es tipo 2 y deriva de situaciones tipo 1
+			$table->boolean('deriva_de_tipos2')->default(0); // Solo si es tipo 3 y deriva de situaciones tipo 2
 			$table->dateTime('fecha_hora_aprox')->nullable(); // Fecha y hora aproximada del incidente 
 			$table->integer('asignatura_id')->unsigned()->nullable();
 			$table->string('testigos')->nullable(); 
@@ -197,6 +201,7 @@ class CreateDisciplinaTable extends Migration {
 	{
 		Schema::drop('dis_libro_rojo');
 		Schema::drop('dis_acciones_restaurativas');
+		Schema::drop('dis_proceso_ordinales');
 		Schema::drop('dis_procesos');
 		Schema::drop('dis_ordinales');
 		Schema::drop('dis_configuraciones');

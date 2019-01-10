@@ -239,6 +239,14 @@ class GruposController extends Controller {
 		$res['ordinales'] = $ordinales;
 		
 		
+		
+		// DESCRIPCIÓN PARA TYPEAHEAD
+		$consulta = 'SELECT distinct(c.descripcion) as descripcion FROM dis_procesos c WHERE (c.year_id=? or c.year_id=?) and c.deleted_at is null';
+		$descripciones_typeahead = DB::select($consulta, [ $year_id, $year_id-1 ]);
+		
+		$res['descripciones_typeahead'] = $descripciones_typeahead;
+		
+		
 		return $res;
 	}
 
