@@ -158,7 +158,7 @@ class PrematriculasController extends Controller {
 		}
 		
 		// Probando Events, borrar
-		event(new MatriculasEvent());
+		//event(new MatriculasEvent());
 		//! Borrar Event
 
 		$sqlYearAnt = 'SELECT id from years where year=:year_ant';

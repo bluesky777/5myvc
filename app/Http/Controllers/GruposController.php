@@ -74,27 +74,46 @@ class GruposController extends Controller {
 		
 		// Con los prematriculados
 		/*
-		$consulta = 'SELECT g.id, g.nombre, g.abrev, gra.orden as orden_grado, g.orden, g.grado_id, g.year_id, gra.orden as orden_grado, g.titular_id, g.created_at, g.updated_at, count(m.id) as cantidad, g.cupo, (g.cupo - count(m.id)) as cant_faltantes
+		$consulta = 'SELECT g.id, g.nombre, g.abrev, gra.orden as orden_grado, g.orden, g.grado_id, g.year_id, g.titular_id, g.created_at, g.updated_at, g.cupo, count(g.id) as cantidad, (g.cupo - count(g.id)) as cant_faltantes
 			from grupos g
 			inner join years y on y.id=g.year_id and y.year=:anio and y.deleted_at is null
 			inner join grados gra on gra.id=g.grado_id and g.year_id=y.id 
-			left join matriculas m on m.grupo_id=g.id and m.deleted_at is null and (m.estado="MATR" or m.estado="ASIS" or m.estado="PREM")
-			left join alumnos a on m.alumno_id=a.id and a.deleted_at is null
-			where g.deleted_at is null 
-			group by g.id
-			order by g.orden';
-		*/
-		$consulta = 'SELECT g.id, g.nombre, g.abrev, gra.orden as orden_grado, g.orden, g.grado_id, g.year_id, gra.orden as orden_grado, g.titular_id, g.created_at, g.updated_at, g.cupo, count(g.id) as cantidad, (g.cupo - count(g.id)) as cant_faltantes
-			from grupos g
-			inner join years y on y.id=g.year_id and y.year=:anio and y.deleted_at is null
-			inner join grados gra on gra.id=g.grado_id and g.year_id=y.id 
-			left join (select m.grupo_id from matriculas m inner join alumnos a ON m.alumno_id=a.id and a.deleted_at is null and m.deleted_at is null and (m.estado="PREM")
+			left join (
+				select m.grupo_id from matriculas m 
+					inner join alumnos a ON m.alumno_id=a.id and a.deleted_at is null and m.deleted_at is null and (m.estado="PREM" OR m.estado="MATR")
 			) r on r.grupo_id=g.id 
 			where g.deleted_at is null 
 			group by g.id
 			order by g.orden';
+		*/
+		$consulta = 'SELECT r1.*, r2.cantidad FROM (
+			SELECT g.id, g.nombre, g.abrev, gra.orden as orden_grado, g.orden, g.grado_id, g.year_id, g.titular_id, g.created_at, g.updated_at, g.cupo, (g.cupo - count(g.id)) as cant_faltantes
+					from grupos g
+					inner join years y on y.id=g.year_id and y.year=:anio and y.deleted_at is null
+					inner join grados gra on gra.id=g.grado_id and g.year_id=y.id 
+					left join (
+						select m.grupo_id from matriculas m 
+							inner join alumnos a ON m.alumno_id=a.id and a.deleted_at is null and m.deleted_at is null and (m.estado="PREM" OR m.estado="MATR")
+					) r on r.grupo_id=g.id 
+					where g.deleted_at is null 
+					group by g.id
+					order by g.orden
+			)r1 left join (
+				SELECT g.id, g.grado_id, count(g.id) as cantidad
+						from grupos g
+						inner join years y on y.id=g.year_id and y.year=:anio2 and y.deleted_at is null
+						inner join grados gra on gra.id=g.grado_id and g.year_id=y.id 
+						left join (
+							select m.grupo_id from matriculas m 
+								inner join alumnos a ON m.alumno_id=a.id and a.deleted_at is null and m.deleted_at is null and (m.estado="PREM")
+						) r on r.grupo_id=g.id 
+						where g.deleted_at is null 
+						group by g.id
+						order by g.orden
+			)r2 ON r1.id=r2.id';
 			
-		$res['grupos'] = DB::select($consulta, [':anio'=> ($user->year+1) ] );
+			
+		$res['grupos'] = DB::select($consulta, [':anio'=> ($user->year+1), ':anio2'=> ($user->year+1) ] );
 		
 		for ($i=0; $i < count($res['grupos']); $i++) { 
 			
@@ -128,6 +147,7 @@ class GruposController extends Controller {
 			// Contamos los que llevaron formularios
 			$consulta = 'SELECT count(m.id) as formularios FROM matriculas m
 				INNER JOIN grupos g ON g.id=m.grupo_id and m.estado="FORM" AND m.grupo_id=:grupo_id and m.deleted_at is null and g.deleted_at is null
+				INNER JOIN alumnos a ON a.id=m.alumno_id AND a.deleted_at is null
 				INNER JOIN years y ON y.id=g.year_id AND y.deleted_at is null and y.year=:year_next 
 				GROUP BY g.id;';
 			
@@ -143,6 +163,7 @@ class GruposController extends Controller {
 			// Contamos los que está 100% matriculados
 			$consulta = 'SELECT count(m.id) as matriculados FROM matriculas m
 				INNER JOIN grupos g ON g.id=m.grupo_id and m.estado="MATR" AND m.grupo_id=:grupo_id and m.deleted_at is null and g.deleted_at is null
+				INNER JOIN alumnos a ON a.id=m.alumno_id AND a.deleted_at is null
 				INNER JOIN years y ON y.id=g.year_id AND y.deleted_at is null and y.year=:year_next 
 				GROUP BY g.id;';
 			
