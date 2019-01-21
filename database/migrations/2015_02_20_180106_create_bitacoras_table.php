@@ -57,7 +57,7 @@ class CreateBitacorasTable extends Migration {
 			$table->string('affected_element_type')->nullable();		// Puede ser la 'Nota' de un alumno
 			$table->integer('affected_element_id')->nullable();			// Si fue una nota afectada, aquí ponemos su id
 			$table->string('affected_element_new_value_string')->nullable();	// qué valor se puso al elemento afectado (la nota)
-			$table->string('affected_element_old_value_string')->nullable();	// qué valor tenía antes de la acción
+			$table->text('affected_element_old_value_string')->nullable();	// qué valor tenía antes de la acción
 			$table->integer('affected_element_new_value_int')->nullable();	// qué valor se puso al elemento afectado (la nota)
 			$table->integer('affected_element_old_value_int')->nullable();	// qué valor tenía antes de la acción
 			$table->integer('periodo_id')->nullable();

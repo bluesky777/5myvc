@@ -12,6 +12,7 @@ use App\Models\Grupo;
 use App\Models\Asignatura;
 use App\Models\EscalaDeValoracion;
 use App\Models\Frase;
+use App\Models\Unidad;
 use Carbon\Carbon;
 
 
@@ -103,8 +104,9 @@ class YearsController extends Controller {
 			Year::where('actual', true)->update(['actual'=>false]);
 		}
 
-		$year 			= Year::find($year_id_nuevo);
-		$year->actual 	= true;
+		$year 				= Year::find($year_id_nuevo);
+		$year->actual 		= true;
+		$year->created_by 	= $user->user_id;
 		$year->save();
 
 		
@@ -122,15 +124,20 @@ class YearsController extends Controller {
 		if ($pasado) {
 
 
-			$year->ciudad_id				=	$pasado->ciudad_id;
-			$year->logo_id					=	$pasado->logo_id;
-			$year->rector_id				=	$pasado->rector_id;
-			$year->secretario_id			=	$pasado->secretario_id;
-			$year->tesorero_id				=	$pasado->tesorero_id;
-			$year->coordinador_academico_id	=	$pasado->coordinador_academico_id;
-			$year->coordinador_disciplinario_id	=	$pasado->coordinador_disciplinario_id;
-			$year->capellan_id				=	$pasado->capellan_id;
-			$year->psicorientador_id 		=	$pasado->psicorientador_id;
+			$year->ciudad_id						=	$pasado->ciudad_id;
+			$year->logo_id							=	$pasado->logo_id;
+			$year->rector_id						=	$pasado->rector_id;
+			$year->secretario_id					=	$pasado->secretario_id;
+			$year->tesorero_id						=	$pasado->tesorero_id;
+			$year->coordinador_academico_id			=	$pasado->coordinador_academico_id;
+			$year->coordinador_disciplinario_id		=	$pasado->coordinador_disciplinario_id;
+			$year->capellan_id						=	$pasado->capellan_id;
+			$year->psicorientador_id 				=	$pasado->psicorientador_id;
+			$year->config_certificado_estudio_id 		=	$pasado->config_certificado_estudio_id;
+			$year->cant_areas_pierde_year 			=	$pasado->cant_areas_pierde_year;
+			$year->cant_asignatura_pierde_year 		=	$pasado->cant_asignatura_pierde_year;
+			$year->contador_certificados 			=	$pasado->contador_certificados;
+			$year->contador_folios 					=	$pasado->contador_folios;
 
 			$year->save();
 			
@@ -163,6 +170,39 @@ class YearsController extends Controller {
 				$newFra->year_id 		= $year->id;
 				$newFra->save();
 			}
+
+
+
+			/// COPIAREMOS LAS UNIDADES POR DEFECTO
+			$unidades_ant = DB::select('SELECT * FROM unidades_por_defecto WHERE year_id=? AND deleted_at is null;', [$pasado->id]);
+
+			foreach ($unidades_ant as $key => $unidad) {
+				DB::insert('INSERT INTO unidades_por_defecto(definicion, porcentaje, year_id, obligatoria, orden, created_by) VALUES(?,?,?,?,?,?)', 
+					[$unidad->definicion, $unidad->porcentaje, $year->id, $unidad->obligatoria, $unidad->orden, $unidad->created_by]);
+			}
+
+
+
+			/// COPIAREMOS LAS CONFIGURACIONES DE DISCIPLINA Y ORDINALES
+			$dis_configuraciones = DB::select('SELECT * FROM dis_configuraciones WHERE year_id=? AND deleted_at is null;', [$pasado->id]);
+			if (count($dis_configuraciones) > 0) {
+				$dis = $dis_configuraciones[0];
+				
+				DB::insert('INSERT INTO dis_configuraciones(year_id, reinicia_por_periodo, falta_tipo1_displayname, faltas_tipo1_displayname, genero_falta_t1, falta_tipo2_displayname, faltas_tipo2_displayname, genero_falta_t2, 
+					falta_tipo3_displayname, faltas_tipo3_displayname, genero_falta_t3, cant_tard_to_ft1, cant_ft1_to_ft2, cant_ft2_to_ft3,
+					nombre_col1, nombre_col2, nombre_col3, definicion_ft1, definicion_ft2, definicion_ft3) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)', 
+					[ $year->id, $dis->reinicia_por_periodo, $dis->falta_tipo1_displayname, $dis->faltas_tipo1_displayname, $dis->genero_falta_t1, $dis->falta_tipo2_displayname, $dis->faltas_tipo2_displayname, $dis->genero_falta_t2, 
+					$dis->falta_tipo3_displayname, $dis->faltas_tipo3_displayname, $dis->genero_falta_t3, $dis->cant_tard_to_ft1, $dis->cant_ft1_to_ft2, $dis->cant_ft2_to_ft3, 
+					$dis->nombre_col1, $dis->nombre_col2, $dis->nombre_col3, $dis->definicion_ft1, $dis->definicion_ft2, $dis->definicion_ft3 ]);
+					
+				$dis_ordinales = DB::select('SELECT * FROM dis_ordinales WHERE year_id=? AND deleted_at is null;', [$pasado->id]);
+					
+				foreach ($dis_ordinales as $key => $ord) {
+					DB::insert('INSERT INTO dis_ordinales(year_id, tipo, ordinal, descripcion, pagina) VALUES(?,?,?,?,?)', 
+						[ $year->id, $ord->tipo, $ord->ordinal, $ord->descripcion, $ord->pagina ]);
+				}
+			}
+			
 
 
 			
@@ -243,7 +283,10 @@ class YearsController extends Controller {
 
 	public function putGuardarCambios()
 	{
+		$user = User::fromToken();
+		$now 	= Carbon::now('America/Bogota');
 		$year = Year::findOrFail(Request::input('id'));
+		
 		try {
 			$year->nombre_colegio	=	Request::input('nombre_colegio');
 			$year->abrev_colegio	=	Request::input('abrev_colegio');
@@ -270,8 +313,27 @@ class YearsController extends Controller {
 			$year->genero_subunidad			=	Request::input('genero_subunidad');
 			
 			$year->alumnos_can_see_notas	=	Request::input('alumnos_can_see_notas');
+			$year->updated_by				=	$user->user_id;
 
 			$year->save();
+			
+			
+			$consulta 	= 'SELECT id as history_id FROM historiales WHERE user_id=? and deleted_at is null order by id desc limit 1';
+			$his 		= DB::select($consulta, [$user->user_id])[0];
+
+			$bit_by 	= $user->user_id;
+			$bit_hist 	= $his->history_id;
+			//$bit_old 	= $VALOR; 				
+			//$bit_new 	= Request::input('VALOR'); 	
+			
+			$consulta 	= 'INSERT INTO bitacoras (created_by, historial_id, affected_element_type, affected_element_id, created_at, affected_element_new_value_string) 
+					VALUES (?,?,?,?,?,?)';
+
+			DB::insert($consulta, [ $bit_by, $bit_hist, 'YEAR CONFIGURACION', Request::input('id'), $now, (string) $year ]);
+			
+			$consulta 	= 'SELECT * FROM bitacoras order by id desc limit 1';
+			$his 		= DB::select($consulta, [$user->user_id]);
+			return $his;
 
 			return $year;
 		} catch (Exception $e) {

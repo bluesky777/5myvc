@@ -124,13 +124,13 @@ class Year extends Model {
 	public static function de_un_profesor($profesor_id)
 	{
 		$consulta = 'SELECT y.id, y.year, y.nombre_colegio, y.abrev_colegio FROM years y
-					inner join contratos c on c.year_id=y.id and c.profesor_id = :profesor_id
+					inner join contratos c on c.year_id=y.id and c.profesor_id = :profesor_id and c.deleted_at is null
 					where y.deleted_at is null';
 
 		$years = DB::select(DB::raw($consulta), array(':profesor_id' => $profesor_id));
 
 		foreach ($years as $year) {
-			$year->periodos = Periodo::where('year_id', '=', $year->id)->get();
+			$year->periodos = Periodo::where('year_id', $year->id)->get();
 		}
 
 		return $years;

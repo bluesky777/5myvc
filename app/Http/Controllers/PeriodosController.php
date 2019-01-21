@@ -221,6 +221,34 @@ class PeriodosController extends Controller {
 		$res->unidades_copiadas		= $unidades_copiadas;
 		$res->subunidades_copiadas	= $subunidades_copiadas;
 		$res->notas_copiadas		= $notas_copiadas;
+		
+		
+		
+		$consulta = 'SELECT id, definicion, porcentaje, orden 
+					FROM unidades
+					where asignatura_id=:asignatura_id and periodo_id=:periodo_id and deleted_at is null
+					order by orden';
+
+		$unidades = DB::select($consulta, [
+			':asignatura_id'	=> $asignatura_to_id,
+			':periodo_id'		=> $periodo_to_id
+		]);
+
+
+		foreach ($unidades as $unidad) {
+
+			$consulta = 'SELECT id, definicion, porcentaje, orden, "0" as cantNotas 
+						FROM subunidades
+						where unidad_id=:unidad_id and deleted_at is null
+						order by orden';
+
+			$unidad->subunidades = DB::select(DB::raw($consulta), [':unidad_id'	=> $unidad->id]);
+
+
+		}
+			
+		$res->unidades		= $unidades;
+			
 
 		return (array)$res;
 	}

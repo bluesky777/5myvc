@@ -351,15 +351,25 @@ class NotasController extends Controller {
 		
 		foreach ($alumnos as $alumno) {
 			
-			
-			$consulta = "INSERT INTO notas(subunidad_id, alumno_id, nota, created_by, created_at, updated_at) 
+			if ($sub_id) {
+				$consulta = "INSERT INTO notas(subunidad_id, alumno_id, nota, created_by, created_at, updated_at) 
 						SELECT * FROM 
 						(SELECT '.$sub_id.' as subunidad_id, '.$alumno->alumno_id.' as alumno_id, '.$nota_default.' as nota, '.$user->user_id.' as created_by, '.$now.' as created_at, '.$now.' as updated_at) AS tmp
 							WHERE NOT EXISTS (
 								SELECT * from notas WHERE subunidad_id=? and alumno_id=? and deleted_at is null
 							) LIMIT 1";
 								
-			DB::insert($consulta, [ $sub_id, $alumno->alumno_id ]);
+				DB::insert($consulta, [ $sub_id, $alumno->alumno_id ]);
+				
+				// Notas
+				$cons = "SELECT n.id, n.nota, n.subunidad_id, n.alumno_id, n.created_by, n.updated_by, n.deleted_by, n.deleted_at, n.created_at, n.updated_at
+					FROM notas n
+					WHERE n.alumno_id=:alumno_id and n.subunidad_id=:subunidad_id;";
+			
+				$nota = DB::select($cons, [':alumno_id' => $alumno->alumno_id, ':subunidad_id' => $sub_id ]);
+				$alumno->nota 				= $nota[0];
+			}
+			
 			
 			
 			$frases = FraseAsignatura::deAlumno($asignatura_id, $alumno->alumno_id, $user->periodo_id);
@@ -379,16 +389,6 @@ class NotasController extends Controller {
 					WHERE a.tipo='tardanza' and a.asignatura_id=:asignatura_id and a.alumno_id=:alumno_id and a.deleted_at is null;";
 			$tardanzas = DB::select($cons_tar, [":per_id" => $user->periodo_id, ':asignatura_id' => $asignatura_id, ':alumno_id' => $alumno->alumno_id ]);
 			
-			// Notas
-			$cons = "SELECT n.id, n.nota, n.subunidad_id, n.alumno_id, n.created_by, n.updated_by, n.deleted_by, n.deleted_at, n.created_at, n.updated_at
-				FROM notas n
-				WHERE n.alumno_id=:alumno_id and n.subunidad_id=:subunidad_id;";
-			
-			$nota = DB::select($cons, [':alumno_id' => $alumno->alumno_id, ':subunidad_id' => $sub_id ]);
-			
-			
-
-			$alumno->nota 				= $nota[0];
 			$alumno->tardanzas 			= $tardanzas;
 			$alumno->tardanzas_count 	= count($tardanzas);
 

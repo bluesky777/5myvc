@@ -432,7 +432,7 @@ class AlumnosController extends Controller {
 		
 		
 		$consulta = 'SELECT m.id as matricula_id, m.alumno_id, a.no_matricula, a.nombres, a.apellidos, a.sexo, a.user_id, g.nombre as grupo_nombre, g.abrev as grupo_abrev, 
-				a.fecha_nac, a.ciudad_nac, c1.departamento as departamento_nac_nombre, c1.ciudad as ciudad_nac_nombre, a.tipo_doc, t1.tipo as tipo_doc_name, a.documento, a.ciudad_doc, 
+				a.fecha_nac, a.ciudad_nac, c1.departamento as departamento_nac_nombre, c1.ciudad as ciudad_nac_nombre, a.tipo_doc, t1.tipo as tipo_doc_name, a.documento, a.ciudad_doc, a.deleted_at,
 				c2.ciudad as ciudad_doc_nombre, c2.departamento as departamento_doc_nombre, a.tipo_sangre, a.eps, a.telefono, a.celular, a.egresado,
 				a.direccion, a.barrio, a.is_urbana, a.estrato, a.ciudad_resid, c3.ciudad as ciudad_resid_nombre, c3.departamento as departamento_resid_nombre, a.religion, u.email, a.facebook, a.created_by, a.updated_by,
 				a.pazysalvo, a.deuda, m.grupo_id, a.is_urbana, IF(a.is_urbana, "SI", "NO") as es_urbana,
@@ -451,8 +451,9 @@ class AlumnosController extends Controller {
 			left join ciudades c1 on c1.id=a.ciudad_nac and c1.deleted_at is null
 			left join ciudades c2 on c2.id=a.ciudad_doc and c2.deleted_at is null
 			left join ciudades c3 on c3.id=a.ciudad_resid and c3.deleted_at is null
-			where a.deleted_at is null and m.deleted_at is null
+			where m.deleted_at is null
 			order by a.apellidos, a.nombres';
+			// he quitado el      a.deleted_at is null
 			
 		// \Log::info('Año '.$this->user->year_id);
 		$alumno = DB::select($consulta, [ ':alumno_id' => $id, ':year_id' => $this->user->year_id ]);
@@ -465,7 +466,7 @@ class AlumnosController extends Controller {
 		}else{
 			
 			$consulta = 'SELECT a.id as alumno_id, a.no_matricula, a.nombres, a.apellidos, a.sexo, a.user_id, 
-					a.fecha_nac, a.ciudad_nac, c1.departamento as departamento_nac_nombre, c1.ciudad as ciudad_nac_nombre, a.tipo_doc, t1.tipo as tipo_doc_name, a.documento, a.ciudad_doc, 
+					a.fecha_nac, a.ciudad_nac, c1.departamento as departamento_nac_nombre, c1.ciudad as ciudad_nac_nombre, a.tipo_doc, t1.tipo as tipo_doc_name, a.documento, a.ciudad_doc, a.deleted_at,
 					c2.ciudad as ciudad_doc_nombre, c2.departamento as departamento_doc_nombre, a.tipo_sangre, a.eps, a.telefono, a.celular, a.egresado,
 					a.direccion, a.barrio, a.is_urbana, a.estrato, a.ciudad_resid, c3.ciudad as ciudad_resid_nombre, c3.departamento as departamento_resid_nombre, a.religion, u.email, a.facebook, a.created_by, a.updated_by,
 					a.pazysalvo, a.deuda, a.is_urbana, IF(a.is_urbana, "SI", "NO") as es_urbana,
@@ -481,8 +482,9 @@ class AlumnosController extends Controller {
 				left join ciudades c1 on c1.id=a.ciudad_nac and c1.deleted_at is null
 				left join ciudades c2 on c2.id=a.ciudad_doc and c2.deleted_at is null
 				left join ciudades c3 on c3.id=a.ciudad_resid and c3.deleted_at is null
-				where a.id=:alumno_id and a.deleted_at is null
+				where a.id=:alumno_id
 				order by a.apellidos, a.nombres';
+				// he quitado el      a.deleted_at is null
 				
 			$alumno = DB::select($consulta, [ ':alumno_id' => $id ]);
 			
@@ -788,7 +790,7 @@ class AlumnosController extends Controller {
 		$todos_anios = true;
 		
 		if ($todos_anios) {
-				$consulta = 'SELECT a.id as alumno_id, a.nombres, a.apellidos, "alumno" as tipo, 
+				$consulta = 'SELECT a.id as alumno_id, a.nombres, a.apellidos, "alumno" as tipo, a.deleted_at, 
 						a.foto_id, IFNULL(i2.nombre, IF(a.sexo="F","default_female.png", "default_male.png")) as foto_nombre
 					FROM alumnos a
 					INNER JOIN matriculas m on a.id=m.alumno_id and m.deleted_at is null
