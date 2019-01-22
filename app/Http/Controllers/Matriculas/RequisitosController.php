@@ -94,6 +94,43 @@ class RequisitosController extends Controller {
 	}
 		
 
+
+	public function putListadoObservaciones()
+	{
+		$now 		= Carbon::now('America/Bogota');
+		$year_id 	= Request::input('year_id', $this->user->year_id);
+		
+		
+		$consulta 	= 'SELECT * FROM requisitos_matricula WHERE year_id=? and deleted_at is null';
+		$requisitos = DB::select($consulta, [$year_id]);
+		
+		
+		for ($i=0; $i < count($requisitos); $i++) { 
+			
+			$consulta 	= 'SELECT distinct(o.descripcion) as descripcion FROM requisitos_alumno o WHERE o.requisito_id=? and o.descripcion is not null and o.descripcion!=""';
+			$requisitos[$i]->requisitos_alumnos = DB::select($consulta, [ $requisitos[$i]->id ]);
+		
+			
+			$consulta 	= 'SELECT a.nombres, o.alumno_id, a.apellidos, a.celular, g.abrev as abrev_grupo, o.descripcion, o.id as requisito_alumno_id 
+				FROM requisitos_alumno o
+				INNER JOIN requisitos_matricula r ON r.id=o.requisito_id and r.deleted_at is null
+				INNER JOIN alumnos a ON a.id=o.alumno_id and a.deleted_at is null
+				INNER JOIN matriculas m ON a.id=m.alumno_id and (m.estado="MATR" or m.estado="ASIS" or m.estado="PREM") and m.deleted_at is null
+				INNER JOIN grupos g ON g.id=m.grupo_id and g.year_id=? and m.deleted_at is null
+				WHERE r.id=? and o.descripcion is not null and o.descripcion!="" 
+				ORDER BY g.abrev, a.apellidos';
+				
+			$requisitos[$i]->alumnos_observaciones = DB::select($consulta, [ $year_id, $requisitos[$i]->id ]);
+		
+			
+		}
+		
+		
+		return [ 'requisitos' => $requisitos ];
+		
+	}
+		
+
 	public function deleteDestroy($id)
 		{
 		$now 		= Carbon::now('America/Bogota');
