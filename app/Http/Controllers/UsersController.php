@@ -124,4 +124,83 @@ class UsersController extends Controller {
 		
 	}
 
+
+
+	public function postCrearPsicologo()
+	{
+		$user 		= User::fromToken();
+		$now 		= Carbon::now('America/Bogota');
+		
+		if($user->roles[0]->name == 'Admin'){
+			$username = 'psicologo'.rand(100, 9999);
+			
+			$consulta = 'INSERT INTO users(username, password, sexo, is_superuser, tipo, is_active, periodo_id, created_by, created_at) 
+				VALUES("'.$username.'", "'.Hash::make('123').'", "M", 1, "Usuario", 1, 1, ?, "'.$now.'")';
+				
+			DB::insert($consulta, [$user->user_id]);
+			
+			$id = DB::getPdo()->lastInsertId();
+			Log::info('Último id: '. $id);
+			$consulta = 'INSERT INTO role_user(user_id, role_id) 
+				VALUES('.$id.', 11)'; //  Psicólogo
+				
+			DB::insert($consulta);
+			
+			$consulta = 'SELECT u.id as persona_id, "" as nombres, "" as apellidos, u.id as user_id, u.username, u.tipo, 
+				u.sexo, u.email, "N/A" as fecha_nac, "N/A" as ciudad_nac, 
+				u.imagen_id, IFNULL(i.nombre, IF(u.sexo="F","default_female.png", "default_male.png")) as imagen_nombre, 
+				"N/A" as grupo_id, ("N/A") as nombre_grupo, ("N/A") as abrev_grupo, "N/A" as year_id  
+				from users u
+				left join images i on i.id=u.imagen_id 
+				where u.id='.$id;
+				
+			$usuario = DB::select($consulta)[0];
+
+			return ['usuario'=>$usuario];
+		}else{
+			return abort(404, 'Sin autorización');
+		}
+		
+	}
+
+	
+
+	public function postCrearEnfermero()
+	{
+		$user 		= User::fromToken();
+		$now 		= Carbon::now('America/Bogota');
+		
+		if($user->roles[0]->name == 'Admin'){
+			$username = 'enfermero'.rand(100, 9999);
+			
+			$consulta = 'INSERT INTO users(username, password, sexo, is_superuser, tipo, is_active, periodo_id, created_by, created_at) 
+				VALUES("'.$username.'", "'.Hash::make('123').'", "M", 1, "Usuario", 1, 1, ?, "'.$now.'")';
+				
+			DB::insert($consulta, [$user->user_id]);
+			
+			$id = DB::getPdo()->lastInsertId();
+			Log::info('Último id: '. $id);
+			$consulta = 'INSERT INTO role_user(user_id, role_id) 
+				VALUES('.$id.', 7)'; //  Enfermero
+				
+			DB::insert($consulta);
+			
+			$consulta = 'SELECT u.id as persona_id, "" as nombres, "" as apellidos, u.id as user_id, u.username, u.tipo, 
+				u.sexo, u.email, "N/A" as fecha_nac, "N/A" as ciudad_nac, 
+				u.imagen_id, IFNULL(i.nombre, IF(u.sexo="F","default_female.png", "default_male.png")) as imagen_nombre, 
+				"N/A" as grupo_id, ("N/A") as nombre_grupo, ("N/A") as abrev_grupo, "N/A" as year_id  
+				from users u
+				left join images i on i.id=u.imagen_id 
+				where u.id='.$id;
+				
+			$usuario = DB::select($consulta)[0];
+
+			return ['usuario'=>$usuario];
+		}else{
+			return abort(404, 'Sin autorización');
+		}
+		
+	}
+
+	
 }
