@@ -244,6 +244,18 @@ class ChangeAskedController extends Controller {
 
 			
 			return [ 'alumnos' => $alumnos, 'publicaciones' => $publicaciones, 'eventos' => $eventos ];
+		
+		}elseif ($user->tipo == 'Usuario') {
+			
+
+			# Las publicaciones
+			$publicaciones = Publicaciones::ultimas_publicaciones('Acudiente');
+
+			# Calendario
+			$eventos = DB::select('SELECT * FROM calendario WHERE solo_profes=0 and deleted_at is null');
+
+			
+			return [ 'publicaciones' => $publicaciones, 'eventos' => $eventos ];
 		}
 		
 		return ['msg'=> 'No puedes ver pedidos'];
