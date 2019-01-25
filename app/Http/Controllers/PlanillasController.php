@@ -313,7 +313,7 @@ class PlanillasController extends Controller {
 					a.foto_id, IFNULL(i2.nombre, IF(a.sexo="F","default_female.png", "default_male.png")) as foto_nombre,
 					m.estado 
 				FROM alumnos a 
-				inner join matriculas m on a.id=m.alumno_id and m.grupo_id=:grupo_id and (m.estado="ASIS" or m.estado="MATR")
+				inner join matriculas m on a.id=m.alumno_id and m.grupo_id=:grupo_id and (m.estado="ASIS" or m.estado="MATR" or m.estado="PREM")
 				left join users u on a.user_id=u.id and u.deleted_at is null
 				left join images i2 on i2.id=a.foto_id and i2.deleted_at is null
 				where a.deleted_at is null and m.deleted_at is null
