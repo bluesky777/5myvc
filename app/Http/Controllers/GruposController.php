@@ -604,6 +604,7 @@ class GruposController extends Controller {
 			$grupo->orden		=	Request::input('orden');
 			$grupo->caritas		=	Request::input('caritas', false);
 			$grupo->cupo		=	Request::input('cupo');
+			$grupo->updated_by	=	$user->user_id;
 
 			$grupo->save();
 
@@ -618,7 +619,10 @@ class GruposController extends Controller {
 
 	public function deleteDestroy($id)
 	{
+		$user = User::fromToken();
 		$grupo = Grupo::findOrFail($id);
+		$grupo->deleted_by = $user->user_id;
+		$grupo->save();
 		$grupo->delete();
 
 		return $grupo;
