@@ -47,7 +47,12 @@ class Area extends Model {
 			}
 			
 			$areas[$i]->cant 				= $found;
-			$areas[$i]->area_nota 			= round($areas[$i]->sumatoria / $found);
+			if ($found>0) {
+				$areas[$i]->area_nota 			= round($areas[$i]->sumatoria / $found);
+			}else{
+				$areas[$i]->area_nota 			= 0;
+			}
+			
 			$esca = 						EscalaDeValoracion::valoracion($areas[$i]->area_nota, $escalas);
 			if ($esca) {
 				$areas[$i]->area_desempenio 	= EscalaDeValoracion::valoracion($areas[$i]->area_nota, $escalas)->desempenio;
