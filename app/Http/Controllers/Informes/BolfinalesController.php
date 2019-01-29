@@ -362,8 +362,13 @@ class BolfinalesController extends Controller {
 			}
 
 		}
-
-		$alumno->promedio = $alumno->promedio / count($alumno->asignaturas);
+		
+		if (count($alumno->asignaturas) > 0) {
+			$alumno->promedio = $alumno->promedio / count($alumno->asignaturas);
+		}else{
+			$alumno->promedio = 0;
+		}
+		
 
 		$escala = $this->valoracion($alumno->promedio);
 		if ($escala) {
