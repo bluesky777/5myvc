@@ -115,6 +115,22 @@ class EnfermeriaController extends Controller {
 	}
 	
 
+	public function deleteDestroy($id)
+	{
+		if($this->user->roles[0]->name == 'Admin' || $this->user->roles[0]->name == 'Enfermero'){
+			$now 				= Carbon::now('America/Bogota');
+			
+			$consulta          = 'DELETE FROM registros_enfermeria WHERE id=?';
+			DB::delete($consulta, [ $id ]);
+				
+			return 'Eliminado';
+		}else{
+			return abort(401, 'No puedes eliminar');
+		}
+			
+	}
+	
+
 
 
 
