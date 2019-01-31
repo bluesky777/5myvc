@@ -352,7 +352,7 @@ class MatriculasController extends Controller {
 
 		// Alumnos del grado anterior que no se han matriculado en este grupo
 		$consulta = 'SELECT m.id as matricula_id, m.alumno_id, a.no_matricula, a.nombres, a.apellidos, a.sexo, a.user_id, 
-							a.fecha_nac, a.ciudad_nac, a.celular, a.direccion, a.religion,
+							a.fecha_nac, a.ciudad_nac, a.celular, a.direccion, a.religion, gru.nombre as nombre_grupo, gru.abrev as abrev_grupo,
 							m.grupo_id, 
 							u.imagen_id, IFNULL(i.nombre, IF(a.sexo="F","default_female.png", "default_male.png")) as imagen_nombre, 
 							a.foto_id, IFNULL(i2.nombre, IF(a.sexo="F","default_female.png", "default_male.png")) as foto_nombre,

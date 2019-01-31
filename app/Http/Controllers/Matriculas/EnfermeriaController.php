@@ -40,8 +40,8 @@ class EnfermeriaController extends Controller {
 		
 		
         $consulta = 'SELECT r.*, u.username as created_by_name, u2.username as updated_by_name FROM registros_enfermeria r
-			INNER JOIN users u ON u.id=r.created_by and u.deleted_at is null
-			INNER JOIN users u2 ON u2.id=r.updated_by and u2.deleted_at is null
+			LEFT JOIN users u ON u.id=r.created_by and u.deleted_at is null
+			LEFT JOIN users u2 ON u2.id=r.updated_by and u2.deleted_at is null
 			WHERE alumno_id=?';
 			
         $registros_enfermeria 		= DB::select($consulta, [Request::input('alumno_id')]);
