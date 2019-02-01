@@ -6,6 +6,7 @@ use Request;
 use Excel;
 use Hash;
 use Carbon\Carbon;
+use \Log;
 
 use App\Models\User;
 use App\Models\Role;
@@ -39,7 +40,10 @@ class ImportarController extends Controller {
 					
 					$abrev 		= $results[$i]->getTitle();
 					Debugging::pin('$abrev', $abrev);
-					$consulta 	= 'SELECT g.id, g.abrev, g.year_id FROM grupos g inner join years y on y.id=g.year_id WHERE g.abrev=? and g.deleted_At is null and y.deleted_at is null and y.year=?;';
+					Log::info('$abrev ' .$abrev . ' - year '.$year);
+					$consulta 	= 'SELECT g.id, g.abrev, g.year_id FROM grupos g inner join years y on y.id=g.year_id WHERE g.abrev=? and g.deleted_at is null and y.deleted_at is null and y.year=?;';
+					$grupo 		= DB::select($consulta, [$abrev, $year]);
+					Log::info('count: '.  count($grupo));
 					$grupo 		= DB::select($consulta, [$abrev, $year])[0];
 					
 					for ($f=0; $f < count($results[$i]); $f++) { 
@@ -48,7 +52,7 @@ class ImportarController extends Controller {
 						$res 		= $fixer->verificar($alumno, $year);
 						$alumno->ciudad_docu_acud1 = $res['ciudad_id_A1'];
 						$alumno->ciudad_docu_acud2 = $res['ciudad_id_A2'];
-						
+						Log::info($alumno->primer_nombre);
 						if ($alumno->id) {
 							$consulta 	= 'UPDATE alumnos SET no_matricula=?, nombres=?, apellidos=?, sexo=?, fecha_nac=?, 
 								tipo_doc=?, documento=?, no_matricula=?, direccion=?, barrio=?, telefono=?, celular=?, estrato=?, 
@@ -73,6 +77,47 @@ class ImportarController extends Controller {
 							$this->modificar_acudiente2($alumno, $now, $res['consultaA2']);
 			
 			
+						}else{
+							
+							$alumno_row = $results[$i][$f];
+							
+							if ($alumno_row->primer_nombre) {
+								$alumno = new Alumno;
+								$alumno->nombres    = $alumno_row->primer_nombre.' '.$alumno_row->segundo_nombre;
+								$alumno->apellidos  = $alumno_row->primer_apellido.' '.$alumno_row->segundo_apellido;
+								$alumno->sexo       = $alumno_row->sexo;
+								$alumno->save();
+								
+								
+								$opera = new OperacionesAlumnos();
+								
+								$usuario = new User;
+								$usuario->username		=	$opera->username_no_repetido($alumno->nombres);
+								$usuario->password		=	Hash::make('123456');
+								$usuario->sexo			=	$alumno_row->sexo;
+								$usuario->is_superuser	=	false;
+								$usuario->periodo_id	=	1; // Verificar que haya un periodo cod 1
+								$usuario->is_active		=	true;
+								$usuario->tipo			=	'Alumno';
+								$usuario->save();
+
+								
+								$role = Role::where('name', 'Alumno')->get();
+								$usuario->attachRole($role[0]);
+
+								$alumno->user_id = $usuario->id;
+								$alumno->save();
+
+
+								$matricula = new Matricula;
+								$matricula->alumno_id		=	$alumno->id;
+								$matricula->grupo_id		=	$grupo->id;
+								$matricula->estado			=	"MATR";
+								$matricula->fecha_matricula = 	$now;
+								$matricula->save();
+							
+							}
+						
 						}
 						
 					}
@@ -163,10 +208,6 @@ class ImportarController extends Controller {
 					$alumno->apellidos  = $alumno_row->apellidos;
 					$alumno->sexo       = $alumno_row->sexo;
 					$alumno->save();
-					
-					
-					$consulta 	= 'SELECT * FROM years WHERE actual=1';
-					$year 		= DB::select($consulta)[0];
 					
 					
 					$opera = new OperacionesAlumnos();
