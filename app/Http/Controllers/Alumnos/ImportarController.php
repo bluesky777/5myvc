@@ -40,10 +40,10 @@ class ImportarController extends Controller {
 					
 					$abrev 		= $results[$i]->getTitle();
 					Debugging::pin('$abrev', $abrev);
-					Log::info('$abrev ' .$abrev . ' - year '.$year);
+					
 					$consulta 	= 'SELECT g.id, g.abrev, g.year_id FROM grupos g inner join years y on y.id=g.year_id WHERE g.abrev=? and g.deleted_at is null and y.deleted_at is null and y.year=?;';
 					$grupo 		= DB::select($consulta, [$abrev, $year]);
-					Log::info('count: '.  count($grupo));
+					
 					$grupo 		= DB::select($consulta, [$abrev, $year])[0];
 					
 					for ($f=0; $f < count($results[$i]); $f++) { 
@@ -52,7 +52,7 @@ class ImportarController extends Controller {
 						$res 		= $fixer->verificar($alumno, $year);
 						$alumno->ciudad_docu_acud1 = $res['ciudad_id_A1'];
 						$alumno->ciudad_docu_acud2 = $res['ciudad_id_A2'];
-						Log::info($alumno->primer_nombre);
+
 						if ($alumno->id) {
 							$consulta 	= 'UPDATE alumnos SET no_matricula=?, nombres=?, apellidos=?, sexo=?, fecha_nac=?, 
 								tipo_doc=?, documento=?, no_matricula=?, direccion=?, barrio=?, telefono=?, celular=?, estrato=?, 
@@ -83,9 +83,23 @@ class ImportarController extends Controller {
 							
 							if ($alumno_row->primer_nombre) {
 								$alumno = new Alumno;
-								$alumno->nombres    = $alumno_row->primer_nombre.' '.$alumno_row->segundo_nombre;
-								$alumno->apellidos  = $alumno_row->primer_apellido.' '.$alumno_row->segundo_apellido;
-								$alumno->sexo       = $alumno_row->sexo;
+								$alumno->nombres    			= $alumno_row->primer_nombre.' '.$alumno_row->segundo_nombre;
+								$alumno->apellidos  			= $alumno_row->primer_apellido.' '.$alumno_row->segundo_apellido;
+								$alumno->sexo       			= $alumno_row->sexo;
+								$alumno->tipo_doc   			= $alumno_row->tipo_doc;
+								$alumno->nro_de_documento  		= $alumno_row->nro_de_documento;
+								$alumno->numero_matricula 		= $alumno_row->numero_matricula;
+								$alumno->direccion_residencia 	= $alumno_row->direccion_residencia;
+								$alumno->barrio 				= $alumno_row->barrio;
+								$alumno->fecha_de_nacim 		= $alumno_row->fecha_de_nacim;
+								$alumno->numero_matricula 		= $alumno_row->numero_matricula;
+								$alumno->telefono 				= $alumno_row->telefono;
+								$alumno->celular 				= $alumno_row->celular;
+								$alumno->estrato 				= $alumno_row->estrato;
+								$alumno->rh 					= $alumno_row->rh;
+								$alumno->eps 					= $alumno_row->eps;
+								$alumno->tipo_sangre 			= $alumno_row->tipo_sangre;
+								$alumno->religion 				= $alumno_row->religion;
 								$alumno->save();
 								
 								

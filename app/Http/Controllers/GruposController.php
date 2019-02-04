@@ -175,6 +175,22 @@ class GruposController extends Controller {
 				$res['grupos'][$i]->cant_matriculados = 0;
 			}
 			
+			
+			// Contamos los asistentes
+			$consulta = 'SELECT count(m.id) as asistentes FROM matriculas m
+				INNER JOIN grupos g ON g.id=m.grupo_id and m.estado="ASIS" AND m.grupo_id=:grupo_id and m.deleted_at is null and g.deleted_at is null
+				INNER JOIN alumnos a ON a.id=m.alumno_id AND a.deleted_at is null
+				INNER JOIN years y ON y.id=g.year_id AND y.deleted_at is null and y.year=:year_next 
+				GROUP BY g.id;';
+			
+			$asistentes = DB::select($consulta, [ ':grupo_id'=> $res['grupos'][$i]->id, ':year_next'=> $user->year+1 ] );
+			
+			if(count($asistentes) > 0){
+				$res['grupos'][$i]->cant_asistentes = $asistentes[0]->asistentes;
+			}else{
+				$res['grupos'][$i]->cant_asistentes = 0;
+			}
+			
 		
 		}
 		
