@@ -211,19 +211,25 @@ class TLoginController extends Controller {
 		} 
 
 		// Alumnos
-		$cons_alum = "SELECT a.id, a.nombres, a.apellidos, sexo, user_id, a.fecha_nac, a.religion, a.pazysalvo, a.deuda from alumnos a WHERE a.deleted_at is null";
+		$cons_alum = "SELECT a.id, a.nombres, a.apellidos, sexo, user_id, a.fecha_nac, a.religion, a.pazysalvo, a.deuda 
+			from alumnos a 
+			inner join matriculas m ON m.alumno_id=a.id and m.deleted_at is null and (m.estado='MATR' or m.estado='ASIS' or m.estado='PREM')
+			inner join grupos g ON m.grupo_id=g.id and g.deleted_at is null
+			inner join years y ON g.year_id=y.id and y.year>2018 and y.deleted_at is null
+			WHERE a.deleted_at is null";
 		$alumnos = DB::select($cons_alum);
 
 
 		// Periodos
-		$cons_per = "SELECT * FROM periodos";
+		$cons_per = "SELECT p.* FROM periodos p inner join years y ON p.year_id=y.id and y.year>2018 and y.deleted_at is null";
 		$periodos = DB::select($cons_per);
 
 
 		// Matriculas
 		$cons_matri = "SELECT m.id, m.alumno_id, m.grupo_id, m.estado, g.nombre as nombre_grupo, g.abrev, g.year_id 
 					FROM matriculas m
-					inner join grupos g on g.id=m.grupo_id and (m.estado='MATR' or m.estado='ASIS')";
+					inner join grupos g on g.id=m.grupo_id and (m.estado='MATR' or m.estado='ASIS' or m.estado='PREM')
+					inner join years y ON g.year_id=y.id and y.year>2018 and y.deleted_at is null";
 		$matriculas = DB::select($cons_matri);
 
 		// Grupos
@@ -232,20 +238,23 @@ class TLoginController extends Controller {
 
 		// Profesores
 		$cons_pr = "SELECT p.id, p.nombres, p.apellidos, p.sexo, p.fecha_nac FROM profesores p
-					inner join contratos c on p.id=c.profesor_id
+					inner join contratos c on p.id=c.profesor_id and p.deleted_at is null
+					inner join years y ON c.year_id=y.id and y.year>2018 and y.deleted_at is null
 					WHERE p.deleted_at is null and c.deleted_at is null
 					group by p.id;";
 		$profesores = DB::select($cons_pr);
 
 		// Ausencias
-		$cons_aus = "SELECT  a.id, a.asignatura_id, a.alumno_id, a.periodo_id, a.cantidad_ausencia, a.cantidad_tardanza, a.entrada, a.tipo, a.fecha_hora, a.uploaded, a.created_by FROM ausencias a
-					inner join periodos p on p.id=a.periodo_id and p.year_id=:year_id
-					WHERE a.deleted_at is null;";
-		$ausencias = DB::select($cons_aus, [":year_id" => $year_id]);
+		$cons_aus = "SELECT  a.id, a.asignatura_id, a.alumno_id, a.periodo_id, a.cantidad_ausencia, a.cantidad_tardanza, a.entrada, a.tipo, a.fecha_hora, a.uploaded, a.created_by 
+					FROM ausencias a
+					inner join periodos p on p.id=a.periodo_id and p.deleted_at is null
+					inner join years y ON p.year_id=y.id and y.year>2018 and y.deleted_at is null
+					WHERE a.deleted_at is null and a.asignatura_id is null;";
+		$ausencias = DB::select($cons_aus); // , [":year_id" => $year_id]
 
 
 		// Años
-		$cons_ye = "SELECT * FROM years y WHERE y.deleted_at is null";
+		$cons_ye = "SELECT * FROM years y WHERE y.year>2018 and y.deleted_at is null";
 		$years = DB::select($cons_ye);
 
 
