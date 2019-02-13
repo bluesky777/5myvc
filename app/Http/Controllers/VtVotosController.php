@@ -95,7 +95,7 @@ class VtVotosController extends Controller {
 			if ($votaciones[$j]->can_see_results) {
 
 				$aspiraciones = VtAspiracion::where('votacion_id', $votaciones[$j]->id)->get();
-				
+
 				$result = [];
 
 				foreach ($aspiraciones as $aspira) {

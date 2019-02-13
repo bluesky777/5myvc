@@ -16,6 +16,7 @@ class VtCandidato extends Model {
 
 	public static function porAspiracion($aspiracion_id, $year_id)
 	{
+		/*
 		$consulta = 'SELECT c.id as candidato_id, c.plancha, c.numero, usus.persona_id, 
 					usus.nombres, usus.apellidos, usus.user_id, usus.username, usus.tipo, usus.imagen_id, usus.imagen_nombre, usus.nombre_grupo, usus.abrev_grupo, 
 					usus.foto_id, usus.foto_nombre, usus.imagen_id, usus.imagen_nombre
@@ -24,7 +25,7 @@ class VtCandidato extends Model {
 				inner join (
 					
 				SELECT p.id as persona_id, p.nombres, p.apellidos, p.user_id, u.username, 
-					("Pr") as tipo, p.sexo, u.email, p.fecha_nac, p.ciudad_nac, 
+					("Pr") as tipo, p.sexo, 
 					u.imagen_id, IFNULL(i.nombre, IF(p.sexo="F","default_female.png", "default_male.png")) as imagen_nombre, 
 					p.foto_id, IFNULL(i2.nombre, IF(p.sexo="F","default_female.png", "default_male.png")) as foto_nombre, 
 					"N/A" as grupo_id, ("N/A") as nombre_grupo, ("N/A") as abrev_grupo, "N/A" as year_id  
@@ -35,7 +36,7 @@ class VtCandidato extends Model {
 					where p.deleted_at is null
 				union
 				SELECT a.id as persona_id, a.nombres, a.apellidos, a.user_id, u.username, 
-					("Al") as tipo, a.sexo, u.email, a.fecha_nac, a.ciudad_nac, 
+					("Al") as tipo, a.sexo, 
 					u.imagen_id, IFNULL(i.nombre, IF(a.sexo="F","default_female.png", "default_male.png")) as imagen_nombre, 
 					a.foto_id, IFNULL(i2.nombre, IF(a.sexo="F","default_female.png", "default_male.png")) as foto_nombre, 
 					g.id as grupo_id, g.nombre as nombre_grupo, g.abrev as abrev_grupo, g.year_id
@@ -48,7 +49,7 @@ class VtCandidato extends Model {
 					where a.deleted_at is null
 				union
 				SELECT ac.id as persona_id, ac.nombres, ac.apellidos, ac.user_id, u.username, 
-					("Acu") as tipo, ac.sexo, u.email, ac.fecha_nac, ac.ciudad_nac, 
+					("Acu") as tipo, ac.sexo, 
 					u.imagen_id, IFNULL(i.nombre, IF(ac.sexo="F","default_female.png", "default_male.png")) as imagen_nombre, 
 					ac.foto_id, IFNULL(i2.nombre, IF(ac.sexo="F","default_female.png", "default_male.png")) as foto_nombre, 
 					"N/A" as grupo_id, ("N/A") as nombre_grupo, ("N/A") as abrev_grupo, "N/A" as year_id
@@ -59,7 +60,7 @@ class VtCandidato extends Model {
 					where ac.deleted_at is null
 				union
 				SELECT u.id as persona_id, "" as nombres, "" as apellidos, u.id as user_id, u.username,
-					("Usu") as tipo, u.sexo, u.email, "N/A" as fecha_nac, "N/A" as ciudad_nac, 
+					("Usu") as tipo, u.sexo, 
 					u.imagen_id, IFNULL(i.nombre, IF(u.sexo="F","default_female.png", "default_male.png")) as imagen_nombre, 
 					u.imagen_id as foto_id, IFNULL(i.nombre, IF(u.sexo="F","default_female.png", "default_male.png")) as foto_nombre, 
 					"N/A" as grupo_id, ("N/A") as nombre_grupo, ("N/A") as abrev_grupo, "N/A" as year_id  
@@ -80,7 +81,30 @@ class VtCandidato extends Model {
 					and u.deleted_at is null ) usus
 					on usus.user_id=c.user_id
 				where c.deleted_at is null and usus.year_id=:year_id order by c.plancha';
-
+		*/
+		$consulta = 'SELECT c.id as candidato_id, c.plancha, c.numero, usus.persona_id, 
+					usus.nombres, usus.apellidos, usus.user_id, usus.username, usus.tipo, usus.imagen_id, usus.imagen_nombre, usus.nombre_grupo, usus.abrev_grupo, 
+					usus.foto_id, usus.foto_nombre, usus.imagen_id, usus.imagen_nombre
+				FROM vt_candidatos c 
+				INNER JOIN users u ON u.id=c.user_id and c.aspiracion_id=:aspiracion_id
+				inner join (
+					
+				SELECT a.id as persona_id, a.nombres, a.apellidos, a.user_id, u.username, 
+					("Al") as tipo, a.sexo, 
+					u.imagen_id, IFNULL(i.nombre, IF(a.sexo="F","default_female.png", "default_male.png")) as imagen_nombre, 
+					a.foto_id, IFNULL(i2.nombre, IF(a.sexo="F","default_female.png", "default_male.png")) as foto_nombre, 
+					g.id as grupo_id, g.nombre as nombre_grupo, g.abrev as abrev_grupo, g.year_id
+					from alumnos a 
+					inner join users u on a.user_id=u.id
+					inner join matriculas m on m.alumno_id=a.id and (m.estado="MATR" or m.estado="ASIS")
+					inner join grupos g on g.id=m.grupo_id
+					left join images i on i.id=u.imagen_id
+					left join images i2 on i2.id=a.foto_id
+					where a.deleted_at is null
+				 ) usus
+					on usus.user_id=c.user_id
+				where c.deleted_at is null and usus.year_id=:year_id order by c.plancha';
+				
 		$datos = array(
 			':aspiracion_id'	=> $aspiracion_id,
 			':year_id'			=> $year_id);

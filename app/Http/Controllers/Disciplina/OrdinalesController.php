@@ -22,13 +22,10 @@ class OrdinalesController extends Controller {
 		$now 		= Carbon::now('America/Bogota');
 		$year_id 	= Request::input('year_id', $user->year_id);
 
-		$consulta = 'SELECT d.* FROM dis_ordinales d
-			WHERE d.year_id=:year_id and d.deleted_at is null order by d.ordinal';
+		$consulta = 'SELECT * FROM dis_ordinales WHERE year_id='.$year_id.' and deleted_at is null order by ordinal';
 			
-		$ordinales = DB::select($consulta, [
-			':year_id'		=> $year_id,
-		]);
-		
+		$ordinales = DB::select($consulta);
+
 		$consulta = 'SELECT c.* FROM dis_configuraciones c
 			WHERE c.year_id=:year_id and c.deleted_at is null';
 			
