@@ -42,7 +42,7 @@ class VtCandidato extends Model {
 					g.id as grupo_id, g.nombre as nombre_grupo, g.abrev as abrev_grupo, g.year_id
 					from alumnos a 
 					inner join users u on a.user_id=u.id
-					inner join matriculas m on m.alumno_id=a.id and (m.estado="MATR" or m.estado="ASIS")
+					inner join matriculas m on m.alumno_id=a.id and (m.estado="MATR" or m.estado="ASIS" or m.estado="PREM")
 					inner join grupos g on g.id=m.grupo_id
 					left join images i on i.id=u.imagen_id
 					left join images i2 on i2.id=a.foto_id
@@ -90,13 +90,13 @@ class VtCandidato extends Model {
 				inner join (
 					
 				SELECT a.id as persona_id, a.nombres, a.apellidos, a.user_id, u.username, 
-					("Al") as tipo, a.sexo, 
-					u.imagen_id, IFNULL(i.nombre, IF(a.sexo="F","default_female.png", "default_male.png")) as imagen_nombre, 
-					a.foto_id, IFNULL(i2.nombre, IF(a.sexo="F","default_female.png", "default_male.png")) as foto_nombre, 
-					g.id as grupo_id, g.nombre as nombre_grupo, g.abrev as abrev_grupo, g.year_id
+						("Al") as tipo, a.sexo, 
+						u.imagen_id, IFNULL(i.nombre, IF(a.sexo="F","default_female.png", "default_male.png")) as imagen_nombre, 
+						a.foto_id, IFNULL(i2.nombre, IF(a.sexo="F","default_female.png", "default_male.png")) as foto_nombre, 
+						g.id as grupo_id, g.nombre as nombre_grupo, g.abrev as abrev_grupo, g.year_id
 					from alumnos a 
 					inner join users u on a.user_id=u.id
-					inner join matriculas m on m.alumno_id=a.id and (m.estado="MATR" or m.estado="ASIS")
+					inner join matriculas m on m.alumno_id=a.id and (m.estado="MATR" or m.estado="ASIS" or m.estado="PREM")
 					inner join grupos g on g.id=m.grupo_id
 					left join images i on i.id=u.imagen_id
 					left join images i2 on i2.id=a.foto_id
@@ -140,7 +140,7 @@ class VtCandidato extends Model {
 					g.id as grupo_id, g.nombre as nombre_grupo, g.abrev as abrev_grupo, g.year_id
 					from alumnos a 
 					inner join users u on a.user_id=u.id
-					inner join matriculas m on m.alumno_id=a.id and (m.estado="MATR" or m.estado="ASIS")
+					inner join matriculas m on m.alumno_id=a.id and (m.estado="MATR" or m.estado="ASIS" or m.estado="PREM")
 					inner join grupos g on g.id=m.grupo_id
 					left join images i on i.id=u.imagen_id
 					left join images i2 on i2.id=a.foto_id
