@@ -63,7 +63,7 @@ class VtVotacion extends Model {
 					for ($i=0; $i < count($participantes); $i++) { 
 						$consulta 		= 'SELECT m.grupo_id FROM matriculas m 
 											INNER JOIN vt_participantes p ON p.grupo_profes_acudientes=m.grupo_id and p.votacion_id=? and m.deleted_at is null
-											WHERE m.alumno_id=? and m.grupo_id=? and (m.estado="MATR" or m.estado="ASIS") and deleted_at is null';
+											WHERE m.alumno_id=? and m.grupo_id=? and (m.estado="MATR" or m.estado="ASIS" or m.estado="PREM") and deleted_at is null';
 						$inscripc 	= DB::select($consulta, [$votaciones[$j]->id, $user->persona_id, $participantes[$i]->grupo_profes_acudientes]);
 						if (count($inscripc)>0) {
 							$votaciones[$j]->grupo_id = $inscripc[0]->grupo_id;
