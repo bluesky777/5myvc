@@ -95,9 +95,8 @@ class ImportarController extends Controller {
 								$alumno->telefono 				= $alumno_row->telefono;
 								$alumno->celular 				= $alumno_row->celular;
 								$alumno->estrato 				= $alumno_row->estrato;
-								$alumno->rh 					= $alumno_row->rh;
 								$alumno->eps 					= $alumno_row->eps;
-								$alumno->tipo_sangre 			= $alumno_row->tipo_sangre;
+								$alumno->tipo_sangre 			= $alumno_row->rh;
 								$alumno->religion 				= $alumno_row->religion;
 								$alumno->save();
 								
