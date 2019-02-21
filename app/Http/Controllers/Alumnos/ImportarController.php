@@ -89,7 +89,7 @@ class ImportarController extends Controller {
 								$alumno->tipo_doc   			= $alumno_row->tipo_doc;
 								$alumno->documento  			= $alumno_row->nro_de_documento;
 								$alumno->no_matricula 			= $alumno_row->numero_matricula;
-								$alumno->direccion_residencia 	= $alumno_row->direccion_residencia;
+								$alumno->direccion 				= $alumno_row->direccion_residencia;
 								$alumno->barrio 				= $alumno_row->barrio;
 								$alumno->fecha_de_nacim 		= $alumno_row->fecha_de_nacim;
 								$alumno->telefono 				= $alumno_row->telefono;
