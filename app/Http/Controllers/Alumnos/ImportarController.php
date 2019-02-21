@@ -91,7 +91,7 @@ class ImportarController extends Controller {
 								$alumno->no_matricula 			= $alumno_row->numero_matricula;
 								$alumno->direccion 				= $alumno_row->direccion_residencia;
 								$alumno->barrio 				= $alumno_row->barrio;
-								$alumno->fecha_de_nacim 		= $alumno_row->fecha_de_nacim;
+								$alumno->fecha_nac 				= $alumno_row->fecha_de_nacim;
 								$alumno->telefono 				= $alumno_row->telefono;
 								$alumno->celular 				= $alumno_row->celular;
 								$alumno->estrato 				= $alumno_row->estrato;
