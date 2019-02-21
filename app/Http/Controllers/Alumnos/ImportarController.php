@@ -87,12 +87,11 @@ class ImportarController extends Controller {
 								$alumno->apellidos  			= $alumno_row->primer_apellido.' '.$alumno_row->segundo_apellido;
 								$alumno->sexo       			= $alumno_row->sexo;
 								$alumno->tipo_doc   			= $alumno_row->tipo_doc;
-								$alumno->nro_de_documento  		= $alumno_row->nro_de_documento;
-								$alumno->numero_matricula 		= $alumno_row->numero_matricula;
+								$alumno->documento  			= $alumno_row->nro_de_documento;
+								$alumno->no_matricula 			= $alumno_row->numero_matricula;
 								$alumno->direccion_residencia 	= $alumno_row->direccion_residencia;
 								$alumno->barrio 				= $alumno_row->barrio;
 								$alumno->fecha_de_nacim 		= $alumno_row->fecha_de_nacim;
-								$alumno->numero_matricula 		= $alumno_row->numero_matricula;
 								$alumno->telefono 				= $alumno_row->telefono;
 								$alumno->celular 				= $alumno_row->celular;
 								$alumno->estrato 				= $alumno_row->estrato;
