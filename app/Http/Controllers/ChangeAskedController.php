@@ -176,7 +176,7 @@ class ChangeAskedController extends Controller {
 		
 		}elseif ($user->tipo == 'Alumno') {
 
-			$ausencias 			= Ausencia::totalDeAlumno($user->persona_id, $user->periodo_id);
+			$ausencias 			= Ausencia::deAlumnoYear($user->persona_id, $user->year_id);
 			
 			# Datos de los docentes de este año
 			$profes_actuales = $this->datos_de_docentes_este_anio($user, false);
