@@ -4,6 +4,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 use DB;
+use App\Models\EscalaDeValoracion;
 
 
 class NotaComportamiento extends Model {
@@ -40,6 +41,36 @@ class NotaComportamiento extends Model {
 		}else{
 			return [];
 		}
+
+		 
+	}
+
+
+
+	public static function notas_comportamiento_year($alumno_id, $year_id){
+		$periodos = DB::select('SELECT * FROM periodos p WHERE p.year_id=? and p.deleted_at is null ', [$year_id]);
+		
+		for ($i=0; $i < count($periodos); $i++) { 
+			$periodo_id = $periodos[$i]->id;
+			
+			$consulta = 'SELECT * FROM nota_comportamiento n WHERE n.alumno_id=:alumno_id and n.periodo_id=:periodo_id and n.deleted_at is null';
+			$nota = DB::select($consulta, [
+											':alumno_id'	=>$alumno_id, 
+											':periodo_id'	=>$periodo_id
+										]);
+			
+			if(count($nota) > 0){
+				$periodos[$i]->nota 			= $nota[0];
+				$periodos[$i]->definiciones 	= DefinicionComportamiento::frases($nota[0]->id);
+				$escalas_val 					= DB::select('SELECT * FROM escalas_de_valoracion WHERE year_id=? AND deleted_at is null', [$year_id]);
+				$escala 						= EscalaDeValoracion::valoracion($periodos[$i]->nota->nota, $escalas_val)->desempenio;
+				$periodos[$i]->nota->juicio 	= $escala;
+			}else{
+				$periodos[$i]->nota 			= '';
+				$periodos[$i]->definiciones 	= [];
+			}
+		}
+		return $periodos;
 
 		 
 	}

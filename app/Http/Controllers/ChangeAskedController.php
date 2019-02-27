@@ -15,6 +15,7 @@ use App\Models\Debugging;
 use App\Models\ImageModel;
 use App\Models\Ausencia;
 use App\Models\NotaComportamiento;
+use App\Models\Disciplina;
 use App\Models\DefinicionComportamiento;
 
 use App\Http\Controllers\Alumnos\Solicitudes;
@@ -146,7 +147,7 @@ class ChangeAskedController extends Controller {
 			
 			
 			
-			# Asignaturas hoy - horario
+			# Asignaturas hoy -  
 			$now = Carbon::now('America/Bogota');
 			$dia = $now->dayOfWeek;
 			$horario_hoy 	= $this->asignaturas_dia($user->year_id, $user->persona_id, $user->periodo_id, $dia);
@@ -181,10 +182,10 @@ class ChangeAskedController extends Controller {
 			# Datos de los docentes de este año
 			$profes_actuales = $this->datos_de_docentes_este_anio($user, false);
 			
-			$comportamiento 	= NotaComportamiento::nota_comportamiento($user->persona_id, $user->periodo_id);
-			if ($comportamiento) {
-				$comportamiento->definiciones = DefinicionComportamiento::frases($comportamiento->id);
-			}
+			$comportamiento 	= NotaComportamiento::notas_comportamiento_year($user->persona_id, $user->year_id);
+
+			$situaciones 		= Disciplina::situaciones_year($user->persona_id, $user->year_id);
+
 			
 			# Las publicaciones
 			$publicaciones = Publicaciones::ultimas_publicaciones('Alumno');
@@ -194,7 +195,7 @@ class ChangeAskedController extends Controller {
 			$eventos = DB::select('SELECT * FROM calendario WHERE solo_profes=0 and deleted_at is null');
 
 			
-			return [ 'ausencias_periodo'=>$ausencias, 'comportamiento'=>$comportamiento, 'profes_actuales' => $profes_actuales,
+			return [ 'ausencias_periodo'=>$ausencias, 'situaciones'=> $situaciones, 'comportamiento'=>$comportamiento, 'profes_actuales' => $profes_actuales,
 				'publicaciones' => $publicaciones, 'eventos' => $eventos ];
 		
 		
@@ -214,7 +215,7 @@ class ChangeAskedController extends Controller {
 							left join users u on a.user_id=u.id and u.deleted_at is null
 							left join images i on i.id=u.imagen_id and i.deleted_at is null
 							left join images i2 on i2.id=a.foto_id and i2.deleted_at is null
-							left join matriculas m on m.alumno_id=a.id and m.deleted_at is null and (m.estado="ASIS" or m.estado="MATR")
+							left join matriculas m on m.alumno_id=a.id and m.deleted_at is null and (m.estado="ASIS" or m.estado="MATR" or m.estado="PREM")
 							left join grupos g on g.id=m.grupo_id and g.deleted_at is null and g.year_id=?
 							where a.deleted_at is null and p.deleted_at is null  and g.nombre is not null
 							order by g.orden, a.apellidos, a.nombres';
@@ -223,27 +224,21 @@ class ChangeAskedController extends Controller {
 			
 			for ($i=0; $i < count($alumnos); $i++) { 
 				
-				$ausencias 			= Ausencia::totalDeAlumno($alumnos[$i]->alumno_id, $user->periodo_id);
-				
-				$comportamiento 	= NotaComportamiento::nota_comportamiento($alumnos[$i]->alumno_id, $user->periodo_id);
-				if ($comportamiento) {
-					$comportamiento->definiciones = DefinicionComportamiento::frases($comportamiento->id);
-				}
-				
-				$alumnos[$i]->ausencias_periodo 	= $ausencias;
-				$alumnos[$i]->comportamiento 		= $comportamiento;
+				$alumnos[$i]->comportamiento 		= NotaComportamiento::notas_comportamiento_year($alumnos[$i]->alumno_id, $user->year_id);
+				$alumnos[$i]->situaciones 			= Disciplina::situaciones_year($alumnos[$i]->alumno_id, $user->year_id);
+				$alumnos[$i]->ausencias_periodo 	= Ausencia::deAlumnoYear($alumnos[$i]->alumno_id, $user->year_id);
 				
 			}
 
 			# Las publicaciones
-			$publicaciones = Publicaciones::ultimas_publicaciones('Acudiente');
-
+			$publicaciones 		= Publicaciones::ultimas_publicaciones('Acudiente');
 			
 			# Calendario
 			$eventos = DB::select('SELECT * FROM calendario WHERE solo_profes=0 and deleted_at is null');
 
 			
-			return [ 'alumnos' => $alumnos, 'publicaciones' => $publicaciones, 'eventos' => $eventos ];
+			return [ 'alumnos' => $alumnos, 
+				'publicaciones' => $publicaciones, 'eventos' => $eventos ];
 		
 		}elseif ($user->tipo == 'Usuario') {
 			

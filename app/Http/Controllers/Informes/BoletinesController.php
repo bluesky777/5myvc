@@ -27,6 +27,7 @@ use App\Models\ImageModel;
 use App\Models\EscalaDeValoracion;
 use App\Models\Area;
 use App\Models\Debugging;
+use App\Models\Disciplina;
 
 use Carbon\Carbon;
 
@@ -344,6 +345,10 @@ class BoletinesController extends Controller {
 
 
 		}
+		
+		
+		// DISCPLINA
+		$alumno->situaciones = Disciplina::situaciones_year($alumno->alumno_id, $this->user->year_id);
 		
 
 		// Agrupamos por áreas
