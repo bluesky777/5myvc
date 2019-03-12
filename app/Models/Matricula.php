@@ -52,7 +52,7 @@ class Matricula extends Model {
 							m.fecha_retiro as fecha_retiro, m.estado, m.fecha_matricula, m.nuevo, IF(m.nuevo, "SI", "NO") as es_nuevo, m.repitente,
 							a.has_sisben, a.nro_sisben, a.has_sisben_3, a.nro_sisben_3 
 						FROM alumnos a 
-						inner join matriculas m on a.id=m.alumno_id and m.grupo_id=:grupo_id and (m.estado="ASIS" or m.estado="MATR")
+						inner join matriculas m on a.id=m.alumno_id and m.grupo_id=:grupo_id and (m.estado="ASIS" or m.estado="MATR" or m.estado="PREM")
 						left join users u on a.user_id=u.id and u.deleted_at is null
 						left join images i on i.id=u.imagen_id and i.deleted_at is null
 						left join tipos_documentos t1 on t1.id=a.tipo_doc and t1.deleted_at is null
