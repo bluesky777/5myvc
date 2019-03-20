@@ -127,10 +127,21 @@ class ObservadorController extends Controller {
 
         }
         
-        $filas      = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33];
+        
+        if ($tamanio == 'carta') {
+            $filas      = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26];
+        }else{
+            $filas      = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33];
+        }
+        
         $dns        = url('/') . '/images/perfil/';
         $periodos   = Periodo::hastaPeriodoN($year->year_id);
-        $filasPer   = [1,2,3,4,5,6];
+        
+        if ($tamanio == 'carta') {
+            $filasPer   = [1,2,3,4,5];
+        }else{
+            $filasPer   = [1,2,3,4,5,6];
+        }
         
         $html = View::make('observador', compact('grupos', 'year', 'filas', 'dns', 'periodos', 'filasPer'))->render();
 

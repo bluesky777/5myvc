@@ -39,13 +39,13 @@
                         <span class="texto-negrita txt-12">{{$alumno->tipo_doc_abrev}} {{$alumno->documento}} 
                         </span>
                     </div>
-                    <div class="col-xs-2">
+                    <div class="col-xs-1">
                         RH: {{$alumno->tipo_sangre}} 
                     </div>
                     <div class="col-xs-3">
                         DIRECCIÓN: {{$alumno->direccion}} {{$alumno->barrio}} 
                     </div>
-                    <div class="col-xs-3">
+                    <div class="col-xs-4">
                         TEL: {{$alumno->celular}} - {{$alumno->telefono}}  
                     </div>
                 </div>
