@@ -22,13 +22,31 @@
 
                 <div class="row">
                     <div class="col-xs-5 ">
-                        NOMBRE: <span class="texto-negrita">{{$alumno->apellidos}} {{$alumno->nombres}} </span> 
+                        NOMBRE: <span class="texto-negrita txt-12">{{$alumno->apellidos}} {{$alumno->nombres}} </span> 
                     </div>
                     <div class="col-xs-4">
                         NACIMIENTO: {{$alumno->fecha_nac}} {{$alumno->ciudad_nac_nombre}} 
                     </div>
+                    
                     <div class="col-xs-3 texto-right">
                         GRUPO: <span class="texto-negrita">{{$grupo->nombre}} </span> 
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-xs-4">
+                        DOCUMENTO: 
+                        <span class="texto-negrita txt-12">{{$alumno->tipo_doc_abrev}} {{$alumno->documento}} 
+                        </span>
+                    </div>
+                    <div class="col-xs-2">
+                        RH: {{$alumno->tipo_sangre}} 
+                    </div>
+                    <div class="col-xs-3">
+                        DIRECCIÓN: {{$alumno->direccion}} {{$alumno->barrio}} 
+                    </div>
+                    <div class="col-xs-3">
+                        TEL: {{$alumno->celular}} - {{$alumno->telefono}}  
                     </div>
                 </div>
 
