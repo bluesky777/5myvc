@@ -547,7 +547,7 @@ class BoletinesController extends Controller {
 				
 				$escala = '';
 				
-				if ($escala = EscalaDeValoracion::valoracion($la_nota, $this->escalas_val)) {
+				if (EscalaDeValoracion::valoracion($la_nota, $this->escalas_val)) {
 					$escala = EscalaDeValoracion::valoracion($la_nota, $this->escalas_val)->desempenio;
 				}
 				
