@@ -138,6 +138,10 @@ class YearsController extends Controller {
 			$year->cant_asignatura_pierde_year 		=	$pasado->cant_asignatura_pierde_year;
 			$year->contador_certificados 			=	$pasado->contador_certificados;
 			$year->contador_folios 					=	$pasado->contador_folios;
+			$year->nota_minima_aceptada				=	$pasado->nota_minima_aceptada;
+			$year->resolucion						=	$pasado->resolucion;
+			$year->codigo_dane						=	$pasado->codigo_dane;
+			$year->encabezado_certificado			=	$pasado->encabezado_certificado;
 
 			$year->save();
 			

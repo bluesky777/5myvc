@@ -52,7 +52,7 @@ class NotasPerdidasController extends Controller {
 
 		$consulta_alums = "SELECT a.id as alumno_id, a.nombres, a.apellidos, a.sexo, a.user_id, a.celular, a.email, a.foto_id, a.pazysalvo
 			from alumnos a
-			inner join matriculas m on m.alumno_id=a.id and (m.estado='MATR' or m.estado='ASIS') and m.grupo_id=:grupo_id and m.deleted_at is null
+			inner join matriculas m on m.alumno_id=a.id and (m.estado='MATR' or m.estado='ASIS' or m.estado='PREM') and m.grupo_id=:grupo_id and m.deleted_at is null
 			inner join notas n on n.alumno_id=a.id and n.nota < :nota_minima_aceptada
 			inner join subunidades s on s.id=n.subunidad_id and s.deleted_at is null 
 			inner join unidades u on u.id=s.unidad_id and u.asignatura_id=:asignatura_id and u.deleted_at is null 
@@ -86,7 +86,7 @@ class NotasPerdidasController extends Controller {
 				for ($k=0; $k < $cant_alum; $k++) { 
 
 					$notas 		= DB::select($consulta_subs, [':nota_minima_aceptada' => $user->nota_minima_aceptada, ':asignatura_id' => $asign_all[$j]->asignatura_id, 
-															'periodo' => $periodo_a_calcular, ':alumno_id' => $alumn_all[$k]->alumno_id ]);
+															':periodo' => $periodo_a_calcular, ':alumno_id' => $alumn_all[$k]->alumno_id ]);
 					$alumn_all[$k]->notas = $notas;
 					$alumn_all[$k]->userData = Alumno::userData($alumn_all[$k]->alumno_id);
 				}
@@ -249,7 +249,7 @@ class NotasPerdidasController extends Controller {
 
 					$consulta = "SELECT a.id as alumno_id, a.nombres, a.apellidos, a.sexo, a.user_id, a.celular, a.email, a.foto_id, a.pazysalvo
 						from alumnos a
-						inner join matriculas m on m.alumno_id=a.id and (m.estado='MATR' or m.estado='ASIS') and m.grupo_id=:grupo_id and m.deleted_at is null
+						inner join matriculas m on m.alumno_id=a.id and (m.estado='MATR' or m.estado='ASIS' or m.estado='PREM') and m.grupo_id=:grupo_id and m.deleted_at is null
 						inner join notas n on n.alumno_id=a.id and n.nota < :nota_minima_aceptada
 						inner join subunidades s on s.id=n.subunidad_id and s.deleted_at is null 
 						inner join unidades u on u.id=s.unidad_id and u.asignatura_id=:asignatura_id and u.deleted_at is null 
