@@ -544,7 +544,13 @@ class BoletinesController extends Controller {
 				if ($la_nota < $nota_minima_aceptada) {
 					$clase = ' nota-perdida-bold ';
 				}
-				$escala = EscalaDeValoracion::valoracion($la_nota, $this->escalas_val)->desempenio;
+				
+				$escala = '';
+				
+				if ($escala = EscalaDeValoracion::valoracion($la_nota, $this->escalas_val)) {
+					$escala = EscalaDeValoracion::valoracion($la_nota, $this->escalas_val)->desempenio;
+				}
+				
 			}
 			
 			

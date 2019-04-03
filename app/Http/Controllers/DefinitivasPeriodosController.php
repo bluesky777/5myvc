@@ -117,7 +117,7 @@ class DefinitivasPeriodosController extends Controller {
 						WHERE NOT EXISTS (
 							SELECT id FROM notas_finales WHERE alumno_id='.$defi_autos[$i]->alumno_id.' and asignatura_id='.$defi_autos[$i]->asignatura_id.' and periodo_id='.$periodo_id.'
 						) LIMIT 1';
-
+							
 			DB::select($consulta);
 			
 		}
