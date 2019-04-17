@@ -39,7 +39,7 @@ class AcudientesExportController extends Controller {
                 where g.deleted_at is null
                 order by g.orden';
 
-            $grupos = DB::select($consulta, [':year_id'=> Year::actual()->id] );
+            $grupos = DB::select($consulta, [':year_id'=> $user->year_id] );
             
             for ($i=0; $i < count($grupos); $i++) { 
                 $grupo = $grupos[$i];
