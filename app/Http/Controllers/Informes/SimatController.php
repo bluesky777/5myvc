@@ -34,7 +34,7 @@ class SimatController extends Controller {
             $extension = 'xlsx';
         }
 
-		Excel::create('Alumnos con acudientes '.$user->year, function($excel) {
+		Excel::create('Alumnos con acudientes '.$user->year, function($excel) use ($user) {
 
             $consulta = 'SELECT g.id, g.nombre, g.abrev, g.orden, gra.orden as orden_grado, g.grado_id, g.year_id, g.titular_id,
                 p.nombres as nombres_titular, p.apellidos as apellidos_titular, p.titulo,
