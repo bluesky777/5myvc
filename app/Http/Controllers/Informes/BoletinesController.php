@@ -28,6 +28,7 @@ use App\Models\EscalaDeValoracion;
 use App\Models\Area;
 use App\Models\Debugging;
 use App\Models\Disciplina;
+use \Log;
 
 use Carbon\Carbon;
 
