@@ -420,7 +420,7 @@ class BoletinesController extends Controller {
 		$consulta 		= 'SELECT y.year, y.id as year_id, g.id as grupo_id, si_recupera_materia_recup_indicador, nota_minima_aceptada
 						FROM years y
 						INNER JOIN grupos g ON g.year_id=y.id and g.deleted_at is null
-						INNER JOIN matriculas m ON m.grupo_id=g.id and (m.estado="MATR" or m.estado="ASIS") and m.deleted_at is null and m.alumno_id=?
+						INNER JOIN matriculas m ON m.grupo_id=g.id and (m.estado="MATR" or m.estado="ASIS" or m.estado="PREM") and m.deleted_at is null and m.alumno_id=?
 						WHERE y.deleted_at is null and y.year=?';
 						
 		$year_ant 		= DB::select($consulta, [$alumno->alumno_id, $year_ant_num]);
