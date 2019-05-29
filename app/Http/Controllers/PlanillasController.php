@@ -12,6 +12,7 @@ use App\Models\Subunidad;
 use App\Models\Unidad;
 use App\Models\Profesor;
 use App\Models\Alumno;
+use Carbon\Carbon;
 
 
 class PlanillasController extends Controller {
@@ -254,7 +255,7 @@ class PlanillasController extends Controller {
 			
 			
 			$consulta = 'SELECT m.id as matricula_id, m.alumno_id, a.no_matricula, a.nombres, a.apellidos, a.sexo, a.user_id, 
-					a.fecha_nac, a.ciudad_nac, c1.ciudad as ciudad_nac_nombre, a.tipo_doc, a.documento, a.ciudad_doc, c2.ciudad as ciudad_doc_nombre, a.tipo_sangre, a.eps, a.telefono, a.celular, 
+					a.fecha_nac, a.ciudad_nac, c1.ciudad as ciudad_nac_nombre, a.tipo_doc, a.documento, a.ciudad_doc, a.tipo_sangre, a.eps, a.telefono, a.celular, 
 					a.direccion, a.barrio, a.estrato, a.ciudad_resid, c3.ciudad as ciudad_resid_nombre, a.religion, a.email, a.facebook, a.created_by, a.updated_by,
 					a.pazysalvo, a.deuda, m.grupo_id, 
 					u.imagen_id, IFNULL(i.nombre, IF(a.sexo="F","default_female.png", "default_male.png")) as imagen_nombre, 
@@ -267,8 +268,6 @@ class PlanillasController extends Controller {
 				left join images i on i.id=u.imagen_id and i.deleted_at is null
 				left join images i2 on i2.id=a.foto_id and i2.deleted_at is null
 				left join ciudades c1 on c1.id=a.ciudad_nac and c1.deleted_at is null
-				left join ciudades c2 on c2.id=a.ciudad_doc and c2.deleted_at is null
-				left join ciudades c3 on c3.id=a.ciudad_resid and c3.deleted_at is null
 				where a.deleted_at is null and m.deleted_at is null
 				order by a.apellidos, a.nombres';
 
@@ -305,6 +304,7 @@ class PlanillasController extends Controller {
 		for ($i=0; $i < count($grupos); $i++) { 
 			
 			
+			/*
 			$consulta = 'SELECT m.id as matricula_id, m.alumno_id, a.no_matricula, a.nombres, a.apellidos, a.sexo, a.user_id, 
 					a.fecha_nac, a.tipo_doc, a.documento, a.celular, 
 					a.direccion, a.barrio, a.religion, u.email, a.facebook,
@@ -318,9 +318,46 @@ class PlanillasController extends Controller {
 				left join images i2 on i2.id=a.foto_id and i2.deleted_at is null
 				where a.deleted_at is null and m.deleted_at is null
 				order by a.apellidos, a.nombres';
-
+			*/
+			
+			$consulta = 'SELECT m.id as matricula_id, m.alumno_id, a.no_matricula, a.nombres, a.apellidos, a.sexo, a.user_id, a.egresado,
+					a.fecha_nac, a.ciudad_nac, c1.departamento as departamento_nac_nombre, c1.ciudad as ciudad_nac_nombre, a.tipo_doc, t1.tipo as tipo_doc_name, a.documento, a.ciudad_doc, 
+					a.tipo_sangre, a.eps, CONCAT(a.telefono, " / ", a.celular) as telefonos, 
+					a.direccion, a.barrio, a.estrato, a.ciudad_resid, a.religion, a.email, a.facebook, a.created_by, a.updated_by,
+					a.pazysalvo, a.deuda, m.grupo_id, a.is_urbana, IF(a.is_urbana, "Urbano", "Rural") as es_urbana,
+					t1.tipo as tipo_doc, t1.abrev as tipo_doc_abrev,
+					u.imagen_id, IFNULL(i.nombre, IF(a.sexo="F","default_female.png", "default_male.png")) as imagen_nombre, 
+					u.username, u.is_superuser, u.is_active,
+					a.foto_id, IFNULL(i2.nombre, IF(a.sexo="F","default_female.png", "default_male.png")) as foto_nombre,
+					m.fecha_retiro as fecha_retiro, m.estado, m.fecha_matricula, m.nuevo, IF(m.nuevo, "SI", "NO") as es_nuevo, m.repitente,
+					a.has_sisben, a.nro_sisben, a.has_sisben_3, a.nro_sisben_3 
+				FROM alumnos a 
+				inner join matriculas m on a.id=m.alumno_id and m.grupo_id=:grupo_id and (m.estado="ASIS" or m.estado="MATR" or m.estado="PREM")
+				left join users u on a.user_id=u.id and u.deleted_at is null
+				left join images i on i.id=u.imagen_id and i.deleted_at is null
+				left join tipos_documentos t1 on t1.id=a.tipo_doc and t1.deleted_at is null
+				left join images i2 on i2.id=a.foto_id and i2.deleted_at is null
+				left join ciudades c1 on c1.id=a.ciudad_nac and c1.deleted_at is null
+				where a.deleted_at is null and m.deleted_at is null
+				order by a.apellidos, a.nombres';
+			
 			$grupos[$i]->alumnos = DB::select($consulta, [':grupo_id' => $grupos[$i]->id]);
 
+			
+			// Recorro para calcular edad
+			$cantA = count($grupos[$i]->alumnos);
+
+			for ($j=0; $j < $cantA; $j++) { 
+				// Edad
+				if ($grupos[$i]->alumnos[$j]->fecha_nac) {
+					$anio 	= date('Y', strtotime( $grupos[$i]->alumnos[$j]->fecha_nac) );
+					$mes 	= date('m', strtotime( $grupos[$i]->alumnos[$j]->fecha_nac) );
+					$dia 	= date('d', strtotime( $grupos[$i]->alumnos[$j]->fecha_nac) );
+					$grupos[$i]->alumnos[$j]->edad = Carbon::createFromDate($anio, $mes, $dia)->age;
+				}else{
+					$grupos[$i]->alumnos[$j]->edad = '';
+				}
+			}
 
 		}
 
