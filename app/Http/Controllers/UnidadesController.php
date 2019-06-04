@@ -16,8 +16,8 @@ use Carbon\Carbon;
 class UnidadesController extends Controller {
 
 
-	private $cons_unidades 		= 'SELECT * FROM unidades WHERE asignatura_id=? and periodo_id=? and deleted_at is null';
-	private $cons_subunidades 	= 'SELECT * FROM subunidades WHERE unidad_id=? and deleted_at is null';
+	private $cons_unidades 		= 'SELECT * FROM unidades WHERE asignatura_id=? and periodo_id=? and deleted_at is null order by orden, id';
+	private $cons_subunidades 	= 'SELECT * FROM subunidades WHERE unidad_id=? and deleted_at is null order by orden, id';
 
 
 	public function getDeAsignaturaPeriodo($asignatura_id, $periodo_id)
@@ -58,15 +58,25 @@ class UnidadesController extends Controller {
 			
 		}
 
-		// Vuelvo a traer las unidades, por si las moscas
-		$unidades = DB::select($this->cons_unidades, [$asignatura_id, $periodo_id]);
+		// Vuelvo a traer las unidades, por si las moscas y para arreglar orden
+		$orden_duplicado 	= false;
+		$orden_anterior 	= -5;
+		$unidades 			= DB::select($this->cons_unidades, [$asignatura_id, $periodo_id]);
 
 		foreach ($unidades as $unidad) {
 
 			$subunidades 			= DB::select($this->cons_subunidades, [$unidad->id]);
 			$unidad->subunidades 	= $subunidades;
 
+			// A veces hay varios con el mismo número en el orden, debo encontrarlo y arreglarlo.
+			if ($orden_anterior == $unidad->orden) {
+				$orden_duplicado = true;
+			}else{
+				$orden_anterior = $unidad->orden;
+			}
 		}
+
+		$unidades = Unidad::arreglarOrden($unidades, $asignatura_id, $periodo_id);
 
 		return $unidades;
 	}

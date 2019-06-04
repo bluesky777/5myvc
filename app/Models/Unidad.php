@@ -24,6 +24,29 @@ class Unidad extends Model {
 		return $this->hasMany('Subunidad');
 	}
 
+
+
+	public static function arreglarOrden($unidadesT, $asignatura_id, $periodo_id)
+	{
+		
+		for ($i=0; $i < count($unidadesT); $i++) { 
+			DB::update('UPDATE unidades SET orden=? WHERE id=?', [$i, $unidadesT[$i]->id]);
+			$unidadesT[$i]->orden = $i;
+
+			for ($j=0; $j < count($unidadesT[$i]->subunidades); $j++) { 
+				DB::update('UPDATE subunidades SET orden=? WHERE id=?', [$j, $unidadesT[$i]->subunidades[$j]->id]);
+				$unidadesT[$i]->subunidades[$j]->orden = $j;
+			}
+			
+		}
+		
+
+
+		return $unidadesT;
+	}
+
+
+
 	
 	public static function deAsignatura($asignatura_id, $periodo_id)
 	{

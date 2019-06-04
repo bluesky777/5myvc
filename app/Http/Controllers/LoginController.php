@@ -117,7 +117,10 @@ class LoginController extends Controller {
 		}
 
 		
-		$consulta 	= 'SELECT id, tipo, password FROM users WHERE username=? and deleted_at is null';
+		$consulta 	= 'SELECT u.id, u.tipo, u.password, u.periodo_id, p.year_id FROM users u 
+			LEFT JOIN periodos p ON p.id=u.periodo_id and p.deleted_at is null
+			WHERE u.username=? and u.deleted_at is null';
+
 		$usuario 	= DB::select($consulta, [ $credentials['username'] ])[0];
 
 		if (Hash::check($credentials['password'], $usuario->password)){
@@ -133,10 +136,38 @@ class LoginController extends Controller {
 			
 		}
 
+		$res = [ 'el_token' => $token ];
+
+		// Ahora miramos si está en el periodo actual. Si no, lo cambiamos
+		$consulta 	= 'SELECT id, year, actual FROM years WHERE actual=1 and deleted_at is null';
+		$anio 		= DB::select($consulta)[0];
+
+		$consulta 	= 'SELECT id, actual FROM periodos WHERE actual=1 and year_id=? and deleted_at is null';
+		$periodo 	= DB::select($consulta, [$anio->id])[0];
+
+
+		if (count($anio) > 0 && $usuario->periodo_id > 0 && count($periodo) > 0) {
+
+			if ($anio->id != $usuario->year_id) {
+				
+				$res['cambia_anio'] = $periodo->id;
+				$consulta 	= 'UPDATE users SET periodo_id=? WHERE id=?';
+				DB::update($consulta, [$periodo->id, $usuario->id]);
+
+			// Si sí es el año, verificamos periodo
+			}else{
+
+				if ($periodo->id != $usuario->periodo_id) {
+					$res['cambia_anio'] = $periodo->id;
+					$consulta 	= 'UPDATE users SET periodo_id=? WHERE id=?';
+					DB::update($consulta, [$periodo->id, $usuario->id]);
+				}
+			}
+		}
 		
 
 		//return ['token' => compact('token')];
-		return [ 'el_token' => $token ];
+		return $res;
 
 		
 	}

@@ -166,29 +166,46 @@ class DisciplinaController extends Controller {
 	
 	public function postStore()
 	{
-		$user 	        	= User::fromToken();
-		$now 				= Carbon::now('America/Bogota');
-		$year_id     		= Request::input('year_id');
-		$alumno_id     		= Request::input('alumno_id');
-		$periodo_id     	= Request::input('periodo_id');
-		$descripcion    	= Request::input('descripcion');
-		$testigos    		= Request::input('testigos');
-		$descargo    		= Request::input('descargo');
-		$tipo_situacion 	= Request::input('tipo_situacion');
-		$profesor_id 		= Request::input('profesor')['profesor_id'];
-		$fecha_hora_aprox 	= Request::input('fecha_hora_aprox');
+		$user 	        		= User::fromToken();
+		$now 					= Carbon::now('America/Bogota');
+		$year_id     			= Request::input('year_id');
+		$alumno_id     			= Request::input('alumno_id');
+		$periodo_id     		= Request::input('periodo_id');
+		$descripcion    		= Request::input('descripcion');
+		$testigos    			= Request::input('testigos');
+		$descargo    			= Request::input('descargo');
+		$tipo_situacion 		= Request::input('tipo_situacion');
+		$profesor_id 			= Request::input('profesor')['profesor_id'];
+		$fecha_hora_aprox 		= Request::input('fecha_hora_aprox');
+		$deriva_de_tardanzas 	= Request::input('deriva_de_tardanzas', 0);
+		$dependencias 			= Request::input('dependencias');
 		
+		$depe_t1 	= 0;
+		$depe_t1 	= 0;
+		
+
 		if ($fecha_hora_aprox) {
 			$fecha_hora_aprox 	= Carbon::parse($fecha_hora_aprox);
+		}
+
+		if (count($dependencias) > 0) {
+			for ($i=0; $i < count($dependencias); $i++) { 
+				if($dependencias[$i]['tipo_situacion'] == 1){
+					$depe_t1 	= 1;
+				}
+				if($dependencias[$i]['tipo_situacion'] == 2){
+					$depe_t1 	= 2;
+				}
+			}
 		}
 
 		
 		// Inserto el proceso
 		$consulta = 'INSERT INTO dis_procesos(year_id, alumno_id, periodo_id, fecha_hora_aprox, descripcion, testigos, descargo, 
-			tipo_situacion, profesor_id, created_at, updated_at, added_by) 
+			tipo_situacion, profesor_id, deriva_de_tardanzas, created_at, updated_at, added_by) 
 			VALUES(?,?,?,?,?,?,?,?,?,?,?,?)';
 			
-		$datos = [ $year_id, $alumno_id, $periodo_id, $fecha_hora_aprox, $descripcion, $testigos, $descargo, $tipo_situacion, $profesor_id, $now, $now, $user->user_id ];
+		$datos = [ $year_id, $alumno_id, $periodo_id, $fecha_hora_aprox, $descripcion, $testigos, $descargo, $tipo_situacion, $profesor_id, $deriva_de_tardanzas, $now, $now, $user->user_id ];
 		
 		DB::insert($consulta, $datos);
 		
@@ -206,12 +223,9 @@ class DisciplinaController extends Controller {
 		
 		
 		// Modificamos las faltas de las que depende de este proceso
-		$dependencias = Request::input('dependencias');
 		for ($i=0; $i < count($dependencias); $i++) { 
-			
 			$consulta = 'UPDATE dis_procesos SET become_id=? WHERE id=?';
 			DB::update($consulta, [ $last_id, $dependencias[$i]['id'] ]);
-			
 		}
 		
 		

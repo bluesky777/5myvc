@@ -33,8 +33,10 @@ class NotasController extends Controller {
 		$resultado = [];
 		
 		// Unidades con Subunidades
-		$unidadesT 	= DB::select('SELECT * FROM unidades u WHERE u.asignatura_id=? and u.deleted_at is null and u.periodo_id=? order by u.orden, u.id', [$asignatura_id, $user->periodo_id]);
-		$unidades 	= [];
+		$unidadesT 			= DB::select('SELECT * FROM unidades u WHERE u.asignatura_id=? and u.deleted_at is null and u.periodo_id=? order by u.orden, u.id', [$asignatura_id, $user->periodo_id]);
+		$unidades 			= [];
+		$orden_duplicado 	= false;
+		$orden_anterior 	= -5;
 		
 		$asignatura = (object)Asignatura::detallada($asignatura_id, $user->year_id);
 		
@@ -45,12 +47,21 @@ class NotasController extends Controller {
 				Nota::verificarCrearNotas($asignatura->grupo_id, $subunidad, $user->user_id);
 			}
 
+			// A veces hay varios con el mismo número en el orden, debo encontrarlo y arreglarlo.
+			if ($orden_anterior == $unidad->orden) {
+				$orden_duplicado = true;
+			}else{
+				$orden_anterior = $unidad->orden;
+			}
+
 			$unidad->subunidades = $subunidades;
 			if (count($subunidades) > 0) {
 				array_push($unidades, $unidad);
 			}
 		}
 
+
+		$unidadesT = Unidad::arreglarOrden($unidadesT, $asignatura_id, $user->periodo_id);
 		
 
 		// alumnos con sus notas

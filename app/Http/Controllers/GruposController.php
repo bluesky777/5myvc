@@ -512,7 +512,7 @@ class GruposController extends Controller {
 						a.foto_id, IFNULL(i2.nombre, IF(a.sexo="F","default_female.png", "default_male.png")) as foto_nombre,
 						(a.direccion + " - " + a.barrio) as direccion, a.facebook, a.pazysalvo, a.deuda
 					FROM alumnos a
-					inner join matriculas m on m.alumno_id=a.id and m.grupo_id=:grupo_id and m.deleted_at is null 
+					inner join matriculas m on m.alumno_id=a.id and m.grupo_id=:grupo_id and (m.estado="PREM" OR m.estado="MATR" OR m.estado="ASIS") and m.deleted_at is null 
 					left join users u on u.id=a.user_id
 					left join images i on i.id=u.imagen_id
 					left join images i2 on i2.id=a.foto_id
