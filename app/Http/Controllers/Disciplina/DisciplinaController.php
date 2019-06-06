@@ -203,7 +203,7 @@ class DisciplinaController extends Controller {
 		// Inserto el proceso
 		$consulta = 'INSERT INTO dis_procesos(year_id, alumno_id, periodo_id, fecha_hora_aprox, descripcion, testigos, descargo, 
 			tipo_situacion, profesor_id, deriva_de_tardanzas, created_at, updated_at, added_by) 
-			VALUES(?,?,?,?,?,?,?,?,?,?,?,?)';
+			VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)';
 			
 		$datos = [ $year_id, $alumno_id, $periodo_id, $fecha_hora_aprox, $descripcion, $testigos, $descargo, $tipo_situacion, $profesor_id, $deriva_de_tardanzas, $now, $now, $user->user_id ];
 		
