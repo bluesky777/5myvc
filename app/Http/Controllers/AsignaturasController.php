@@ -27,7 +27,7 @@ class AsignaturasController extends Controller {
 					FROM asignaturas a
 					inner join materias m on m.id=a.materia_id and m.deleted_at is null
 					left join areas ar on ar.id=m.area_id and ar.deleted_at is null
-					inner join grupos g on g.id=a.grupo_id and g.year_id=?
+					inner join grupos g on g.id=a.grupo_id and g.year_id=? and g.deleted_at is null
 					where a.deleted_at is null
 					order by g.orden, ar.orden, a.orden';
 
@@ -46,7 +46,7 @@ class AsignaturasController extends Controller {
 	{
 		//$user = User::fromToken();
 
-		$cons_unidades 		= 'SELECT * FROM unidades u
+		$cons_unidades 		= 'SELECT u.*, p.numero as numero_periodo FROM unidades u
 			INNER JOIN periodos p ON u.periodo_id=p.id and p.deleted_at is null
 			WHERE u.asignatura_id=? and u.deleted_at is null order by u.orden, u.id';
 
