@@ -12,6 +12,7 @@ use App\Models\Unidad;
 use Carbon\Carbon;
 
 use App\Http\Controllers\Alumnos\Solicitudes;
+use Log;
 
 
 class AsignaturasController extends Controller {
@@ -21,7 +22,8 @@ class AsignaturasController extends Controller {
 		$user = User::fromToken();
 
 		$consulta = 'SELECT a.id, a.materia_id, a.grupo_id, a.profesor_id, a.creditos, a.orden, a.domingo, a.lunes, a.martes, a.miercoles, a.jueves, a.viernes, a.sabado,
-						a.created_by, a.updated_by, a.created_at, a.updated_at, ar.nombre as nombre_area, ar.alias as alias_area
+						a.created_by, a.updated_by, a.created_at, a.updated_at, ar.nombre as nombre_area, ar.alias as alias_area,
+						m.materia as nombre_asignatura
 					FROM asignaturas a
 					inner join materias m on m.id=a.materia_id and m.deleted_at is null
 					left join areas ar on ar.id=m.area_id and ar.deleted_at is null
@@ -29,8 +31,42 @@ class AsignaturasController extends Controller {
 					where a.deleted_at is null
 					order by g.orden, ar.orden, a.orden';
 
-		$asignaturas = DB::select($consulta, array($user->year_id));
+		$asignaturas 	= DB::select($consulta, [$user->year_id]);
+		$cant 			= count($asignaturas);
+
+
+
 		return $asignaturas;
+	}
+
+	
+	
+
+	public function putDetalleAsignatura()
+	{
+		//$user = User::fromToken();
+
+		$cons_unidades 		= 'SELECT * FROM unidades u
+			INNER JOIN periodos p ON u.periodo_id=p.id and p.deleted_at is null
+			WHERE u.asignatura_id=? and u.deleted_at is null order by u.orden, u.id';
+
+		$unidades 	= DB::select($cons_unidades, [Request::input('asignatura_id')]);
+		$cant 			= count($unidades);
+
+		$cons_subunidades 	= 'SELECT * FROM subunidades WHERE unidad_id=? and deleted_at is null order by orden, id';
+		$cons_notas 		= 'SELECT count(id) as cantidad FROM notas WHERE subunidad_id=? and deleted_at is null';
+		$cantidad_notas 	= 0;
+
+		for ($i=0; $i < $cant; $i++) { 
+			$unidades[$i]->subunidades 	= DB::select($cons_subunidades, [$unidades[$i]->id] );
+
+			for ($j=0; $j < count($unidades[$i]->subunidades); $j++) { 
+				$unidades[$i]->subunidades[$j]->cantidad 	= DB::select($cons_notas, [$unidades[$i]->subunidades[$j]->id] )[0]->cantidad;
+				$cantidad_notas 	+= $unidades[$i]->subunidades[$j]->cantidad;
+			}
+		}
+
+		return ['unidades' => $unidades, 'cantidad_notas' => $cantidad_notas];
 	}
 
 	
