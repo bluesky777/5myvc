@@ -48,7 +48,7 @@ class AsignaturasController extends Controller {
 
 		$cons_unidades 		= 'SELECT u.*, p.numero as numero_periodo FROM unidades u
 			INNER JOIN periodos p ON u.periodo_id=p.id and p.deleted_at is null
-			WHERE u.asignatura_id=? and u.deleted_at is null order by u.orden, u.id';
+			WHERE u.asignatura_id=? and u.deleted_at is null order by p.numero, u.orden, u.id';
 
 		$unidades 	= DB::select($cons_unidades, [Request::input('asignatura_id')]);
 		$cant 			= count($unidades);
