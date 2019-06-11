@@ -35,7 +35,7 @@ class PuestosController extends Controller {
                 inner join materias m on m.id=a.materia_id and m.deleted_at is null and a.deleted_at is null and a.grupo_id=:gr_id
                 inner join areas ar on ar.id=m.area_id and ar.deleted_at is null
                 left join (
-                    select nf.asignatura_id, avg(nf.nota) as nota_final_year from notas_finales nf
+                    select nf.asignatura_id, (sum(nf.nota)/4) as nota_final_year from notas_finales nf
                     inner join asignaturas a on a.id=nf.asignatura_id and a.deleted_at is null and nf.alumno_id=:alu_id
                     inner join periodos p on p.id=nf.periodo_id and p.deleted_at is null and p.year_id=:year_id
                     group by a.id
@@ -59,7 +59,7 @@ class PuestosController extends Controller {
                 inner join materias m on m.id=a.materia_id and m.deleted_at is null and a.deleted_at is null and a.grupo_id=:gr_id
                 inner join areas ar on ar.id=m.area_id and ar.deleted_at is null
                 left join (
-                    select nf.asignatura_id, avg(nf.nota) as nota_final_year from notas_finales nf
+                    select nf.asignatura_id, (sum(nf.nota)/3) as nota_final_year from notas_finales nf
                     inner join asignaturas a on a.id=nf.asignatura_id and a.deleted_at is null and nf.alumno_id=:alu_id
                     inner join periodos p on p.id=nf.periodo_id and (p.numero=1 or p.numero=2 or p.numero=3) and p.deleted_at is null and p.year_id=:year_id
                     group by a.id
@@ -83,7 +83,7 @@ class PuestosController extends Controller {
                 inner join materias m on m.id=a.materia_id and m.deleted_at is null and a.deleted_at is null and a.grupo_id=:gr_id
                 inner join areas ar on ar.id=m.area_id and ar.deleted_at is null
                 left join (
-                    select nf.asignatura_id, avg(nf.nota) as nota_final_year from notas_finales nf
+                    select nf.asignatura_id, (sum(nf.nota)/2) as nota_final_year from notas_finales nf
                     inner join asignaturas a on a.id=nf.asignatura_id and a.deleted_at is null and nf.alumno_id=:alu_id
                     inner join periodos p on p.id=nf.periodo_id and (p.numero=1 or p.numero=2) and p.deleted_at is null and p.year_id=:year_id
                     group by a.id

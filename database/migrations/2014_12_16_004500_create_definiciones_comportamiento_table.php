@@ -19,7 +19,7 @@ class CreateDefinicionesComportamientoTable extends Migration {
 			$table->increments('id');
 			$table->integer('comportamiento_id')->unsigned();
 			$table->integer('frase_id')->unsigned()->nullable();
-			$table->string('frase')->nullable();
+			$table->text('frase')->nullable();
 			$table->date('fecha')->nullable();
 			$table->integer('orden')->nullable();
 			$table->integer('created_by')->nullable();

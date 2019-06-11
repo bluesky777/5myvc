@@ -223,8 +223,6 @@ class BoletinesController extends Controller {
 
 			// Todas las materias con sus unidades y subunides
 			$this->allNotasAlumno($alumno, $grupo_id, $user->periodo_id, true);
-
-			//$alumno->userData = Alumno::userData($alumno->alumno_id);
 			
 			$this->asignaturasPerdidasDeAlumno($alumno, $grupo_id, $user->year_id, $periodo_a_calcular);
 			
@@ -264,40 +262,58 @@ class BoletinesController extends Controller {
 
 		return array($grupo, $year, $response_alumnos);
 	}
+	
 
 	public function allNotasAlumno(&$alumno, $grupo_id, $periodo_id, $comport_and_frases=false)
 	{
 
 
-		//$asignaturas			= Grupo::detailed_materias($grupo_id);
 		$asignaturas			= Grupo::detailed_materias_notafinal($alumno->alumno_id, $grupo_id, $periodo_id, $this->user->year_id);
 		$ausencias_total		= Ausencia::totalDeAlumno($alumno->alumno_id, $periodo_id);
 		$asignaturas_perdidas 	= [];
 	
-		$sumatoria_asignaturas = 0;
-		$alumno->ausencias_total = $ausencias_total;
+		$sumatoria_asignaturas 		= 0;
+		$alumno->ausencias_total 	= $ausencias_total;
+		$cant 						= count($asignaturas);
 
-		foreach ($asignaturas as $asignatura) {
-			$asignatura->unidades = Unidad::deAsignaturaCalculada($alumno->alumno_id, $asignatura->asignatura_id, $periodo_id);
+		for ($i=0; $i<$cant; $i++) {
 
-			foreach ($asignatura->unidades as $unidad) {
+			// NOTAS FINALES
+			$asignaturas[$i]->notas_finales 		= DB::select('SELECT periodo, nota, manual, recuperada FROM notas_finales WHERE alumno_id=? and asignatura_id=? and periodo<=? order by periodo asc', [$alumno->alumno_id, $asignaturas[$i]->asignatura_id, $this->user->numero_periodo]);
+			$asignaturas[$i]->nota_faltante 		= 0;
+			$asignaturas[$i]->nota_definitiva_anio 	= 0;
+
+			$cant_n = count($asignaturas[$i]->notas_finales);
+			$cant_n = ($cant_n>3) ? 3 : $cant_n ;
+
+			for ($h=0; $h < $cant_n; $h++) { 
+				$asignaturas[$i]->nota_faltante = $asignaturas[$i]->notas_finales[$h]->nota + $asignaturas[$i]->nota_faltante;
+			}
+			$asignaturas[$i]->nota_definitiva_anio = $asignaturas[$i]->nota_faltante / $this->user->numero_periodo;
+			$asignaturas[$i]->nota_faltante = $this->user->nota_minima_aceptada*4 - $asignaturas[$i]->nota_faltante;
+			
+
+			// UNIDADES
+			$asignaturas[$i]->unidades = Unidad::deAsignaturaCalculada($alumno->alumno_id, $asignaturas[$i]->asignatura_id, $periodo_id);
+
+			foreach ($asignaturas[$i]->unidades as $unidad) {
 				$unidad->subunidades = Subunidad::deUnidadCalculada($alumno->alumno_id, $unidad->unidad_id, $this->user->year_id);
 			}
 			
 			if ($comport_and_frases) {
-				$asignatura->ausencias	= Ausencia::deAlumno($asignatura->asignatura_id, $alumno->alumno_id, $periodo_id);
-				$asignatura->frases		= FraseAsignatura::deAlumno($asignatura->asignatura_id, $alumno->alumno_id, $periodo_id);
+				$asignaturas[$i]->ausencias		= Ausencia::deAlumno($asignaturas[$i]->asignatura_id, $alumno->alumno_id, $periodo_id);
+				$asignaturas[$i]->frases		= FraseAsignatura::deAlumno($asignaturas[$i]->asignatura_id, $alumno->alumno_id, $periodo_id);
 			}
 			
 
-			$sumatoria_asignaturas += $asignatura->nota_asignatura; // Para sacar promedio del periodo
+			$sumatoria_asignaturas += $asignaturas[$i]->nota_asignatura; // Para sacar promedio del periodo
 
 
 			// SUMAR AUSENCIAS Y TARDANZAS
 			if ($comport_and_frases) {
 				$cantAus = 0;
 				$cantTar = 0;
-				foreach ($asignatura->ausencias as $ausencia) {
+				foreach ($asignaturas[$i]->ausencias as $ausencia) {
 					if ($ausencia->tipo == "tardanza") {
 						$cantTar += (int)$ausencia->cantidad_tardanza;
 					}elseif ($ausencia->tipo == "ausencia") {
@@ -306,8 +322,8 @@ class BoletinesController extends Controller {
 					
 				}
 
-				$asignatura->total_ausencias = $cantAus;
-				$asignatura->total_tardanzas = $cantTar;
+				$asignaturas[$i]->total_ausencias = $cantAus;
+				$asignaturas[$i]->total_tardanzas = $cantTar;
 			}
 		}
 

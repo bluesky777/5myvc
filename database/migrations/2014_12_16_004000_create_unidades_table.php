@@ -17,7 +17,7 @@ class CreateUnidadesTable extends Migration {
 		Schema::create('unidades', function(Blueprint $table) {
 			$table->engine = "InnoDB";
 			$table->increments('id');
-			$table->string('definicion');
+			$table->text('definicion');
 			$table->integer('porcentaje')->default(0)->nullable();
 			$table->integer('periodo_id')->unsigned();
 			$table->integer('asignatura_id')->unsigned();

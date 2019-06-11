@@ -16,7 +16,7 @@ class CreateSubunidadesTable extends Migration {
 		Schema::create('subunidades', function(Blueprint $table) {
 			$table->engine = "InnoDB";
 			$table->increments('id');
-			$table->string('definicion');
+			$table->text('definicion');
 			$table->integer('porcentaje')->default(0)->nullable();
 			$table->integer('unidad_id')->unsigned();
 			$table->integer('nota_default')->nullable()->dafault(0);

@@ -17,7 +17,7 @@ class CreateFrasesTable extends Migration {
 		{
 			$table->engine = "InnoDB";
 			$table->increments('id');
-			$table->string('frase');
+			$table->text('frase');
 			$table->string('tipo_frase');
 			$table->integer('year_id')->unsigned();
 			$table->integer('created_by')->nullable();

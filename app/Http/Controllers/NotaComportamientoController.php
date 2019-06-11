@@ -30,8 +30,10 @@ class NotaComportamientoController extends Controller {
 
 		foreach ($alumnos as $alumno) {
 
-			$userData = Alumno::userData($alumno->alumno_id);
-			$alumno->userData = $userData;
+			//$userData = Alumno::userData($alumno->alumno_id);
+			//$alumno->userData = $userData;
+			$alumno->escrita 		= 'escribir';
+			$alumno->tipo_frase 	= ['tipo_frase' => 'Todas'];
 
 			$nota = NotaComportamiento::crearVerifNota($alumno->alumno_id, $user->periodo_id, $nota_max);
 
@@ -53,6 +55,21 @@ class NotaComportamientoController extends Controller {
 			
 			$alumno->definiciones = $definiciones;
 			$alumno->nota = $nota;
+
+
+			// Traido los procesos
+			$consulta 	= 'SELECT d.*, SUBSTRING(d.fecha_hora_aprox, 1, 10) as fecha_corta, CONCAT(p.nombres, " ", p.apellidos) as profesor_nombre 
+				FROM dis_procesos d 
+				LEFT JOIN profesores p ON p.id=d.profesor_id and p.deleted_at is null
+				WHERE alumno_id=? and d.periodo_id=? and d.deleted_at is null';
+				
+			$procesos 	= DB::select($consulta, [ $alumno->alumno_id, $user->periodo_id ]);
+			
+			for ($k=0; $k < count($procesos); $k++) { 
+				$consulta 	= 'SELECT d.* FROM dis_proceso_ordinales d WHERE proceso_id=? and d.deleted_at is null';
+				$procesos[$k]->proceso_ordinales 	= DB::select($consulta, [ $procesos[$k]->id ]);
+			}
+			$alumno->procesos_disciplinarios = $procesos;
 		}
 
 		$frases = Frase::where('year_id', '=', $user->year_id)->get();
@@ -82,10 +99,23 @@ class NotaComportamientoController extends Controller {
 	}
 
 
-	public function getShow($id)
+	
+	
+	public function putFrasesCheck()
 	{
-		//
+		$texto = Request::input('texto');
+
+		$consulta = 'SELECT d.frase
+			FROM definiciones_comportamiento d
+			WHERE d.deleted_at is null and frase like :texto
+			GROUP BY d.frase order by d.frase';
+			// INNER JOIN matriculas para evitar que se repita. Sólo traerá los que tengan alguna matricula en el sistema.
+	
+		$res = DB::select($consulta, [':texto' => '%'.$texto.'%']);
+		return [ 'frases' => $res ];
+
 	}
+
 
 
 	public function putUpdate($id)
