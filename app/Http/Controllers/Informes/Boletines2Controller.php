@@ -175,8 +175,8 @@ class Boletines2Controller extends Controller {
 			for ($h=0; $h < $cant_n; $h++) { 
 				$asignaturas[$i]->nota_faltante = $asignaturas[$i]->notas_finales[$h]->nota + $asignaturas[$i]->nota_faltante;
 			}
-			$asignaturas[$i]->nota_definitiva_anio = $asignaturas[$i]->nota_faltante / $this->user->numero_periodo;
-			$asignaturas[$i]->nota_faltante = $this->user->nota_minima_aceptada*4 - $asignaturas[$i]->nota_faltante;
+			$asignaturas[$i]->nota_definitiva_anio 	= round($asignaturas[$i]->nota_faltante / $this->user->numero_periodo);
+			$asignaturas[$i]->nota_faltante 		= $this->user->nota_minima_aceptada*4 - $asignaturas[$i]->nota_faltante;
 			
 
 			// UNIDADES
