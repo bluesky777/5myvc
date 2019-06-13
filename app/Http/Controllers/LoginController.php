@@ -117,7 +117,7 @@ class LoginController extends Controller {
 		}
 
 		
-		$consulta 	= 'SELECT u.id, u.tipo, u.password, u.periodo_id, p.year_id FROM users u 
+		$consulta 	= 'SELECT u.id, u.tipo, u.password, u.periodo_id, p.year_id, u.is_active FROM users u 
 			LEFT JOIN periodos p ON p.id=u.periodo_id and p.deleted_at is null
 			WHERE u.username=? and u.deleted_at is null';
 
@@ -125,15 +125,23 @@ class LoginController extends Controller {
 
 		if (Hash::check($credentials['password'], $usuario->password)){
 
-			
-			// Alumnos asistentes o matriculados del grupo
-			$consulta = 'INSERT INTO historiales(user_id, tipo, ip, browser_name, browser_version, browser_family, browser_engine, entorno, platform_name, platform_family, device_family, device_model, device_grade, updated_at, created_at) 
-										VALUES(:user_id, :tipo, :ip, :browser_name, :browser_version, :browser_family, :browser_engine, :entorno, :platform_name, :platform_family, :device_family, :device_model, :device_grade, :updated_at, :created_at)';
-			
-			$result = DB::insert($consulta, [ ':user_id' => $usuario->id, ':tipo' => $usuario->tipo, ':ip' => $this->direccion, 
+
+			if ($usuario->is_active) {
+				
+				// Alumnos asistentes o matriculados del grupo
+				$consulta = 'INSERT INTO historiales(user_id, tipo, ip, browser_name, browser_version, browser_family, browser_engine, entorno, platform_name, platform_family, device_family, device_model, device_grade, updated_at, created_at) 
+					VALUES(:user_id, :tipo, :ip, :browser_name, :browser_version, :browser_family, :browser_engine, :entorno, :platform_name, :platform_family, :device_family, :device_model, :device_grade, :updated_at, :created_at)';
+
+				$result = DB::insert($consulta, [ ':user_id' => $usuario->id, ':tipo' => $usuario->tipo, ':ip' => $this->direccion, 
 				':browser_name' => Browser::browserName(), ':browser_version' => Browser::browserVersion(), ':browser_family' => Browser::browserFamily(), 
 				':browser_engine' => Browser::browserEngine(), ':entorno' => $this->entorno, ':platform_name' => Browser::browserEngine(), ':platform_family' => Browser::platformFamily(), ':device_family' => Browser::deviceFamily(), ':device_model' => Browser::deviceModel(), ':device_grade' => Browser::mobileGrade(), ':updated_at' => $now, ':created_at' => $now ]);
-			
+
+			}else{
+
+				abort(400, 'Usuario invalidado');
+
+			}
+
 		}
 
 		$res = [ 'el_token' => $token ];

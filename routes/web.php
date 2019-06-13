@@ -53,6 +53,7 @@ AdvancedRoute::controller('contratos', 'ContratosController');
 AdvancedRoute::controller('nota_comportamiento', 'NotaComportamientoController');
 AdvancedRoute::controller('definitivas_periodos', 'DefinitivasPeriodosController');
 AdvancedRoute::controller('definiciones_comportamiento', 'DefinicionesComportamientoController');
+AdvancedRoute::controller('comportamiento', 'Disciplina\ComportamientoController');
 AdvancedRoute::controller('frases', 'FrasesController');
 AdvancedRoute::controller('ChangesAsked', 'ChangeAskedController');
 AdvancedRoute::controller('ChangesAskedAssignment', 'ChangeAskedAssignmentController');

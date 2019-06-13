@@ -232,6 +232,10 @@ class GruposController extends Controller {
 		$user 		= User::fromToken();
 		$year_id 	= Request::input('year_id', $user->year_id);
 		$res 		= [];
+
+		$year 		= Year::datos($user->year_id, true); // Datos del año actual
+		
+		$res['year'] 	= $year;
 		
 		
 		$consulta = 'SELECT g.id, g.nombre, g.abrev, g.orden, gra.orden as orden_grado, g.grado_id, g.year_id, g.titular_id, g.cupo, 

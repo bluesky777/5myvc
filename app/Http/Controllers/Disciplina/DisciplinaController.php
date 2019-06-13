@@ -58,7 +58,7 @@ class DisciplinaController extends Controller {
 	
 	
 	
-	private function datosAlumno(&$alumno, $year_id, $periodos=false){
+	public function datosAlumno(&$alumno, $year_id, $periodos=false){
 		
 		if ($periodos==false) {
 			

@@ -21,6 +21,18 @@ class ComportamientoController extends Controller {
 	}
 
 
+
+	public function putSituacionesPorGrupos()
+	{
+		$user = User::fromToken();
+
+		
+
+		return $nota;
+	}
+
+
+	/*
 	public function putCrear()
 	{
 		$user 	= User::fromToken();
@@ -63,5 +75,6 @@ class ComportamientoController extends Controller {
 
 		return $nota;
 	}
+	*/
 
 }
