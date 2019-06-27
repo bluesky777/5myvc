@@ -218,7 +218,7 @@ class BolfinalesController extends Controller {
 		}
 
 
-		return array($grupo, $year, $response_alumnos, $this->escalas_val);
+		return [$grupo, $year, $response_alumnos, $this->escalas_val];
 	}
 
 	public function definitivasMateriasXPeriodo(&$alumno, $grupo_id, $year_id, $periodos, $per_calcular=null, $si_recupera_materia_recup_indicador=false)

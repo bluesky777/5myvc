@@ -256,7 +256,7 @@ class PlanillasController extends Controller {
 			
 			$consulta = 'SELECT m.id as matricula_id, m.alumno_id, a.no_matricula, a.nombres, a.apellidos, a.sexo, a.user_id, 
 					a.fecha_nac, a.ciudad_nac, c1.ciudad as ciudad_nac_nombre, a.tipo_doc, a.documento, a.ciudad_doc, a.tipo_sangre, a.eps, a.telefono, a.celular, 
-					a.direccion, a.barrio, a.estrato, a.ciudad_resid, c3.ciudad as ciudad_resid_nombre, a.religion, a.email, a.facebook, a.created_by, a.updated_by,
+					a.direccion, a.barrio, a.estrato, a.ciudad_resid, a.religion, a.email, a.facebook, a.created_by, a.updated_by,
 					a.pazysalvo, a.deuda, m.grupo_id, 
 					u.imagen_id, IFNULL(i.nombre, IF(a.sexo="F","default_female.png", "default_male.png")) as imagen_nombre, 
 					u.username, u.is_superuser, u.is_active,
@@ -303,22 +303,7 @@ class PlanillasController extends Controller {
 
 		for ($i=0; $i < count($grupos); $i++) { 
 			
-			
-			/*
-			$consulta = 'SELECT m.id as matricula_id, m.alumno_id, a.no_matricula, a.nombres, a.apellidos, a.sexo, a.user_id, 
-					a.fecha_nac, a.tipo_doc, a.documento, a.celular, 
-					a.direccion, a.barrio, a.religion, u.email, a.facebook,
-					a.pazysalvo, a.deuda, m.grupo_id, 
-					u.username, u.is_superuser, u.is_active,
-					a.foto_id, IFNULL(i2.nombre, IF(a.sexo="F","default_female.png", "default_male.png")) as foto_nombre,
-					m.estado 
-				FROM alumnos a 
-				inner join matriculas m on a.id=m.alumno_id and m.grupo_id=:grupo_id and (m.estado="ASIS" or m.estado="MATR" or m.estado="PREM")
-				left join users u on a.user_id=u.id and u.deleted_at is null
-				left join images i2 on i2.id=a.foto_id and i2.deleted_at is null
-				where a.deleted_at is null and m.deleted_at is null
-				order by a.apellidos, a.nombres';
-			*/
+
 			
 			$consulta = 'SELECT m.id as matricula_id, m.alumno_id, a.no_matricula, a.nombres, a.apellidos, a.sexo, a.user_id, a.egresado,
 					a.fecha_nac, a.ciudad_nac, c1.departamento as departamento_nac_nombre, c1.ciudad as ciudad_nac_nombre, a.tipo_doc, t1.tipo as tipo_doc_name, a.documento, a.ciudad_doc, 

@@ -63,10 +63,9 @@ class Grupo extends Model {
 						order by a.apellidos, a.nombres';
 		}
 
-		$alumnos = DB::select($consulta, array($grupo_id));
+		$alumnos = DB::select($consulta, [$grupo_id]);
 
 		return $alumnos;
-		//return $this->belongsToMany('Alumno', 'matriculas');
 	}
 
 	public static function detailed_materias($grupo_id, $profesor_id=null, $exceptuando=false)

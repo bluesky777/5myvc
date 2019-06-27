@@ -33,6 +33,13 @@ class CreateMatriculasTable extends Migration {
 			$table->boolean('profes_editar_notas')->nullable(); // Si true, los profes pueden editar sus notas
 			$table->boolean('nuevo')->nullable(); // Si true, fue creado este año
 			$table->boolean('repitente')->default(0); // Si true, es porque perdió el año pasado aquí en la institución   
+			
+			$table->boolean('promovido')->default(0);
+			$table->decimal('promedio', 5, 2)->default(0);
+			$table->integer('cant_asign_perdidas', 2)->default(0);
+			$table->integer('cant_areas_perdidas', 2)->default(0);
+			$table->integer('anios_in_cole', 2)->default(0); // Años que lleva en la instituación
+
 			$table->integer('created_by')->nullable();
 			$table->integer('updated_by')->nullable();
 			$table->integer('deleted_by')->nullable();

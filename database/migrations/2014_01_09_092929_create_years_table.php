@@ -67,6 +67,7 @@ class CreateYearsTable extends Migration {
 			$table->integer('cant_asignatura_pierde_year')->nullable()->default(0); // Cantidad de asignaturas con las que se pierde un año
 			$table->string('contador_certificados')->default(''); 
 			$table->string('contador_folios')->default(''); 
+			$table->text('texto_acta_eval')->nullable(); 
 			
 			$table->integer('created_by')->nullable();
 			$table->integer('updated_by')->nullable();

@@ -108,6 +108,7 @@ AdvancedRoute::controller('candidatos', 'VtCandidatosController');
 AdvancedRoute::controller('votos', 'VtVotosController');
 
 AdvancedRoute::controller('planillas', 'PlanillasController');
+AdvancedRoute::controller('actas-evaluacion', 'Informes\ActasEvaluacionController');
 
 AdvancedRoute::controller('certificados-estudio', 'CertificadosEstudioController');
 
