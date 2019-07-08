@@ -48,6 +48,8 @@ class CreateAlumnosTable extends Migration {
 			$table->integer('nro_sisben')->nullable();
 			$table->boolean('has_sisben_3')->nullable()->default(false);
 			$table->integer('nro_sisben_3')->nullable();
+			$table->boolean('nee')->default(false); // Necesidades Educativas Especiales
+			$table->text('nee_descripcion')->nullable();
 			
 			$table->integer('created_by')->nullable();
 			$table->integer('updated_by')->nullable();

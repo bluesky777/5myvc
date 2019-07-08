@@ -12,6 +12,7 @@ use App\Models\User;
 use App\Models\ImageModel;
 use App\Models\Year;
 use App\Http\Controllers\Perfiles\Publicaciones;
+use \Log;
 
 use Carbon\Carbon;
 
@@ -19,7 +20,13 @@ use Carbon\Carbon;
 class CalendarioController extends Controller {
 
     public function putThisYear(){
-        $eventos = DB::select('SELECT * FROM calendario WHERE deleted_at is null');
+        $is_prof_admin = Request::input('is_prof_admin');
+        Log::info($is_prof_admin);
+        if ($is_prof_admin == 'true') {
+            $eventos = DB::select('SELECT * FROM calendario WHERE deleted_at is null');
+        }else{
+            $eventos = DB::select('SELECT * FROM calendario WHERE solo_profes=0 and deleted_at is null');
+        }
         return $eventos;
     }
     
@@ -35,7 +42,7 @@ class CalendarioController extends Controller {
             $end                = Request::input('end');
             $allDay             = Request::input('allDay');
             $solo_profes        = Request::input('solo_profes', 0);
-            $nombres            = $user->tipo == 'Usuario' ? $user->username : ($user->nombres . $user->apellidos);
+            $nombres            = $user->tipo == 'Usuario' ? $user->username : ($user->nombres . ' ' . $user->apellidos);
 
             
             $consulta = 'INSERT INTO calendario(created_by, created_by_nombres, title, start, end, allDay, solo_profes, created_at, updated_at) 
@@ -74,7 +81,7 @@ class CalendarioController extends Controller {
             $end                = null;
             $allDay             = Request::input('allDay');
             $solo_profes        = Request::input('solo_profes', 0);
-            $nombres            = $user->tipo == 'Usuario' ? $user->username : ($user->nombres . $user->apellidos);
+            $nombres            = $user->tipo == 'Usuario' ? $user->username : ($user->nombres . ' ' . $user->apellidos);
             
             if (Request::input('start')) {
                 $start = Carbon::parse(Request::input('start'));
@@ -126,7 +133,7 @@ class CalendarioController extends Controller {
 	public function putSincronizarCumples()
 	{
         $user       = User::fromToken();
-        $nombres    = $user->tipo == 'Usuario' ? $user->username : ($user->nombres . $user->apellidos);
+        $nombres    = $user->tipo == 'Usuario' ? $user->username : ($user->nombres . ' ' . $user->apellidos);
         
         if (($user->roles[0]->name == 'Profesor' ) || $user->roles[0]->name == 'Admin') {
             $now 	= Carbon::now('America/Bogota');

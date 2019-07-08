@@ -437,7 +437,7 @@ class AlumnosController extends Controller {
 				a.direccion, a.barrio, a.is_urbana, a.estrato, a.ciudad_resid, c3.ciudad as ciudad_resid_nombre, c3.departamento as departamento_resid_nombre, a.religion, u.email, a.facebook, a.created_by, a.updated_by,
 				a.pazysalvo, a.deuda, m.grupo_id, a.is_urbana, IF(a.is_urbana, "SI", "NO") as es_urbana,
 				u.imagen_id, IFNULL(i.nombre, IF(a.sexo="F","default_female.png", "default_male.png")) as imagen_nombre, 
-				u.username, u.is_active,
+				u.username, u.is_active, a.nee, a.nee_descripcion,
 				a.foto_id, IFNULL(i2.nombre, IF(a.sexo="F","default_female.png", "default_male.png")) as foto_nombre,
 				m.fecha_retiro as fecha_retiro, m.estado, m.fecha_matricula, m.nuevo, IF(m.nuevo, "SI", "NO") as es_nuevo, m.repitente, m.fecha_pension,
 				a.has_sisben, a.nro_sisben, a.has_sisben_3, a.nro_sisben_3, m.programar, m.descripcion_recomendacion, m.efectuar_una, m.descripcion_efectuada 
@@ -471,7 +471,7 @@ class AlumnosController extends Controller {
 					a.direccion, a.barrio, a.is_urbana, a.estrato, a.ciudad_resid, c3.ciudad as ciudad_resid_nombre, c3.departamento as departamento_resid_nombre, a.religion, u.email, a.facebook, a.created_by, a.updated_by,
 					a.pazysalvo, a.deuda, a.is_urbana, IF(a.is_urbana, "SI", "NO") as es_urbana,
 					u.imagen_id, IFNULL(i.nombre, IF(a.sexo="F","default_female.png", "default_male.png")) as imagen_nombre, 
-					u.username, u.is_active,
+					u.username, u.is_active, a.nee, a.nee_descripcion,
 					a.foto_id, IFNULL(i2.nombre, IF(a.sexo="F","default_female.png", "default_male.png")) as foto_nombre,
 					a.has_sisben, a.nro_sisben, a.has_sisben_3, a.nro_sisben_3
 				FROM alumnos a 
@@ -772,6 +772,11 @@ class AlumnosController extends Controller {
 			}
 			
 		} else if($this->user->roles[0]->name == 'Admin'){
+			
+			$guardarAlumno = new GuardarAlumno();
+			return $guardarAlumno->valor($this->user, Request::input('propiedad'), Request::input('valor'), Request::input('user_id'), $year_id, Request::input('alumno_id'));
+			
+		} else if($this->user->roles[0]->name == 'Psicólogo' && (Request::input('propiedad') == 'nee' || Request::input('propiedad') == 'nee_descripcion')){
 			
 			$guardarAlumno = new GuardarAlumno();
 			return $guardarAlumno->valor($this->user, Request::input('propiedad'), Request::input('valor'), Request::input('user_id'), $year_id, Request::input('alumno_id'));

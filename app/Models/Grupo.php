@@ -32,7 +32,7 @@ class Grupo extends Model {
 
 		if ($con_retirados=='') {
 			// Consulta con solo los matriculados
-			$consulta = 'SELECT m.id as matricula_id, m.alumno_id, a.no_matricula, a.nombres, a.apellidos, a.sexo, a.user_id, 
+			$consulta = 'SELECT m.id as matricula_id, m.alumno_id, a.no_matricula, a.nombres, a.apellidos, a.sexo, a.user_id, a.nee, a.nee_descripcion,
 							a.fecha_nac, a.ciudad_nac, a.celular, a.direccion, a.religion, t.tipo as tipo_doc, t.abrev as tipo_doc_abrev, a.documento, a.no_matricula, 
 							m.grupo_id, m.estado, m.nuevo, m.repitente, username,
 							u.imagen_id, IFNULL(i.nombre, IF(a.sexo="F","default_female.png", "default_male.png")) as imagen_nombre, 
@@ -47,7 +47,7 @@ class Grupo extends Model {
 						order by a.apellidos, a.nombres';
 		}else{
 			// Consulta incluyendo los matriculados y retirados.
-			$consulta = 'SELECT m.id as matricula_id, m.alumno_id, a.no_matricula, a.nombres, a.apellidos, a.sexo, a.user_id, 
+			$consulta = 'SELECT m.id as matricula_id, m.alumno_id, a.no_matricula, a.nombres, a.apellidos, a.sexo, a.user_id, a.nee, a.nee_descripcion, 
 							a.fecha_nac, a.ciudad_nac, a.celular, a.direccion, a.religion, t.tipo as tipo_doc, t.abrev as tipo_doc_abrev, a.documento, a.no_matricula, 
 							m.grupo_id, m.estado, m.nuevo, m.repitente,
 							u.imagen_id, IFNULL(i.nombre, IF(a.sexo="F","default_female.png", "default_male.png")) as imagen_nombre, 

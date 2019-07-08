@@ -335,7 +335,7 @@ class GruposController extends Controller {
 						g.created_at, g.updated_at, count(m.id) as cant_alumnos,
 						p.foto_id, IFNULL(i.nombre, IF(p.sexo="F","default_female.png", "default_male.png")) as foto_nombre 
 					from grupos g
-					INNER JOIN matriculas m ON m.grupo_id=g.id and m.deleted_at is null and (m.estado="ASIS" or m.estado="MATR")
+					INNER JOIN matriculas m ON m.grupo_id=g.id and m.deleted_at is null and (m.estado="PREM" or m.estado="ASIS" or m.estado="MATR")
 					INNER JOIN alumnos a ON a.id=m.alumno_id and a.deleted_at is null
 					left join profesores p on p.id=g.titular_id
 					LEFT JOIN images i on i.id=p.foto_id and i.deleted_at is null
@@ -391,7 +391,7 @@ class GruposController extends Controller {
 			// Cantidad de hombres
 			$consulta = 'SELECT count(m.id) as cant_alumnos, g.nombre, g.id
 				from grupos g
-				INNER JOIN matriculas m ON m.grupo_id=g.id and m.deleted_at is null and (m.estado="MATR" or m.estado="ASIS")
+				INNER JOIN matriculas m ON m.grupo_id=g.id and m.deleted_at is null and (m.estado="PREM" or m.estado="MATR" or m.estado="ASIS")
 				INNER JOIN alumnos a ON a.id=m.alumno_id and a.deleted_at is null and a.sexo="M"
 				where g.deleted_at is null and g.id=?';
 						
@@ -403,7 +403,7 @@ class GruposController extends Controller {
 			// Cantidad de mujeres
 			$consulta = 'SELECT count(m.id) as cant_alumnos, g.nombre, g.id
 				from grupos g
-				INNER JOIN matriculas m ON m.grupo_id=g.id and m.deleted_at is null and (m.estado="MATR" or m.estado="ASIS")
+				INNER JOIN matriculas m ON m.grupo_id=g.id and m.deleted_at is null and (m.estado="PREM" or m.estado="MATR" or m.estado="ASIS")
 				INNER JOIN alumnos a ON a.id=m.alumno_id and a.deleted_at is null and a.sexo="F"
 				where g.deleted_at is null and g.id=?';
 						
@@ -428,14 +428,28 @@ class GruposController extends Controller {
 						
 			$periodos[$i]->total_reti = DB::select($consulta, [$periodos[$i]->fecha_inicio, $periodos[$i]->fecha_fin] )[0];
 			
-			$consulta = 'SELECT count(m.id) as cant_alumnos, g.nombre, g.id
+			if ($periodos[$i]->numero == 1) {
+				$consulta = 'SELECT count(m.id) as cant_alumnos, g.nombre, g.id
+							from grupos g
+							INNER JOIN matriculas m ON m.grupo_id=g.id and m.deleted_at is null
+							INNER JOIN alumnos a ON a.id=m.alumno_id and a.deleted_at is null
+							where g.deleted_at is null and m.fecha_matricula<=?
+							order by g.orden';
+					
+				$periodos[$i]->total_matr = DB::select($consulta, [$periodos[$i]->fecha_fin] )[0];
+			
+			}else{
+				$consulta = 'SELECT count(m.id) as cant_alumnos, g.nombre, g.id
 							from grupos g
 							INNER JOIN matriculas m ON m.grupo_id=g.id and m.deleted_at is null
 							INNER JOIN alumnos a ON a.id=m.alumno_id and a.deleted_at is null
 							where g.deleted_at is null and m.fecha_matricula>=? and m.fecha_matricula<=?
 							order by g.orden';
 					
-			$periodos[$i]->total_matr = DB::select($consulta, [$periodos[$i]->fecha_inicio, $periodos[$i]->fecha_fin] )[0];;
+				$periodos[$i]->total_matr = DB::select($consulta, [$periodos[$i]->fecha_inicio, $periodos[$i]->fecha_fin] )[0];
+			
+			}
+			
 		}
 		
 

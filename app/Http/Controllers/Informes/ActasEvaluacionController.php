@@ -20,9 +20,11 @@ class ActasEvaluacionController extends Controller {
 
 	public function putActaEvaluacionPromocion()
 	{
-		$user = User::fromToken();
+		$user 		= User::fromToken();
+		$year 		= Year::datos_basicos($user->year_id);
+		$periodos 	= DB::select('SELECT * FROM periodos WHERE year_id=? and deleted_at is null order by numero', [$user->year_id]);
+		$periodo1 	= $periodos[0];
 
-		$year 			= Year::datos_basicos($user->year_id);
 		
 		$consulta = 'SELECT g.id, g.nombre, g.abrev, g.orden, gra.orden as orden_grado, g.grado_id, g.year_id, g.titular_id,
 			p.nombres as nombres_titular, p.apellidos as apellidos_titular, p.titulo,
@@ -35,11 +37,11 @@ class ActasEvaluacionController extends Controller {
 
 		$grupos = DB::select($consulta, [':year_id'=>$user->year_id] );
 
-
+		// Recorremos los grupos
 		for ($i=0; $i < count($grupos); $i++) { 
 			
 
-			
+			// Alumnos
 			$consulta = 'SELECT m.id as matricula_id, m.alumno_id, a.no_matricula, a.nombres, a.apellidos, a.sexo, a.user_id, a.egresado,
 					a.fecha_nac, a.ciudad_nac, c1.departamento as departamento_nac_nombre, c1.ciudad as ciudad_nac_nombre, a.tipo_doc, t1.tipo as tipo_doc_name, a.documento, a.ciudad_doc, 
 					a.tipo_sangre, a.eps, CONCAT(a.telefono, " / ", a.celular) as telefonos, 
@@ -67,9 +69,37 @@ class ActasEvaluacionController extends Controller {
 			$grupos[$i]->alumnos = DB::select($consulta, [':grupo_id' => $grupos[$i]->id]);
 
 			
-			// Recorro para calcular edad
+			$promovidos_0_perdidas 			= 0;
+			$promovidos_0_perdidas_f 		= 0;
+			$promovidos_0_perdidas_m 		= 0;
+
+			$promovidos_1_perdidas 			= 0;
+			$promovidos_1_perdidas_f 		= 0;
+			$promovidos_1_perdidas_m 		= 0;
+
+			$no_promovidos_2_perdidas 		= 0;
+			$no_promovidos_2_perdidas_f 	= 0;
+			$no_promovidos_2_perdidas_m 	= 0;
+			$no_promovidos_3_perdidas 		= 0;
+			$no_promovidos_3_perdidas_f 	= 0;
+			$no_promovidos_3_perdidas_m 	= 0;
+			$no_promovidos_4_perdidas 		= 0;
+			$no_promovidos_4_perdidas_f 	= 0;
+			$no_promovidos_4_perdidas_m 	= 0;
+
+			$grupos[$i]->cant_terminaron 	= 0;
+			$grupos[$i]->cant_terminaron_m 	= 0;
+			$grupos[$i]->cant_terminaron_f 	= 0;
+			$grupos[$i]->cant_desertores 	= 0;
+			$grupos[$i]->cant_desertores_m 	= 0;
+			$grupos[$i]->cant_desertores_f 	= 0;
+			$grupos[$i]->cant_retirados 	= 0;
+			$grupos[$i]->cant_retirados_m 	= 0;
+			$grupos[$i]->cant_retirados_f 	= 0;
+			
 			$cantA = count($grupos[$i]->alumnos);
 
+			// Recorremos los alumnos
 			for ($j=0; $j < $cantA; $j++) { 
 				// Edad
 				if ($grupos[$i]->alumnos[$j]->fecha_nac) {
@@ -88,14 +118,157 @@ class ActasEvaluacionController extends Controller {
 					$grupos[$i]->alumnos[$j]->promedio = '';
 				}
 
+				// Estado matrícula
+
+				if ($grupos[$i]->alumnos[$j]->estado == 'PREM' || $grupos[$i]->alumnos[$j]->estado == 'ASIS' || $grupos[$i]->alumnos[$j]->estado == 'MATR') {
+					//$grupos[$i]->cant_terminaron 	+= 1;
+
+					if ($grupos[$i]->alumnos[$j]->sexo == 'M') {
+						$grupos[$i]->cant_terminaron_m 	+= 1;
+					}else{
+						$grupos[$i]->cant_terminaron_f 	+= 1;
+					}
+					
+				}else if($grupos[$i]->alumnos[$j]->estado == 'DESE'){
+					$grupos[$i]->cant_desertores 	+= 1;
+
+					if ($grupos[$i]->alumnos[$j]->sexo == 'M') {
+						$grupos[$i]->cant_desertores_m 	+= 1;
+					}else{
+						$grupos[$i]->cant_desertores_f 	+= 1;
+					}
+
+				}else if($grupos[$i]->alumnos[$j]->estado == 'RETI'){
+					$grupos[$i]->cant_retirados 	+= 1;
+
+					if ($grupos[$i]->alumnos[$j]->sexo == 'M') {
+						$grupos[$i]->cant_retirados_m 	+= 1;
+					}else{
+						$grupos[$i]->cant_retirados_f 	+= 1;
+					}
+				}
+
 				// Promovido?
 				if ($grupos[$i]->alumnos[$j]->promovido == 0) {
 					$grupos[$i]->alumnos[$j]->promovido = 'No';
+
+					// Contamos no promovidos
+					if ($grupos[$i]->alumnos[$j]->cant_asign_perdidas == 2 || $grupos[$i]->alumnos[$j]->cant_areas_perdidas == 2) {
+						
+						$no_promovidos_2_perdidas 	+= 1;
+						if($grupos[$i]->alumnos[$j]->sexo == 'M'){
+							$no_promovidos_2_perdidas_m 	+= 1;
+						}else{
+							$no_promovidos_2_perdidas_f 	+= 1;
+						}
+
+					}else if ($grupos[$i]->alumnos[$j]->cant_asign_perdidas == 3 || $grupos[$i]->alumnos[$j]->cant_areas_perdidas == 3) {
+						
+						$no_promovidos_3_perdidas 	+= 1;
+						if($grupos[$i]->alumnos[$j]->sexo == 'M'){
+							$no_promovidos_3_perdidas_m 	+= 1;
+						}else{
+							$no_promovidos_3_perdidas_f 	+= 1;
+						}
+
+					}else if ($grupos[$i]->alumnos[$j]->cant_asign_perdidas > 3 || $grupos[$i]->alumnos[$j]->cant_areas_perdidas > 3) {
+
+						$no_promovidos_4_perdidas 	+= 1;
+						if($grupos[$i]->alumnos[$j]->sexo == 'M'){
+							$no_promovidos_4_perdidas_m 	+= 1;
+						}else{
+							$no_promovidos_4_perdidas_f 	+= 1;
+						}
+					}
+
 				}else{
 					$grupos[$i]->alumnos[$j]->promovido = 'Si';
+					
+					// Contamos promovidos
+					if ($grupos[$i]->alumnos[$j]->cant_asign_perdidas == 0 || $grupos[$i]->alumnos[$j]->cant_areas_perdidas == 0) {
+						
+						$promovidos_0_perdidas 	+= 1;
+						if($grupos[$i]->alumnos[$j]->sexo == 'M'){
+							$promovidos_0_perdidas_m 	+= 1;
+						}else{
+							$promovidos_0_perdidas_f 	+= 1;
+						}
+
+					}else if ($grupos[$i]->alumnos[$j]->cant_asign_perdidas == 1 || $grupos[$i]->alumnos[$j]->cant_areas_perdidas == 1) {
+						
+						$promovidos_1_perdidas 	+= 1;
+						if($grupos[$i]->alumnos[$j]->sexo == 'M'){
+							$promovidos_1_perdidas_m 	+= 1;
+						}else{
+							$promovidos_1_perdidas_f 	+= 1;
+						}
+
+					}
+
 				}
+
 				
+				
+
 			}
+			
+			// Matriculados en fechas...
+			$consulta = 'SELECT m.id as matricula_id, a.id as alumno_id, a.nombres, a.apellidos, a.fecha_nac, m.fecha_matricula, m.fecha_retiro, m.estado, a.sexo, a.no_matricula, a.created_at
+				from matriculas m 
+				INNER JOIN alumnos a ON a.id=m.alumno_id and a.deleted_at is null
+				where m.fecha_matricula<=? and m.deleted_at is null and (m.estado="PREM" or m.estado="MATR" or m.estado="ASIS") and m.grupo_id=? order by a.apellidos';
+
+			$grupos[$i]->cant_matri_per1 				= DB::select($consulta, [$periodo1->fecha_fin, $grupos[$i]->id]);
+
+			$consulta = 'SELECT count(m.id) as cant_alumnos
+				from matriculas m 
+				INNER JOIN alumnos a ON a.id=m.alumno_id and a.deleted_at is null and a.sexo="M"
+				where m.fecha_matricula<=? and m.deleted_at is null and (m.estado="PREM" or m.estado="MATR" or m.estado="ASIS") and m.grupo_id=?';
+
+			$grupos[$i]->cant_matri_per1_m 				= DB::select($consulta, [$periodo1->fecha_fin, $grupos[$i]->id])[0]->cant_alumnos;
+
+			$consulta = 'SELECT count(m.id) as cant_alumnos
+				from matriculas m 
+				INNER JOIN alumnos a ON a.id=m.alumno_id and a.deleted_at is null
+				where m.fecha_matricula>? and m.deleted_at is null and (m.estado="PREM" or m.estado="MATR" or m.estado="ASIS") and m.grupo_id=?';
+
+			$grupos[$i]->cant_matri_despues 			= DB::select($consulta, [$periodo1->fecha_fin, $grupos[$i]->id])[0]->cant_alumnos;
+
+			$consulta = 'SELECT count(m.id) as cant_alumnos
+				from matriculas m 
+				INNER JOIN alumnos a ON a.id=m.alumno_id and a.deleted_at is null and a.sexo="M"
+				where m.fecha_matricula>? and m.deleted_at is null and (m.estado="PREM" or m.estado="MATR" or m.estado="ASIS") and m.grupo_id=?';
+
+			$grupos[$i]->cant_matri_despues_m 			= DB::select($consulta, [$periodo1->fecha_fin, $grupos[$i]->id])[0]->cant_alumnos;
+			
+			
+			// Que terminaron 
+			$consulta = 'SELECT m.id as matricula_id, a.id as alumno_id, a.nombres, a.apellidos, a.fecha_nac, m.fecha_matricula, m.fecha_retiro, m.estado, a.sexo, a.no_matricula, a.created_at
+				from matriculas m 
+				INNER JOIN alumnos a ON a.id=m.alumno_id and a.deleted_at is null
+				where m.deleted_at is null and (m.estado="PREM" or m.estado="MATR" or m.estado="ASIS") and m.grupo_id=? order by a.apellidos';
+
+			$grupos[$i]->cant_terminaron 				= DB::select($consulta, [$grupos[$i]->id]);
+
+
+
+			// Datos estadísticos del grupo
+			$grupos[$i]->promovidos_0_perdidas 			= $promovidos_0_perdidas;
+			$grupos[$i]->promovidos_0_perdidas_f 		= $promovidos_0_perdidas_f;
+			$grupos[$i]->promovidos_0_perdidas_m 		= $promovidos_0_perdidas_m;
+			$grupos[$i]->promovidos_1_perdidas 			= $promovidos_1_perdidas;
+			$grupos[$i]->promovidos_1_perdidas_f 		= $promovidos_1_perdidas_f;
+			$grupos[$i]->promovidos_1_perdidas_m 		= $promovidos_1_perdidas_m;
+
+			$grupos[$i]->no_promovidos_2_perdidas 		= $no_promovidos_2_perdidas;
+			$grupos[$i]->no_promovidos_2_perdidas_f 	= $no_promovidos_2_perdidas_f;
+			$grupos[$i]->no_promovidos_2_perdidas_m 	= $no_promovidos_2_perdidas_m;
+			$grupos[$i]->no_promovidos_3_perdidas 		= $no_promovidos_3_perdidas;
+			$grupos[$i]->no_promovidos_3_perdidas_f 	= $no_promovidos_3_perdidas_f;
+			$grupos[$i]->no_promovidos_3_perdidas_m 	= $no_promovidos_3_perdidas_m;
+			$grupos[$i]->no_promovidos_4_perdidas 		= $no_promovidos_4_perdidas;
+			$grupos[$i]->no_promovidos_4_perdidas_f 	= $no_promovidos_4_perdidas_f;
+			$grupos[$i]->no_promovidos_4_perdidas_m 	= $no_promovidos_4_perdidas_m;
 
 		}
 
@@ -206,7 +379,10 @@ class ActasEvaluacionController extends Controller {
 
             DB::update($consulta, [$alumno->promovido, $alumno->promedio, $alumno->cant_lost_asig, $alumno->cant_lost_areas, $anios, $alumno->matricula_id]);
         
-        }
+		}
+		
+
+		
 
         
 

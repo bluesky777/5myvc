@@ -24,7 +24,7 @@ class Matricula extends Model {
 							a.direccion, a.barrio, a.estrato, a.ciudad_resid, c3.ciudad as ciudad_resid_nombre, a.religion, a.email, a.facebook, a.created_by, a.updated_by,
 							a.pazysalvo, a.deuda, m.grupo_id, m.prematriculado, 
 							u.imagen_id, IFNULL(i.nombre, IF(a.sexo="F","default_female.png", "default_male.png")) as imagen_nombre, 
-							u.username, u.is_superuser, u.is_active,
+							u.username, u.is_superuser, u.is_active, a.nee, a.nee_descripcion,
 							a.foto_id, IFNULL(i2.nombre, IF(a.sexo="F","default_female.png", "default_male.png")) as foto_nombre,
 							m.fecha_retiro as fecha_retiro, m.estado, m.fecha_matricula, m.nuevo, m.repitente 
 						FROM alumnos a 
@@ -48,7 +48,7 @@ class Matricula extends Model {
 							a.pazysalvo, a.deuda, m.grupo_id, a.is_urbana, IF(a.is_urbana, "SI", "NO") as es_urbana,
 							t1.tipo as tipo_doc, t1.abrev as tipo_doc_abrev,
 							u.imagen_id, IFNULL(i.nombre, IF(a.sexo="F","default_female.png", "default_male.png")) as imagen_nombre, 
-							u.username, u.is_superuser, u.is_active,
+							u.username, u.is_superuser, u.is_active, a.nee, a.nee_descripcion,
 							a.foto_id, IFNULL(i2.nombre, IF(a.sexo="F","default_female.png", "default_male.png")) as foto_nombre,
 							m.fecha_retiro as fecha_retiro, m.estado, m.fecha_matricula, m.nuevo, IF(m.nuevo, "SI", "NO") as es_nuevo, m.repitente,
 							a.has_sisben, a.nro_sisben, a.has_sisben_3, a.nro_sisben_3 
