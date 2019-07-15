@@ -288,7 +288,7 @@ class ProfesoresController extends Controller {
 				$profesor->telefono		=	Request::input('telefono');
 				$profesor->celular		=	Request::input('celular');
 				$profesor->facebook		=	Request::input('facebook');
-				$profesor->email		=	Request::input('email');
+				$profesor->email		=	Request::input('email_usu');
 				$profesor->tipo_profesor	=	Request::input('tipo_profesor'); // Catedrático o Tiempo completo
 
 				$profesor->save();
