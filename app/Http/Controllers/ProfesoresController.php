@@ -126,7 +126,7 @@ class ProfesoresController extends Controller {
 		$profesor->celular		=	Request::input('celular');
 		$profesor->facebook		=	Request::input('facebook');
 		$profesor->email		=	Request::input('email');
-		$profesor->tipo_profesor	=	Request::input('tipo_profesor');
+		$profesor->tipo_profesor	=	Request::input('tipo_profesor'); // Catedrático o Tiempo completo
 		$profesor->save();
 		
 
@@ -277,7 +277,7 @@ class ProfesoresController extends Controller {
 				$profesor->apellidos	=	Request::input('apellidos_profesor', Request::input('apellidos'));
 				$profesor->sexo			=	Request::input('sexo');
 				$profesor->tipo_doc		=	Request::input('tipo_doc');
-				$profesor->num_doc		=	Request::input('num_doc');
+				$profesor->num_doc		=	Request::input('documento');
 				$profesor->ciudad_doc	=	Request::input('ciudad_doc');
 				$profesor->fecha_nac	=	Request::input('fecha_nac');
 				$profesor->ciudad_nac	=	Request::input('ciudad_nac');
@@ -289,7 +289,7 @@ class ProfesoresController extends Controller {
 				$profesor->celular		=	Request::input('celular');
 				$profesor->facebook		=	Request::input('facebook');
 				$profesor->email		=	Request::input('email');
-				$profesor->tipo_profesor	=	Request::input('tipo_profesor');
+				$profesor->tipo_profesor	=	Request::input('tipo_profesor'); // Catedrático o Tiempo completo
 
 				$profesor->save();
 
