@@ -246,7 +246,7 @@ class DisciplinaController extends Controller {
 		
 		$id     			= Request::input('id');
 		$become_id     		= Request::input('become_id');
-		return $become_id;
+
 
 		$consulta 	= 'UPDATE dis_procesos SET become_id=? WHERE id=?'; // No creo que sea chévere poner la fecha y modificador
 		$datos 		= [ $become_id, $id ];
