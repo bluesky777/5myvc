@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Models\Unidad;
 use App\Models\Subunidad;
 use App\Models\NotaFinal;
+use Carbon\Carbon;
 
 
 class SubunidadesController extends Controller {
@@ -15,7 +16,8 @@ class SubunidadesController extends Controller {
 
 	public function postIndex()
 	{
-		$user = User::fromToken();
+		$user 	= User::fromToken();
+		$now 	= Carbon::now('America/Bogota');
 		User::pueden_editar_notas($user);
 
 		$cant = Subunidad::where('unidad_id', Request::input('unidad_id'))->count();
@@ -37,6 +39,22 @@ class SubunidadesController extends Controller {
 		$subunidad->created_by		= $user->user_id;
 
 		$subunidad->save();
+
+
+		$consulta 	= 'SELECT id as history_id FROM historiales where user_id=? and deleted_at is null order by id desc limit 1';
+
+		$histo 		= DB::select($consulta, [$user->user_id])[0];
+
+		$bit_by 	= $user->user_id;
+		$bit_hist 	= $histo->history_id;
+		$bit_new 	= $subunidad->definicion . ' -- ' . $subunidad->porcentaje . '%'; 	// Guardo la nota nueva
+		$bit_per 	= $user->periodo_id;
+
+		$consulta 	= 'INSERT INTO bitacoras (created_by, historial_id, affected_element_type, affected_element_id, affected_element_new_value_string, created_at) 
+					VALUES (?, ?, "Nueva subunidad", ?, ?, ?)';
+
+		DB::insert($consulta, [$bit_by, $bit_hist, $subunidad->id, $bit_new, $now]);
+		
 
 		return $subunidad;
 	}

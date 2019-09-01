@@ -236,6 +236,25 @@ class DisciplinaController extends Controller {
 		
 		return (array)$alumno;
 	}
+
+
+
+	public function putCambiarSituacionDerivante()
+	{
+		$user 	        	= User::fromToken();
+		$now 				= Carbon::now('America/Bogota');
+		
+		$id     			= Request::input('id');
+		$become_id     		= Request::input('become_id');
+		return $become_id;
+
+		$consulta 	= 'UPDATE dis_procesos SET become_id=? WHERE id=?'; // No creo que sea chévere poner la fecha y modificador
+		$datos 		= [ $become_id, $id ];
+		
+		DB::update($consulta, $datos);
+		
+		return 'Guardado';
+	}
 	
 	
 	public function putUpdate()
@@ -274,15 +293,15 @@ class DisciplinaController extends Controller {
 		// Modificamos los procesos que llevaron a esta falta
 		for ($i=0; $i < count($dependencias); $i++) { 
 
-			if ($dependencias[$i]->asignado) {
+			if (array_key_exists('asignado', $dependencias[$i])) {
 				
 				$consulta 	= 'UPDATE dis_procesos SET become_id=? WHERE id=?'; // No creo que sea chévere poner la fecha y modificador
-				$datos 		= [ $proceso_id, $dependencias[$i]->id ];
+				$datos 		= [ $proceso_id, $dependencias[$i]['id'] ];
 				
 			}else{
 				
 				$consulta 	= 'UPDATE dis_procesos SET become_id=null WHERE id=?'; // No creo que sea chévere poner la fecha y modificador
-				$datos 		= [ $dependencias[$i]->id ];
+				$datos 		= [ $dependencias[$i]['id'] ];
 				
 			}
 			DB::update($consulta, $datos);
