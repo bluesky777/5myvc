@@ -181,22 +181,11 @@ class DisciplinaController extends Controller {
 		$dependencias 			= Request::input('dependencias');
 		
 		$depe_t1 	= 0;
-		$depe_t1 	= 0;
+		$depe_t2 	= 0;
 		
 
 		if ($fecha_hora_aprox) {
 			$fecha_hora_aprox 	= Carbon::parse($fecha_hora_aprox);
-		}
-
-		if (count($dependencias) > 0) {
-			for ($i=0; $i < count($dependencias); $i++) { 
-				if($dependencias[$i]['tipo_situacion'] == 1){
-					$depe_t1 	= 1;
-				}
-				if($dependencias[$i]['tipo_situacion'] == 2){
-					$depe_t1 	= 2;
-				}
-			}
 		}
 
 		
@@ -209,7 +198,7 @@ class DisciplinaController extends Controller {
 		
 		DB::insert($consulta, $datos);
 		
-		// Traemos el alumno
+		// Traemos el proceso
 		$last_id = DB::getPdo()->lastInsertId();
 		
 		

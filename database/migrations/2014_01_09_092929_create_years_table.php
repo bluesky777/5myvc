@@ -68,6 +68,9 @@ class CreateYearsTable extends Migration {
 			$table->string('contador_certificados')->default(''); 
 			$table->string('contador_folios')->default(''); 
 			$table->text('texto_acta_eval')->nullable(); 
+
+			$table->boolean('prematr_antiguos')->default(false); // Si true, mostrará opción al padre para prematricularse
+			$table->boolean('prematr_nuevos')->default(false);  // Si true, mostrará opción en la pantalla de login
 			
 			$table->integer('created_by')->nullable();
 			$table->integer('updated_by')->nullable();

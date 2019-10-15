@@ -19,7 +19,7 @@ class CreateMatriculasTable extends Migration {
 			$table->increments('id');
 			$table->integer('alumno_id')->unsigned();
 			$table->integer('grupo_id')->unsigned();
-			$table->string('estado', 4)->default('MATR'); // MATR, ASIS, RETI, DESE, TRAS, PREM, FORM,      == Matriculado, Asistente, Retirado, Desertor, Trasladado, Prematriculado, Formulario
+			$table->string('estado', 4)->default('MATR'); // MATR, ASIS, RETI, DESE, TRAS, PREM, FORM, PREA,      == Matriculado, Asistente, Retirado, Desertor, Trasladado, Prematriculado, Formulario, Prematriculado Acudiente
 			$table->date('prematriculado')->nullable(); // Cuando fue prematriculado
 			$table->date('fecha_retiro')->nullable(); // Cuando fue retirado o desertado
 			$table->date('fecha_matricula')->nullable(); // Cuando por fin lo matricularon

@@ -228,6 +228,72 @@ class ChangeAskedController extends Controller {
 				$alumnos[$i]->situaciones 			= Disciplina::situaciones_year($alumnos[$i]->alumno_id, $user->year_id);
 				$alumnos[$i]->ausencias_periodo 	= Ausencia::deAlumnoYear($alumnos[$i]->alumno_id, $user->year_id);
 				
+				# PREMATRICULAS SIGUIENTE AÑO
+				if ($user->prematr_antiguos) {
+					$alumnos[$i]->prematricula = ['estado' => null];
+
+					$consulta 		= 'SELECT distinct(a.id) as alumno_id, a.no_matricula, a.nombres, a.apellidos, a.sexo, a.user_id, m.estado, m.id as matricula_id,
+							u.imagen_id, IFNULL(i.nombre, IF(a.sexo="F","default_female.png", "default_male.png")) as imagen_nombre, 
+							a.foto_id, IFNULL(i2.nombre, IF(a.sexo="F","default_female.png", "default_male.png")) as foto_nombre,
+							g.nombre as nombre_grupo, g.orden
+						FROM alumnos a 
+						left join users u on a.user_id=u.id and u.deleted_at is null
+						left join images i on i.id=u.imagen_id and i.deleted_at is null
+						left join images i2 on i2.id=a.foto_id and i2.deleted_at is null
+						left join matriculas m on m.alumno_id=a.id and m.deleted_at is null
+						left join grupos g on g.id=m.grupo_id and g.deleted_at is null
+						inner join years y on y.id=g.year_id and y.deleted_at is null and y.year=?
+						where a.id=? and a.deleted_at is null and g.nombre is not null
+						order by g.orden, a.apellidos, a.nombres';
+					
+
+					$prematricula = DB::select($consulta, [$user->year+1, $alumnos[$i]->alumno_id]);
+					
+					if (count($prematricula) > 0) {
+						$alumnos[$i]->prematricula = $prematricula[0];
+					}
+					
+					$consulta = 'SELECT m.id as matricula_id, m.alumno_id, a.no_matricula, a.nombres, a.apellidos, g.nombre as grupo_nombre, g.abrev as grupo_abrev, m.grupo_id, m.estado, m.nuevo, m.repitente, m.prematriculado, m.fecha_matricula, y.id as year_id, y.year as year,
+							m.programar, m.descripcion_recomendacion, m.efectuar_una, m.descripcion_efectuada 
+						FROM alumnos a 
+						inner join matriculas m on a.id=m.alumno_id and a.id=:alumno_id 
+						INNER JOIN grupos g ON g.id=m.grupo_id AND g.deleted_at is null
+						INNER JOIN years y ON y.id=g.year_id AND y.deleted_at is null and y.year=:anio
+						where a.deleted_at is null and m.deleted_at is null
+						order by y.year, g.orden';
+
+					$matri_next = DB::select($consulta, [ ':alumno_id' => $alumnos[$i]->alumno_id, ':anio'=> ($user->year+1) ] );
+					
+					$alumnos[$i]->next_year = [];
+					if (count($matri_next) > 0) {
+						$alumnos[$i]->next_year = $matri_next[0];
+					}else{
+
+						$consulta = 'SELECT y.id as year_id, y.year as year
+							FROM years y where y.deleted_at is null and y.year=:anio';
+
+						$matri_next = DB::select($consulta, [ ':anio'=> ($user->year+1) ] );
+
+						if (count($matri_next) > 0) {
+							$alumnos[$i]->next_year = $matri_next[0];
+						}
+					}
+
+				}
+				
+
+			}
+
+			if ($user->prematr_antiguos) {
+
+				// Grupos próximo año
+				$consulta = 'SELECT g.id, g.nombre, g.abrev, g.orden, g.grado_id, g.year_id, g.titular_id, g.created_at, g.updated_at
+					from grupos g
+					inner join years y on y.id=g.year_id and y.year=:anio and y.deleted_at is null
+					where g.deleted_at is null order by g.orden';
+				
+				$grados_sig = DB::select($consulta, [':anio'=> ($user->year+1) ] );
+				
 			}
 
 			# Las publicaciones
@@ -237,8 +303,9 @@ class ChangeAskedController extends Controller {
 			$eventos = DB::select('SELECT * FROM calendario WHERE solo_profes=0 and deleted_at is null');
 
 			
+			
 			return [ 'alumnos' => $alumnos, 
-				'publicaciones' => $publicaciones, 'eventos' => $eventos ];
+				'publicaciones' => $publicaciones, 'eventos' => $eventos, 'grados_sig' => $grados_sig ];
 		
 		}elseif ($user->tipo == 'Usuario') {
 			

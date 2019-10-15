@@ -93,7 +93,7 @@ class GruposController extends Controller {
 					inner join grados gra on gra.id=g.grado_id and g.year_id=y.id 
 					left join (
 						select m.grupo_id from matriculas m 
-							inner join alumnos a ON m.alumno_id=a.id and a.deleted_at is null and m.deleted_at is null and (m.estado="PREM" OR m.estado="MATR")
+							inner join alumnos a ON m.alumno_id=a.id and a.deleted_at is null and m.deleted_at is null and (m.estado="PREM" OR m.estado="PREA" OR m.estado="MATR")
 					) r on r.grupo_id=g.id 
 					where g.deleted_at is null 
 					group by g.id
@@ -105,7 +105,7 @@ class GruposController extends Controller {
 						inner join grados gra on gra.id=g.grado_id and g.year_id=y.id 
 						left join (
 							select m.grupo_id from matriculas m 
-								inner join alumnos a ON m.alumno_id=a.id and a.deleted_at is null and m.deleted_at is null and (m.estado="PREM")
+								inner join alumnos a ON m.alumno_id=a.id and a.deleted_at is null and m.deleted_at is null and (m.estado="PREM" OR m.estado="PREA")
 						) r on r.grupo_id=g.id 
 						where g.deleted_at is null 
 						group by g.id
@@ -128,10 +128,10 @@ class GruposController extends Controller {
 				inner join matriculas m on a.id=m.alumno_id 
 				inner join grupos gru on gru.id=m.grupo_id and gru.year_id=:year_id
 				inner join grados gra on gra.orden=:orden_grado and gru.grado_id=gra.id
-				where a.deleted_at is null and m.deleted_at is null and (m.estado="PREM" or m.estado="MATR" or m.estado="ASIS")
+				where a.deleted_at is null and m.deleted_at is null and (m.estado="PREM" OR m.estado="PREA" or m.estado="MATR" or m.estado="ASIS")
 					and m.alumno_id not in (SELECT m.alumno_id FROM alumnos a 
 						inner join matriculas m on a.id=m.alumno_id and m.grupo_id=:grupo_id 
-						where a.deleted_at is null and m.deleted_at is null and (m.estado="PREM" or m.estado="MATR" or m.estado="ASIS") )
+						where a.deleted_at is null and m.deleted_at is null and (m.estado="PREM" OR m.estado="PREA" or m.estado="MATR" or m.estado="ASIS") )
 				order by a.apellidos, a.nombres';
 
 

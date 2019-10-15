@@ -22,7 +22,11 @@ class MatriculasController extends Controller {
 	public function __construct()
 	{
 		$this->user = User::fromToken();
-		if($this->user->roles[0]->name != 'Admin'){
+		if ($this->user->tipo == 'Acudiente') {
+			if(Request::path() != 'matriculas/prematricular'){
+				return 'No tienes permiso';
+			}
+		}else if($this->user->roles[0]->name != 'Admin'){
 			return 'No tienes permiso';
 		}
 	}
@@ -418,7 +422,12 @@ class MatriculasController extends Controller {
 
 	public function putPrematricular()
 	{
-		if (($this->user->roles[0]->name == 'Profesor' && $this->user->profes_can_edit_alumnos) || $this->user->roles[0]->name == 'Admin') {
+		if ($this->user->tipo == 'Acudiente') {
+			$obj 		= new \stdClass;
+			$obj->name 	= 'Acudiente';
+			$this->user->roles = [ $obj ];
+		}
+		if (($this->user->roles[0]->name == 'Profesor' && $this->user->profes_can_edit_alumnos) || $this->user->roles[0]->name == 'Admin' || $this->user->tipo == 'Acudiente') {
 			$alumno_id 		= Request::input('alumno_id');
 			$grupo_id 		= Request::input('grupo_id');
 			$estado 		= Request::input('estado');
@@ -435,10 +444,11 @@ class MatriculasController extends Controller {
 			$matriculas = DB::select($consulta, ['alumno_id'=>$alumno_id, 'year_id'=>$year_id]);
 			
 			if ( count($matriculas) == 0 ) {
+				
 				if($estado=='FORM' || $estado=='ASIS'){
 					DB::insert('INSERT INTO matriculas(alumno_id, grupo_id, estado, created_by, created_at, updated_at) VALUES(?,?,?,?,?,?)', [$alumno_id, $grupo_id, $estado, $this->user->user_id, $now, $now]);
 				}
-				if($estado=='PREM'){
+				if($estado=='PREM' || $estado=='PREA'){
 					DB::insert('INSERT INTO matriculas(alumno_id, grupo_id, estado, prematriculado, created_by, created_at, updated_at) VALUES(?,?,?,?,?,?,?)', [$alumno_id, $grupo_id, $estado, $now, $this->user->user_id, $now, $now]);
 				}
 				if($estado=='MATR'){
@@ -450,7 +460,7 @@ class MatriculasController extends Controller {
 				if($estado=='FORM' || $estado=='ASIS'){
 					DB::update('UPDATE matriculas SET alumno_id=?, grupo_id=?, estado=?, updated_by=?, updated_at=? WHERE id=?', [$alumno_id, $grupo_id, $estado, $this->user->user_id, $now, $matric->id]);
 				}
-				if($estado=='PREM'){
+				if($estado=='PREM' || $estado=='PREA'){
 					DB::update('UPDATE matriculas SET alumno_id=?, grupo_id=?, estado=?, prematriculado=?, updated_by=?, updated_at=? WHERE id=?', [$alumno_id, $grupo_id, $estado, $now, $this->user->user_id, $now, $matric->id]);
 				}
 				if($estado=='MATR'){
