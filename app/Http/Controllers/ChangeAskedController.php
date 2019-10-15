@@ -222,6 +222,7 @@ class ChangeAskedController extends Controller {
 							
 			$alumnos 	= DB::select($consulta, [ $user->persona_id, $user->year_id ]);	
 			
+
 			for ($i=0; $i < count($alumnos); $i++) { 
 				
 				$alumnos[$i]->comportamiento 		= NotaComportamiento::notas_comportamiento_year($alumnos[$i]->alumno_id, $user->year_id);
@@ -284,6 +285,8 @@ class ChangeAskedController extends Controller {
 
 			}
 
+			$grados_sig = [];
+			
 			if ($user->prematr_antiguos) {
 
 				// Grupos próximo año
