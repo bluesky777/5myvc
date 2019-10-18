@@ -430,7 +430,7 @@ class MatriculasController extends Controller {
 		if (($this->user->roles[0]->name == 'Profesor' && $this->user->profes_can_edit_alumnos) || $this->user->roles[0]->name == 'Admin' || $this->user->tipo == 'Acudiente') {
 			$alumno_id 		= Request::input('alumno_id');
 			$grupo_id 		= Request::input('grupo_id');
-			$estado 		= Request::input('estado');
+			$estado 		= Request::input('estado', 'PREM');
 			$year_id 		= Request::input('year_id');
 			$now 			= Carbon::now('America/Bogota');
 			

@@ -19,10 +19,28 @@ use Carbon\Carbon;
 
 class PublicacionesController extends Controller {
 
-    public function getUltimas(){
+    public function putUltimas(){
         # Las publicaciones
         $publicaciones = Publicaciones::ultimas_publicaciones('Todos');
-        return $publicaciones;
+        
+        $year = DB::select('SELECT id, prematr_nuevos, year FROM years WHERE actual=1 and deleted_at is null');
+        
+        if (count($year) > 0) {
+            $year = $year[0];
+            if ($year->prematr_nuevos) {
+                
+				// Grupos próximo año
+				$consulta = 'SELECT g.id, g.nombre, g.abrev, g.orden, g.grado_id, g.year_id, g.titular_id, g.created_at, g.updated_at
+                    from grupos g
+                    inner join years y on y.id=g.year_id and y.year=:anio and y.deleted_at is null
+                    where g.deleted_at is null order by g.orden';
+                
+                $grados_sig = DB::select($consulta, [':anio'=> ($year->year+1) ] );
+                $year->grados_sig = $grados_sig;
+            }
+        }
+
+        return ['publicaciones' => $publicaciones, 'year' => $year];
     }
     
 

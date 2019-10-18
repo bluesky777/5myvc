@@ -99,21 +99,23 @@ class GruposController extends Controller {
 					group by g.id
 					order by g.orden
 			)r1 left join (
-				SELECT g.id, g.grado_id, count(g.id) as cantidad
+				SELECT g.id, g.grado_id, g.orden, count(g.id) as cantidad
 						from grupos g
 						inner join years y on y.id=g.year_id and y.year=:anio2 and y.deleted_at is null
 						inner join grados gra on gra.id=g.grado_id and g.year_id=y.id 
-						left join (
+						inner join (
 							select m.grupo_id from matriculas m 
+								inner join grupos g on g.id=m.grupo_id and g.deleted_at is null
+								inner join years y on y.id=g.year_id and y.year=:anio3 and y.deleted_at is null
 								inner join alumnos a ON m.alumno_id=a.id and a.deleted_at is null and m.deleted_at is null and (m.estado="PREM" OR m.estado="PREA")
 						) r on r.grupo_id=g.id 
 						where g.deleted_at is null 
 						group by g.id
 						order by g.orden
-			)r2 ON r1.id=r2.id';
+			)r2 ON r1.id=r2.id order by r2.orden';
 			
-			
-		$res['grupos'] = DB::select($consulta, [':anio'=> ($user->year+1), ':anio2'=> ($user->year+1) ] );
+		$next_y = $user->year+1;
+		$res['grupos'] = DB::select($consulta, [':anio'=> $next_y, ':anio2'=> $next_y, ':anio3'=> $next_y ] );
 		
 		for ($i=0; $i < count($res['grupos']); $i++) { 
 			

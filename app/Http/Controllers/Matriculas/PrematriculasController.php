@@ -255,7 +255,7 @@ class PrematriculasController extends Controller {
 
 
 		// Alumnos del grado anterior que no se han matriculado en este grupo
-		$consulta = 'SELECT m.id as matricula_id, m.alumno_id, a.no_matricula, a.nombres, a.apellidos, a.sexo, a.documento, a.user_id, a.celular,
+		$consulta = 'SELECT m.id as matricula_id, m.alumno_id, a.no_matricula, a.nombres, a.apellidos, a.sexo, a.user_id, a.celular,
 				m.grupo_id, m.estado, 
 				a.foto_id, IFNULL(i2.nombre, IF(a.sexo="F","default_female.png", "default_male.png")) as foto_nombre
 			FROM alumnos a 
@@ -267,6 +267,21 @@ class PrematriculasController extends Controller {
         
 		$result['AlumnosFormularios'] = DB::select($consulta, [ ':grupo_id' => $grupo_actual['id'] ]);
 
+
+		
+		// Solo prematriculados
+		$consulta = 'SELECT m.id as matricula_id, m.alumno_id, a.no_matricula, a.nombres, a.apellidos, a.sexo, a.user_id, a.celular,
+				m.grupo_id, m.estado, m.nuevo, 
+				a.foto_id, IFNULL(i2.nombre, IF(a.sexo="F","default_female.png", "default_male.png")) as foto_nombre
+			FROM alumnos a 
+			inner join matriculas m on a.id=m.alumno_id 
+			inner join grupos gru on gru.id=m.grupo_id and gru.id=:grupo_id
+			left join images i2 on i2.id=a.foto_id and i2.deleted_at is null
+			where a.deleted_at is null and m.deleted_at is null and (m.estado="PREA")
+			order by a.apellidos, a.nombres';
+        
+		$result['AlumnosPrematriculadosA'] = DB::select($consulta, [ ':grupo_id' => $grupo_actual['id'] ]);
+		
 
 		return $result;
 

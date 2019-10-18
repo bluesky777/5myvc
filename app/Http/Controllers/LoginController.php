@@ -16,6 +16,9 @@ use Carbon\Carbon;
 
 use App\Models\User;
 use App\Models\VtVotacion;
+use App\Models\Periodo;
+use App\Models\Year;
+use App\Models\Role;
 
 
 
@@ -347,6 +350,111 @@ class LoginController extends Controller {
 
 		return 'Reseteado';
 	}
+
+
+
+
+
+	public function putCrearPrematricula(Request $request){
+		$now 			= Carbon::now('America/Bogota');
+
+		$nombres 		= $request->input('nombres');
+		$apellidos 		= $request->input('apellidos');
+		$sexo 			= $request->input('sexo');
+		$documento 		= $request->input('documento');
+		$celular 		= $request->input('celular');
+		$grupo_id 		= $request->input('grupo_id');
+		$anio 			= $request->input('year');
+		$estado 		= 'PREA';
+	
+
+
+
+		$consulta 	= 'SELECT id, nombres FROM alumnos WHERE nombres=? and apellidos=? and documento=?';
+		$alumno 	= DB::select($consulta, [ $nombres, $apellidos, $documento ]);
+
+		if (count($alumno) > 0) {
+			$alumno = $alumno[0];
+
+			$consulta 	= 'SELECT m.id, estado FROM matriculas m 
+				INNER JOIN grupos g ON g.id=m.grupo_id and g.deleted_at is null
+				INNER JOIN years y ON y.id=g.year_id and y.deleted_at is null
+				WHERE alumno_id=? and year=?';
+
+			$matri = DB::select($consulta, [ $alumno->id, $anio ]);
+
+			if (count($matri) > 0) {
+				if ($matri[0]->estado == 'PREA') {
+					// SI el padre fue quien lo matriculó, podemos cambiar el grupo.
+					DB::update('UPDATE matriculas SET alumno_id=?, grupo_id=?, estado=?, updated_at=? WHERE id=?', [$alumno->id, $grupo_id, $estado, $now, $matri[0]->id]);
+					return [ 'estado' => 'Prematriculado previamente. Cambiado el grupo' ];
+				}else{
+					// Si NO fue el padre quien lo matriculó, no puede cambiar el grupo.
+					return [ 'estado' => 'No puede cambiar el grupo de este alumno. Debe acercarse a Secretaría.' ];
+				}
+				
+			}else{
+				// Existe el alumno, pero no está prematriculado en ese año
+				/*
+				$consulta 	= 'INSERT INTO matriculas(alumno_id, grupo_id, estado, created_at, updated_at) VALUES(?,?,?,?,?)';
+				DB::insert($consulta, [$alumno->id, $grupo_id, $estado, $now, $now]);
+				*/
+				return [ 'estado' => 'Ya existe el alumno. Entre con su cuenta para poder prematricularc correctamente' ];
+
+			}
+
+		} else {
+
+			$consulta 	= 'INSERT INTO alumnos(nombres, apellidos, sexo, documento, celular, tipo_doc, created_at, updated_at) VALUES(?,?,?,?,?,?,?,?)';
+			DB::insert($consulta, [$nombres, $apellidos, $sexo, $documento, $celular, 3, $now, $now]);
+
+			$last_id 	= DB::getPdo()->lastInsertId();
+
+			$consulta 	= 'SELECT id, nombres FROM alumnos WHERE id=?';
+			$alumno 	= DB::select($consulta, [ $last_id ]);
+	
+			$alumno 	= $alumno[0];
+
+			$consulta 	= 'INSERT INTO matriculas(alumno_id, grupo_id, estado, nuevo, created_at, updated_at) VALUES(?,?,?,1,?,?)';
+			DB::insert($consulta, [$alumno->id, $grupo_id, $estado, $now, $now]);
+
+			// Para crear el usuario, necesitamos periodo actual y roles
+			$yearactual = Year::actual();
+			$periodo_actual = Periodo::where('actual', true)
+									->where('year_id', $yearactual->id)->first();
+
+			if (!is_object($periodo_actual)) {
+				$periodo_actual = Periodo::where('year_id', $yearactual->id)->first();
+				$periodo_actual->actual 	= true;
+				$periodo_actual->updated_by = $this->user->user_id;
+				$periodo_actual->save();
+			}
+
+			$usuario = new User;
+			$usuario->username		=	$alumno->nombres . rand(99, 999);
+			$usuario->password		=	Hash::make('123456');
+			$usuario->sexo			=	$sexo;
+			$usuario->is_superuser	=	false;
+			$usuario->periodo_id	=	$periodo_actual->id;
+			$usuario->is_active		=	true;
+			$usuario->tipo			=	'Alumno';
+			$usuario->save();
+
+			
+			$role = Role::where('name', 'Alumno')->get();
+			$usuario->attachRole($role[0]);
+
+			DB::update('UPDATE alumnos SET user_id=? WHERE id=?', [ $usuario->id, $alumno->id ]);
+
+
+			return [ 'estado' => 'Alumno y Prematricula creados' ];
+		}
+		
+
+
+		return 'Reseteado';
+	}
+
 
 
 
