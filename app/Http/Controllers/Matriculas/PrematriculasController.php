@@ -270,7 +270,7 @@ class PrematriculasController extends Controller {
 
 		
 		// Solo prematriculados
-		$consulta = 'SELECT m.id as matricula_id, m.alumno_id, a.no_matricula, a.nombres, a.apellidos, a.sexo, a.user_id, a.celular,
+		$consulta = 'SELECT m.id as matricula_id, m.alumno_id, a.no_matricula, a.nombres, a.apellidos, a.documento, a.sexo, a.user_id, a.celular,
 				m.grupo_id, m.estado, m.nuevo, 
 				a.foto_id, IFNULL(i2.nombre, IF(a.sexo="F","default_female.png", "default_male.png")) as foto_nombre
 			FROM alumnos a 
