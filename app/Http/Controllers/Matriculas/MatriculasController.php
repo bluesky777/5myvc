@@ -22,7 +22,7 @@ class MatriculasController extends Controller {
 	public function __construct()
 	{
 		$this->user = User::fromToken();
-		if ($this->user->tipo == 'Acudiente') {
+		if ($this->user->tipo == 'Acudiente' || $this->user->tipo == 'Alumno') {
 			if(Request::path() != 'matriculas/prematricular'){
 				return 'No tienes permiso';
 			}
@@ -427,7 +427,7 @@ class MatriculasController extends Controller {
 			$obj->name 	= 'Acudiente';
 			$this->user->roles = [ $obj ];
 		}
-		if (($this->user->roles[0]->name == 'Profesor' && $this->user->profes_can_edit_alumnos) || $this->user->roles[0]->name == 'Admin' || $this->user->tipo == 'Acudiente') {
+		if (($this->user->roles[0]->name == 'Profesor' && $this->user->profes_can_edit_alumnos) || $this->user->roles[0]->name == 'Admin' || ($this->user->tipo == 'Acudiente' || $this->user->tipo == 'Alumno') ) {
 			$alumno_id 		= Request::input('alumno_id');
 			$grupo_id 		= Request::input('grupo_id');
 			$estado 		= Request::input('estado', 'PREM');

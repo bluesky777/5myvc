@@ -447,6 +447,28 @@ class YearsController extends Controller {
 	}
 
 
+	public function putToggleCambiarValor(){
+		$user 		= User::fromToken();
+		$now 		= Carbon::now('America/Bogota');
+
+		$year_id 	= 	Request::input('year_id');
+		$valor 		= 	Request::input('valor');
+		$campo 		= 	Request::input('campo');
+
+		
+		$consulta 	= 'UPDATE years SET '.$campo.'=:valor, updated_by=:modificador, updated_at=:fecha WHERE id=:year_id';
+		\Log::info($consulta);
+		$datos 		= [ ':valor' => $valor, ':modificador' => $user->user_id, ':fecha' => $now, ':year_id' => $year_id ];
+		$res = DB::update($consulta, $datos);
+		
+		if($res)
+			return 'Guardado';
+		else
+			return 'No guardado';
+
+	}
+
+
 	public function putToggleIgnorarNotasPerdidas(){
 		$user = User::fromToken();
 
