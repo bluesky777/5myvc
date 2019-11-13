@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "5875400e129dc39bbef800749c453a96",
+    "content-hash": "989ee8d80018c17bcfa5e37ca38a1daa",
     "packages": [
         {
             "name": "barryvdh/laravel-cors",
@@ -1736,12 +1736,12 @@
             "version": "3.9.1",
             "source": {
                 "type": "git",
-                "url": "https://github.com/piwik/device-detector.git",
+                "url": "https://github.com/matomo-org/device-detector.git",
                 "reference": "caf2d15349caffd94a8cfe46edf4061fbc99f70b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/piwik/device-detector/zipball/caf2d15349caffd94a8cfe46edf4061fbc99f70b",
+                "url": "https://api.github.com/repos/matomo-org/device-detector/zipball/caf2d15349caffd94a8cfe46edf4061fbc99f70b",
                 "reference": "caf2d15349caffd94a8cfe46edf4061fbc99f70b",
                 "shasum": ""
             },
@@ -3263,6 +3263,56 @@
             "description": "CssToInlineStyles is a class that enables you to convert HTML-pages/files into HTML-pages/files with inline styles. This is very useful when you're sending emails.",
             "homepage": "https://github.com/tijsverkoyen/CssToInlineStyles",
             "time": "2017-11-27T11:13:29+00:00"
+        },
+        {
+            "name": "twilio/sdk",
+            "version": "5.37.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/twilio/twilio-php.git",
+                "reference": "bd5b4d0b49814d04c118f8dc3ea3e2395073ba6d"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/twilio/twilio-php/zipball/bd5b4d0b49814d04c118f8dc3ea3e2395073ba6d",
+                "reference": "bd5b4d0b49814d04c118f8dc3ea3e2395073ba6d",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.5.0"
+            },
+            "require-dev": {
+                "apigen/apigen": "^4.1",
+                "guzzlehttp/guzzle": "^6.3",
+                "phpunit/phpunit": ">=4.5"
+            },
+            "suggest": {
+                "guzzlehttp/guzzle": "An HTTP client to execute the API requests"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Twilio\\": "src/Twilio/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Twilio API Team",
+                    "email": "api@twilio.com"
+                }
+            ],
+            "description": "A PHP wrapper for Twilio's API",
+            "homepage": "http://github.com/twilio/twilio-php",
+            "keywords": [
+                "api",
+                "sms",
+                "twilio"
+            ],
+            "time": "2019-10-16T21:59:18+00:00"
         },
         {
             "name": "tymon/jwt-auth",

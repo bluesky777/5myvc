@@ -222,6 +222,7 @@ class YearsController extends Controller {
 				$newGr->valormatricula 	= $grupo->valormatricula;
 				$newGr->valorpension 	= $grupo->valorpension;
 				$newGr->orden 			= $grupo->orden;
+				$newGr->cupo 			= $grupo->cupo;
 				$newGr->caritas 		= $grupo->caritas;
 				$newGr->save();
 

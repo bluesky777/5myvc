@@ -236,7 +236,7 @@ class Boletines3Controller extends Controller {
 		
 		
 		// DISCPLINA
-		$alumno->situaciones = Disciplina::situaciones_year($alumno->alumno_id, $this->user->year_id);
+		$alumno->situaciones = Disciplina::situaciones_year($alumno->alumno_id, $this->user->year_id, $periodo_id);
 		
 
 		

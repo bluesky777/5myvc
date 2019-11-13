@@ -184,7 +184,7 @@ class ChangeAskedController extends Controller {
 			
 			$comportamiento 	= NotaComportamiento::notas_comportamiento_year($user->persona_id, $user->year_id);
 
-			$situaciones 		= Disciplina::situaciones_year($user->persona_id, $user->year_id);
+			$situaciones 		= Disciplina::situaciones_year_alumno($user->persona_id, $user->year_id);
 
 			
 			# Las publicaciones
