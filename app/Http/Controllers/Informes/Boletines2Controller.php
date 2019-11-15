@@ -169,13 +169,18 @@ class Boletines2Controller extends Controller {
 			$asignaturas[$i]->nota_faltante 		= 0;
 			$asignaturas[$i]->nota_definitiva_anio 	= 0;
 
-			$cant_n = count($asignaturas[$i]->notas_finales);
-			$cant_n = ($cant_n>3) ? 3 : $cant_n ;
+			$cant_n_o = count($asignaturas[$i]->notas_finales);
+			$cant_n = ($cant_n_o>3) ? 3 : $cant_n_o ;
 
 			for ($h=0; $h < $cant_n; $h++) { 
 				$asignaturas[$i]->nota_faltante = $asignaturas[$i]->notas_finales[$h]->nota + $asignaturas[$i]->nota_faltante;
 			}
-			$asignaturas[$i]->nota_definitiva_anio 	= round($asignaturas[$i]->nota_faltante / $this->user->numero_periodo);
+			
+			if ($cant_n_o > 3) {
+				$asignaturas[$i]->nota_definitiva_anio 	= round(($asignaturas[$i]->nota_faltante + $asignaturas[$i]->notas_finales[$cant_n_o-1]->nota) / $this->user->numero_periodo);
+			}else{
+				$asignaturas[$i]->nota_definitiva_anio 	= round($asignaturas[$i]->nota_faltante / $this->user->numero_periodo);
+			}
 			$asignaturas[$i]->nota_faltante 		= $this->user->nota_minima_aceptada*4 - $asignaturas[$i]->nota_faltante;
 			
 
