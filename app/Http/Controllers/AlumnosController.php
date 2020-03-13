@@ -71,6 +71,28 @@ class AlumnosController extends Controller {
 				]);
 	}
 
+
+	public function putCambiarClaves()
+	{
+		$clave 		= Request::input('clave');
+		$grupo_id 	= Request::input('grupo_id');
+		$clave 		= Hash::make($clave);
+		
+		$consulta = 'UPDATE users u 
+			INNER JOIN alumnos a ON a.user_id=u.id and a.deleted_at is null
+			INNER JOIN matriculas m ON a.id=m.alumno_id and m.deleted_at is null
+			SET u.password=:clave
+			WHERE m.grupo_id=:grupo_id';
+
+		DB::select(DB::raw($consulta), [
+			':clave'			=> $clave,
+			':grupo_id'			=> $grupo_id
+		]);
+
+		return 'Cambiadas';
+	}
+
+
 	public function getSinMatriculas()
 	{
 		$consulta = 'SELECT m.id as matricula_id, a.id as alumno_id, a.no_matricula, a.nombres, a.apellidos, a.sexo, a.user_id, 

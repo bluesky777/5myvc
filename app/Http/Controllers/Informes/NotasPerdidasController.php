@@ -50,7 +50,7 @@ class NotasPerdidasController extends Controller {
 			inner join materias m on m.id=a.materia_id 
 			where a.grupo_id=:grupo_id and a.deleted_at is null';
 
-		$consulta_alums = "SELECT a.id as alumno_id, a.nombres, a.apellidos, a.sexo, a.user_id, a.celular, a.email, a.foto_id, a.pazysalvo
+		$consulta_alums = "SELECT a.id as alumno_id, a.nombres, a.apellidos, a.sexo, a.user_id, a.celular, a.email, a.foto_id, a.pazysalvo, a.nee
 			from alumnos a
 			inner join matriculas m on m.alumno_id=a.id and (m.estado='MATR' or m.estado='ASIS' or m.estado='PREM') and m.grupo_id=:grupo_id and m.deleted_at is null
 			inner join notas n on n.alumno_id=a.id and n.nota < :nota_minima_aceptada

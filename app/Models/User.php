@@ -81,7 +81,7 @@ class User extends Authenticatable implements AuthenticatableUserContract
 				}catch(JWTException $e){
 					// No haremos nada, continuaremos verificando datos.
 				}	
-
+				
 				try {
 					if ($token){
 						// Lleva aquí y ocurre un error cuando se ha demorado mucho en mover la página.
@@ -90,6 +90,7 @@ class User extends Authenticatable implements AuthenticatableUserContract
 						return response()->json(['error' => 'No existe Token'], 401);
 					}
 				} catch (JWTException $e) {
+					Log::info($e);
 					/*
 					$tok = JWTAuth::getToken();
 					$tok->get(); // Sí hay token, definitivamente está expirado :(

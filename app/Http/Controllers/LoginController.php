@@ -19,6 +19,7 @@ use App\Models\VtVotacion;
 use App\Models\Periodo;
 use App\Models\Year;
 use App\Models\Role;
+use \Log;
 
 
 
@@ -34,6 +35,7 @@ class LoginController extends Controller {
 
 		$user = [];
 		$token = [];
+		
 
 		try
 		{
@@ -154,10 +156,11 @@ class LoginController extends Controller {
 		$anio 		= DB::select($consulta)[0];
 
 		$consulta 	= 'SELECT id, actual FROM periodos WHERE actual=1 and year_id=? and deleted_at is null';
-		$periodo 	= DB::select($consulta, [$anio->id])[0];
+		$periodo 	= DB::select($consulta, [$anio->id]);
 
 
-		if (count($anio) > 0 && $usuario->periodo_id > 0 && count($periodo) > 0) {
+		if ($usuario->periodo_id > 0 && count($periodo) > 0) {
+			$periodo 	= $periodo[0];
 
 			if ($anio->id != $usuario->year_id) {
 				
