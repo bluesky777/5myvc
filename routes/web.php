@@ -89,6 +89,7 @@ AdvancedRoute::controller('simat', 'Informes\SimatController');
 AdvancedRoute::controller('acudientes-export', 'Informes\AcudientesExportController');
 AdvancedRoute::controller('excel-docentes', 'Informes\ExcelListadoDocentesController');
 AdvancedRoute::controller('observador', 'Informes\ObservadorController');
+AdvancedRoute::controller('observador-horizontal', 'Informes\ObservadorHorizontalController');
 AdvancedRoute::controller('ordinales', 'Disciplina\OrdinalesController');
 AdvancedRoute::controller('disciplina', 'Disciplina\DisciplinaController');
 
