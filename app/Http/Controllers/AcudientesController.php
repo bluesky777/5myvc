@@ -337,9 +337,14 @@ class AcudientesController extends Controller {
 			$parentesco->save();
 
 			// Usuario nuevo
-			$dirtyName = Request::input('nombres');
-			$uname = preg_replace('/\s+/', '', $dirtyName);
-			$uname = $uname . rand(1000, 99999);
+			if (Request::input('documento')) {
+				$uname = Request::input('documento');
+			}else{
+				$dirtyName = Request::input('nombres');
+				$uname = preg_replace('/\s+/', '', $dirtyName);
+				$uname = $uname . rand(1000, 99999);
+			}
+			
 
 			$usuario = new User;
 			$usuario->username		=	$uname;

@@ -37,6 +37,7 @@ AdvancedRoute::controller('asignaturas', 'AsignaturasController');
 AdvancedRoute::controller('unidades', 'UnidadesController');
 AdvancedRoute::controller('subunidades', 'SubunidadesController');
 AdvancedRoute::controller('users', 'UsersController');
+AdvancedRoute::controller('cambiar-usuarios', 'CambiarUsuarios\CambiarUsuariosController');
 AdvancedRoute::controller('notas', 'NotasController');
 Route::resource('estados_civiles', 'EstadosCivilesController');
 AdvancedRoute::controller('niveles_educativos', 'NivelesEducativosController');

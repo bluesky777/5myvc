@@ -397,9 +397,13 @@ class AlumnosController extends Controller {
 		*/
 		
 		if (!Request::input('username')) {
-			$dirtyName = Request::input('nombres');
-			$name = preg_replace('/\s+/', '', $dirtyName);
-			Request::merge(array('username' => $name));
+			if (Request::input('documento')) {
+				Request::merge(['username' => Request::input('documento')]);
+			}else{
+				$dirtyName = Request::input('nombres');
+				$name = preg_replace('/\s+/', '', $dirtyName);
+				Request::merge(array('username' => $name));
+			}
 		}
 
 		if (!Request::input('email1')) {
