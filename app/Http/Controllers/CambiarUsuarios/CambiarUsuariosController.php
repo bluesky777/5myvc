@@ -58,7 +58,20 @@ class CambiarUsuariosController extends Controller {
 			':texto'		=> $password
 		]);
 		
-		return 'Contraseña cambiada';
+		return 'Contraseñas alumnos cambiadas';
+	}
+
+
+	public function putPonerPasswordTodosAcudientes()
+	{
+		$password   = Hash::make(Request::input('clave'));
+		$consulta   = 'UPDATE users SET password=:texto WHERE tipo="Acudiente";';
+		
+		DB::update($consulta, [
+			':texto'		=> $password
+		]);
+		
+		return 'Contraseñas acudientes cambiadas';
 	}
 
 

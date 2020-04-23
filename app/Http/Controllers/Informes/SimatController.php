@@ -192,29 +192,41 @@ class SimatController extends Controller {
     
     private function Comentarios(&$sheet, $numero=1){
         
+        $sheet->getComment('A'.$numero)->getText()->createTextRun('Sólo lectura (ignore esta columna)');
+        $sheet->getComment('B'.$numero)->getText()->createTextRun('Sólo lectura (ignore esta columna)');
         $sheet->getComment('C'.$numero)->getText()->createTextRun('Coloque: "CÉDULA", "PERMISO ESPECIAL DE PERMANENCIA", "TARJETA DE IDENTIDAD", "CÉDULA EXTRANJERA", "REGISTRO CIVIL", "NÚMERO DE IDENTIFICACIÓN PERSONAL", "NÚMERO ÚNICO DE IDENTIFICACIÓN PERSONAL", "NÚMERO DE SECRETARÍA", "PASAPORTE"');
-        $sheet->getComment('E'.$numero)->getText()->createTextRun('No coloque departamento, solo ciudad');
-        $sheet->getComment('K'.$numero)->getText()->createTextRun('Ignore esta columna');
+        $sheet->getComment('E'.$numero)->getText()->createTextRun('Sólo lectura (ignore esta columna)');
+        $sheet->getComment('E'.$numero)->getText()->createTextRun('Si sabe el ID de la ciudad, colóquelo aquí. De lo contrario ignore esta columna');
+        $sheet->getComment('K'.$numero)->getText()->createTextRun('Sólo lectura (ignore esta columna)');
         $sheet->getComment('L'.$numero)->getText()->createTextRun('Coloque: MATR, ASIS, RETI, DESE');
+        $sheet->getComment('P'.$numero)->getText()->createTextRun('Si sabe el ID de la ciudad, colóquelo aquí. De lo contrario ignore esta columna');
         $sheet->getComment('Q'.$numero)->getText()->createTextRun('¿Es urbano? SI o NO');
         $sheet->getComment('U'.$numero)->getText()->createTextRun('Coloque "No aplica" o deje vacío si no tiene el antiguo SISBEN.');
         $sheet->getComment('V'.$numero)->getText()->createTextRun('Coloque "No aplica" o deje vacío si no tiene el nuevo SISBEN tipo 3.');
+        $sheet->getComment('X'.$numero)->getText()->createTextRun('Sólo lectura (ignore esta columna)');
+        $sheet->getComment('Y'.$numero)->getText()->createTextRun('Si sabe el ID de la ciudad, colóquelo aquí. De lo contrario ignore esta columna');
+        $sheet->getComment('Z'.$numero)->getText()->createTextRun('M o F');
         $sheet->getComment('AA'.$numero)->getText()->createTextRun('Si el año pasado NO finalizó en la institución, coloque SI, de lo contrario, especifique que NO es nuevo.');
         
-        $sheet->getComment('AE'.$numero)->getText()->createTextRun('Coloque un código e ignore las demás columnas para asignar un acudiente a este alumno que ya está agregado');
+        
+        $sheet->getComment('AE'.$numero)->getText()->createTextRun('Si sabe el ID del acudiente, coloquelo aquí e ignore las demás columnas para asignar el acudiente con ese ID a este alumno. Si es un acudiente nuevo, no debe poner ID, ignore esta columna');
+        $sheet->getComment('AH'.$numero)->getText()->createTextRun('M o F');
         $sheet->getComment('AI'.$numero)->getText()->createTextRun('Coloque: "CÉDULA", "PERMISO ESPECIAL DE PERMANENCIA", "TARJETA DE IDENTIDAD", "CÉDULA EXTRANJERA", "REGISTRO CIVIL", "NÚMERO DE IDENTIFICACIÓN PERSONAL", "NÚMERO ÚNICO DE IDENTIFICACIÓN PERSONAL", "NÚMERO DE SECRETARÍA", "PASAPORTE"');
         $sheet->getComment('AJ'.$numero)->getText()->createTextRun('SI o NO');
         $sheet->getComment('AK'.$numero)->getText()->createTextRun('Padre, Madre, Hermano, Hermana, Abuelo, Abuela, Tío, Tía, Primo(a), Otro');
-        $sheet->getComment('AM'.$numero)->getText()->createTextRun('Ignore esta columna');
-        $sheet->getComment('AS'.$numero)->getText()->createTextRun('Ignore esta columna');
+        $sheet->getComment('AM'.$numero)->getText()->createTextRun('Sólo lectura (ignore esta columna)');
+        $sheet->getComment('AN'.$numero)->getText()->createTextRun('Si sabe el ID de la ciudad, colóquelo aquí. De lo contrario ignore esta columna');
+        $sheet->getComment('AS'.$numero)->getText()->createTextRun('Sólo lectura (ignore esta columna)');
         $sheet->getComment('AU'.$numero)->getText()->createTextRun('Comentarios sobre este acudiente del alumno');
         
-        $sheet->getComment('AV'.$numero)->getText()->createTextRun('Coloque un código e ignore las demás columnas para asignar un acudiente a este alumno que ya está agregado');
+        $sheet->getComment('AV'.$numero)->getText()->createTextRun('Si sabe el ID del acudiente, coloquelo aquí e ignore las demás columnas para asignar el acudiente con ese ID a este alumno. Si es un acudiente nuevo, no debe poner ID, ignore esta columna');
+        $sheet->getComment('AY'.$numero)->getText()->createTextRun('M o F');
         $sheet->getComment('AZ'.$numero)->getText()->createTextRun('Coloque: "CÉDULA", "PERMISO ESPECIAL DE PERMANENCIA", "TARJETA DE IDENTIDAD", "CÉDULA EXTRANJERA", "REGISTRO CIVIL", "NÚMERO DE IDENTIFICACIÓN PERSONAL", "NÚMERO ÚNICO DE IDENTIFICACIÓN PERSONAL", "NÚMERO DE SECRETARÍA", "PASAPORTE"');
         $sheet->getComment('BA'.$numero)->getText()->createTextRun('SI o NO');
         $sheet->getComment('BB'.$numero)->getText()->createTextRun('Padre, Madre, Hermano, Hermana, Abuelo, Abuela, Tío, Tía, Primo(a), Otro');
-        $sheet->getComment('BD'.$numero)->getText()->createTextRun('Ignore esta columna');
-        $sheet->getComment('BJ'.$numero)->getText()->createTextRun('Ignore esta columna');
+        $sheet->getComment('BD'.$numero)->getText()->createTextRun('Sólo lectura (ignore esta columna)');
+        $sheet->getComment('BE'.$numero)->getText()->createTextRun('Si sabe el ID de la ciudad, colóquelo aquí. De lo contrario ignore esta columna');
+        $sheet->getComment('BJ'.$numero)->getText()->createTextRun('Sólo lectura (ignore esta columna)');
         $sheet->getComment('BL'.$numero)->getText()->createTextRun('Comentarios sobre este acudiente del alumno');
         
     }

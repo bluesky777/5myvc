@@ -17,7 +17,8 @@ class EscalasDeValoracionController extends Controller {
 		$user 	= User::fromToken();
 
 		$consulta 	= 'SELECT * FROM escalas_de_valoracion WHERE year_id=? and deleted_at is null order by orden asc';
-		$escalas 	= DB::select($consulta, [$user->year_id]);
+		$year_id 	= $user->year_id ? $user->year_id : 1;
+		$escalas 	= DB::select($consulta, [$year_id]);
 
 		return $escalas;
 	}

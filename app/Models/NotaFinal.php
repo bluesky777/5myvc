@@ -214,10 +214,20 @@ class NotaFinal extends Model {
 		$user 			= User::fromToken();
 		$now 			= Carbon::now('America/Bogota');
 
+        /*
 		DB::delete('DELETE nf FROM notas_finales nf
 					WHERE (nf.manual is null or nf.manual=0) and (nf.recuperada is null or nf.recuperada=0) and nf.asignatura_id=? and nf.periodo_id=?', 
-					[ $asignatura_id, $periodo_id ]);
-		
+                    [ $asignatura_id, $periodo_id ]);
+        */
+		DB::delete('DELETE FROM notas_finales
+					WHERE id IN 
+                        (SELECT id FROM notas_finales nf WHERE 
+                            (nf.manual is null or nf.manual=0) and (nf.recuperada is null or nf.recuperada=0) and nf.asignatura_id=? and nf.periodo_id=?
+                            ORDER BY id
+                        )', 
+                        [ $asignatura_id, $periodo_id ]);
+        
+
 		$consulta = 'SELECT r1.alumno_id,
 			    cast(r1.DefMateria as decimal(4,0)) as def_materia_auto, r1.updated_at, r1.periodo_id
 			FROM (

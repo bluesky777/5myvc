@@ -960,6 +960,7 @@ class ChangeAskedController extends Controller {
 	
 	private function asignaturas_dia($year_id, $profesor_id, $periodo_id, $dia)
 	{
+		$dia_cond = ' domingo=1 ';
 		
 		switch ($dia) {
 			case 0:

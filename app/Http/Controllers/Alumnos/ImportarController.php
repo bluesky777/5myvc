@@ -85,7 +85,7 @@ class ImportarController extends Controller {
 								$alumno = new Alumno;
 								$alumno->nombres    			= $alumno_row->primer_nombre.' '.$alumno_row->segundo_nombre;
 								$alumno->apellidos  			= $alumno_row->primer_apellido.' '.$alumno_row->segundo_apellido;
-								$alumno->sexo       			= $alumno_row->sexo;
+								$alumno->sexo       			= $alumno_row->sexo ? $alumno_row->sexo : 'M';
 								$alumno->tipo_doc   			= $alumno_row->tipo_doc;
 								$alumno->documento  			= $alumno_row->nro_de_documento;
 								$alumno->no_matricula 			= $alumno_row->numero_matricula;
@@ -106,7 +106,7 @@ class ImportarController extends Controller {
 								$usuario = new User;
 								$usuario->username		=	$opera->username_no_repetido($alumno->nombres);
 								$usuario->password		=	Hash::make('123456');
-								$usuario->sexo			=	$alumno_row->sexo;
+								$usuario->sexo			=	$alumno_row->sexo ? $alumno_row->sexo : 'M';
 								$usuario->is_superuser	=	false;
 								$usuario->periodo_id	=	1; // Verificar que haya un periodo cod 1
 								$usuario->is_active		=	true;
@@ -127,6 +127,14 @@ class ImportarController extends Controller {
 								$matricula->estado			=	"MATR";
 								$matricula->fecha_matricula = 	$now;
 								$matricula->save();
+
+
+								// Acudiente 1
+								$this->modificar_acudiente1($alumno, $now, $res['consultaA1']);
+				
+								// Acudiente 2
+								$this->modificar_acudiente2($alumno, $now, $res['consultaA2']);
+				
 							
 							}
 						
@@ -218,7 +226,7 @@ class ImportarController extends Controller {
 					$alumno = new Alumno;
 					$alumno->nombres    = $alumno_row->nombres;
 					$alumno->apellidos  = $alumno_row->apellidos;
-					$alumno->sexo       = $alumno_row->sexo;
+					$alumno->sexo       = $alumno_row->sexo ? $alumno_row->sexo : 'M';
 					$alumno->save();
 					
 					
@@ -227,7 +235,7 @@ class ImportarController extends Controller {
 					$usuario = new User;
 					$usuario->username		=	$opera->username_no_repetido($alumno->nombres);
 					$usuario->password		=	Hash::make('123456');
-					$usuario->sexo			=	$alumno_row->sexo;
+					$usuario->sexo			=	$alumno_row->sexo ? $alumno_row->sexo : 'M';
 					$usuario->is_superuser	=	false;
 					$usuario->periodo_id	=	1; // Verificar que haya un periodo cod 1
 					$usuario->is_active		=	true;
@@ -335,7 +343,7 @@ class ImportarController extends Controller {
 							
 			// Si tiene código y tiene nombre escrito, sólo quiere modificarlo
 			DB::update('UPDATE acudientes SET nombres=?, apellidos=?, sexo=?, tipo_doc=?, documento=?, is_acudiente=?, telefono=?, celular=?, ocupacion=?, direccion=?, email=?, updated_at=?'.$consulta.' WHERE id=?', 
-				[$alumno->nombres_acud1, $alumno->apellidos_acud1, $alumno->sexo_acud1, $alumno->tipo_docu_acud1_id, $alumno->documento_acud1, $alumno->is_acudiente1, 
+				[$alumno->nombres_acud1, $alumno->apellidos_acud1, $alumno->sexo_acud1, $alumno->tipo_docu_acud1_id, $alumno->documento_acud1, ($alumno->is_acudiente1?$alumno->is_acudiente1:1), 
 				$alumno->telefono_acud1, $alumno->celular_acud1, $alumno->ocupacion_acud1, $alumno->direccion_acud1, $alumno->email_acud1, $now, $alumno->id_acud1 ]);
 				
 			DB::update('UPDATE parentescos p INNER JOIN acudientes a ON a.id=p.acudiente_id and p.alumno_id=? and p.acudiente_id=? and p.deleted_at is null and a.deleted_at is null 
@@ -350,7 +358,7 @@ class ImportarController extends Controller {
 		}else{
 			if (!(is_null($alumno->nombres_acud1) || $alumno->nombres_acud1 == '')) {
 				DB::insert('INSERT INTO acudientes(nombres, apellidos, sexo, tipo_doc, documento, is_acudiente, telefono, celular, ocupacion, direccion, email, created_at, updated_at, ciudad_doc) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', 
-					[$alumno->nombres_acud1, $alumno->apellidos_acud1, $alumno->sexo_acud1, $alumno->tipo_docu_acud1_id, $alumno->documento_acud1, $alumno->is_acudiente1, 
+					[$alumno->nombres_acud1, $alumno->apellidos_acud1, $alumno->sexo_acud1, $alumno->tipo_docu_acud1_id, $alumno->documento_acud1, ($alumno->is_acudiente1?$alumno->is_acudiente1:1), 
 					$alumno->telefono_acud1, $alumno->celular_acud1, $alumno->ocupacion_acud1, $alumno->direccion_acud1, $alumno->email_acud1, $now, $now, $alumno->ciudad_docu_acud1]);
 					
 				$last_id = DB::getPdo()->lastInsertId();
@@ -368,7 +376,7 @@ class ImportarController extends Controller {
 							
 			// Si tiene código y tiene nombre escrito, sólo quiere modificarlo
 			DB::update('UPDATE acudientes SET nombres=?, apellidos=?, sexo=?, tipo_doc=?, documento=?, is_acudiente=?, telefono=?, celular=?, ocupacion=?, direccion=?, email=?, updated_at=?'.$consulta.' WHERE id=?', 
-				[$alumno->nombres_acud2, $alumno->apellidos_acud2, $alumno->sexo_acud2, $alumno->tipo_docu_acud2_id, $alumno->documento_acud2, $alumno->is_acudiente2, 
+				[$alumno->nombres_acud2, $alumno->apellidos_acud2, $alumno->sexo_acud2, $alumno->tipo_docu_acud2_id, $alumno->documento_acud2, ($alumno->is_acudiente2?$alumno->is_acudiente2:1), 
 				$alumno->telefono_acud2, $alumno->celular_acud2, $alumno->ocupacion_acud2, $alumno->direccion_acud2, $alumno->email_acud2, $now, $alumno->id_acud2 ]);
 				
 			DB::update('UPDATE parentescos p INNER JOIN acudientes a ON a.id=p.acudiente_id and p.alumno_id=? and p.acudiente_id=? and p.deleted_at is null and a.deleted_at is null 
@@ -383,7 +391,7 @@ class ImportarController extends Controller {
 		}else{
 			if (!(is_null($alumno->nombres_acud2) || $alumno->nombres_acud2 == '')) {
 				DB::insert('INSERT INTO acudientes(nombres, apellidos, sexo, tipo_doc, documento, is_acudiente, telefono, celular, ocupacion, direccion, email, created_at, updated_at, ciudad_doc) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', 
-					[$alumno->nombres_acud2, $alumno->apellidos_acud2, $alumno->sexo_acud2, $alumno->tipo_docu_acud2_id, $alumno->documento_acud2, $alumno->is_acudiente2, 
+					[$alumno->nombres_acud2, $alumno->apellidos_acud2, $alumno->sexo_acud2, $alumno->tipo_docu_acud2_id, $alumno->documento_acud2, ($alumno->is_acudiente2?$alumno->is_acudiente2:1), 
 					$alumno->telefono_acud2, $alumno->celular_acud2, $alumno->ocupacion_acud2, $alumno->direccion_acud2, $alumno->email_acud2, $now, $now, $alumno->ciudad_docu_acud2]);
 				
 				$last_id = DB::getPdo()->lastInsertId();
