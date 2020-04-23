@@ -100,6 +100,7 @@ class ImportarController extends Controller {
 								$alumno->religion 				= $alumno_row->religion;
 								$alumno->save();
 								
+								$alumno_row->id = $alumno->id;
 								
 								$opera = new OperacionesAlumnos();
 								
@@ -130,10 +131,10 @@ class ImportarController extends Controller {
 
 
 								// Acudiente 1
-								$this->modificar_acudiente1($alumno, $now, $res['consultaA1']);
+								$this->modificar_acudiente1($alumno_row, $now, $res['consultaA1']);
 				
 								// Acudiente 2
-								$this->modificar_acudiente2($alumno, $now, $res['consultaA2']);
+								$this->modificar_acudiente2($alumno_row, $now, $res['consultaA2']);
 				
 							
 							}
