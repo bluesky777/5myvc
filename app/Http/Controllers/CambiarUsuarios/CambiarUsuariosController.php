@@ -38,7 +38,7 @@ class CambiarUsuariosController extends Controller {
 	public function putPonerDocumentoComoUsernameAcudientes()
 	{
 		$consulta = 'UPDATE IGNORE users u 
-			INNER JOIN alumnos a ON a.user_id=u.id and a.deleted_at is null and u.tipo="Acudiente"
+			INNER JOIN acudientes a ON a.user_id=u.id and a.deleted_at is null and u.tipo="Acudiente"
 			SET u.username=a.documento
 			WHERE a.documento>0 and a.documento is not null and a.documento!="" and u.deleted_at is null';
 		
