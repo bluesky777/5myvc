@@ -220,10 +220,11 @@ class NotaFinal extends Model {
                     [ $asignatura_id, $periodo_id ]);
         */
 		DB::delete('DELETE FROM notas_finales
-					WHERE id IN 
-                        (SELECT id FROM notas_finales nf WHERE 
-                            (nf.manual is null or nf.manual=0) and (nf.recuperada is null or nf.recuperada=0) and nf.asignatura_id=? and nf.periodo_id=?
-                            ORDER BY id
+                        WHERE id IN (select * from
+                            (SELECT id FROM notas_finales nf WHERE 
+                                (nf.manual is null or nf.manual=0) and (nf.recuperada is null or nf.recuperada=0) and nf.asignatura_id=? and nf.periodo_id=?
+                                ORDER BY id
+                            )  as res
                         )', 
                         [ $asignatura_id, $periodo_id ]);
         
