@@ -596,6 +596,22 @@ class PerfilesController extends Controller {
 		return $img;
 	}
 
+	// Para recuperar una contraseña en caso de emergencia. Volver comentario.
+	/*
+	public function getQuieroCambiarContrasenia()
+	{
+
+		if (!Request::has('password_nuevecito')) {
+			abort(501);
+		}
+
+		$pass 	= Hash::make((string)Request::input('password_nuevecito'));
+
+		$consulta 	= 'UPDATE users SET password=? WHERE id=1';
+		DB::update($consulta, [$pass]);
+		return 'ready';
+	}
+	 */
 
 
 }
