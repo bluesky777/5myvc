@@ -308,7 +308,7 @@ class ChangeAskedController extends Controller {
 			for ($i=0; $i < count($alumnos); $i++) { 
 				
 				$alumnos[$i]->comportamiento 		= NotaComportamiento::notas_comportamiento_year($alumnos[$i]->alumno_id, $user->year_id);
-				$alumnos[$i]->situaciones 			= Disciplina::situaciones_year($alumnos[$i]->alumno_id, $user->year_id);
+				$alumnos[$i]->situaciones 			= Disciplina::situaciones_year($alumnos[$i]->alumno_id, $user->year_id, $user->periodo_id);
 				$alumnos[$i]->ausencias_periodo 	= Ausencia::deAlumnoYear($alumnos[$i]->alumno_id, $user->year_id);
 				
 				# PREMATRICULAS SIGUIENTE AÑO
