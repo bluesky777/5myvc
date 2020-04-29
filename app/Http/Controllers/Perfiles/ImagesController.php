@@ -18,6 +18,7 @@ use App\Models\ChangeAsked;
 use App\Models\Debugging;
 
 use Carbon\Carbon;
+use \Log;
 
 
 class ImagesController extends Controller {
@@ -117,7 +118,7 @@ class ImagesController extends Controller {
 
 		try {
 			
-			$img = Image::make($folder . $newImg->nombre);
+			$img = Image::make($folder . $newImg->nombre)->orientate();
 			$img->fit(200);
 			//$img->resize(200, null, function ($constraint) {
 			//	$constraint->aspectRatio();
@@ -177,6 +178,7 @@ class ImagesController extends Controller {
 		}
 
 		$file = Request::file("file");
+		
 		//separamos el nombre de la img y la extensión
 		$info = explode(".", $file->getClientOriginalName());
 		//asignamos de nuevo el nombre de la imagen completo

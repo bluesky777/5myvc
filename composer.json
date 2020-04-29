@@ -9,12 +9,11 @@
         "barryvdh/laravel-cors": "^0.10.0",
         "fideloper/proxy": "~3.3",
         "hisorange/browser-detect": "^3.1",
-        "intervention/image": "^2.4",
+        "intervention/image": "^2.5",
         "laravel/framework": "5.5.*",
         "laravel/tinker": "~1.0",
         "lesichkovm/laravel-advanced-route": "dev-master",
         "maatwebsite/excel": "~2.1.0",
-        "twilio/sdk": "^5.37",
         "tymon/jwt-auth": "^1.0.0-rc.1",
         "zizaco/entrust": "^1.8"
     },
