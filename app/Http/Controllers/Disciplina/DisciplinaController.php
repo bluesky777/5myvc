@@ -204,18 +204,23 @@ class DisciplinaController extends Controller {
 		
 		// Insertamos cada ordinal
 		$selected_ordinales = Request::input('selected_ordinales');
-		for ($i=0; $i < count($selected_ordinales); $i++) { 
-			$consulta = 'INSERT INTO dis_proceso_ordinales(ordinal_id, proceso_id, added_by, created_at, updated_at) VALUES(?,?,?,?,?)';
-			DB::insert($consulta, [ $selected_ordinales[$i]['id'], $last_id, $user->user_id, $now, $now ]);
-			
+		if (is_array($selected_ordinales)) {
+			for ($i=0; $i < count($selected_ordinales); $i++) { 
+				$consulta = 'INSERT INTO dis_proceso_ordinales(ordinal_id, proceso_id, added_by, created_at, updated_at) VALUES(?,?,?,?,?)';
+				DB::insert($consulta, [ $selected_ordinales[$i]['id'], $last_id, $user->user_id, $now, $now ]);
+				
+			}
 		}
 		
 		
 		// Modificamos las faltas de las que depende de este proceso
-		for ($i=0; $i < count($dependencias); $i++) { 
-			$consulta = 'UPDATE dis_procesos SET become_id=? WHERE id=?';
-			DB::update($consulta, [ $last_id, $dependencias[$i]['id'] ]);
+		if (is_array($dependencias)) {
+			for ($i=0; $i < count($dependencias); $i++) { 
+				$consulta = 'UPDATE dis_procesos SET become_id=? WHERE id=?';
+				DB::update($consulta, [ $last_id, $dependencias[$i]['id'] ]);
+			}
 		}
+		
 		
 		
 		

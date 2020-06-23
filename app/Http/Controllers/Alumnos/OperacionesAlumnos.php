@@ -54,7 +54,7 @@ class OperacionesAlumnos {
 		$username_a_verificar = str_replace(' ', '', $username_a_verificar);
 		
 		$i = 0;
-		while(sizeof(DB::select('SELECT username FROM users WHERE username=?', [$username_a_verificar])) > 0 ){
+		while(sizeof((array)DB::select('SELECT username FROM users WHERE username=?', [$username_a_verificar])) > 0 ){
 			$i++;
 			$username_a_verificar = $username_a_verificar.$i;
 		}

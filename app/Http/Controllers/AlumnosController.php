@@ -197,7 +197,7 @@ class AlumnosController extends Controller {
 			
 			$username = $user->username;
 			$i = 0;
-			while(sizeof(User::where('username', $username)->first()) > 0 ){
+			while(sizeof((array)User::where('username', $username)->first()) > 0 ){
 				$i++;
 				$username = $user->username.$i;
 			}
