@@ -70,6 +70,7 @@ AdvancedRoute::controller('years', 'YearsController');
 AdvancedRoute::controller('certificados', 'ConfigCertificadosController');
 AdvancedRoute::controller('periodos', 'PeriodosController');
 AdvancedRoute::controller('asistencias', 'Tardanzas\AsistenciasController');
+AdvancedRoute::controller('aplicacion-descargas', 'AplicacionDescargas\InicioController');
 
 AdvancedRoute::controller('historiales', 'Historiales\HistorialesController');
 

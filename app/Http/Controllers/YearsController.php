@@ -115,7 +115,7 @@ class YearsController extends Controller {
 
 
 
-		// NECESITARÉ MUCHO EL AÑO ANTERIOR
+		// NECESITARÉ MUCHO DEL AÑO ANTERIOR
 		$year_ante = $year->year - 1;
 		$pasado = Year::where('year', $year_ante)->first();
 

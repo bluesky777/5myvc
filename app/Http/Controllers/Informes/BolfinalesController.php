@@ -148,12 +148,27 @@ class BolfinalesController extends Controller {
 
 			
 			
-			$consulta = 'SELECT r.*, m.materia, m.alias FROM recuperacion_final r 
+			$consulta = 'SELECT r.*, m.materia, m.alias, m.area_id FROM recuperacion_final r 
 				INNER JOIN asignaturas a ON a.id=r.asignatura_id and a.deleted_at is null
 				INNER JOIN materias m ON m.id=a.materia_id and m.deleted_at is null
 				WHERE alumno_id=? and year=?';
 				
 			$alumno->recuperaciones = DB::select($consulta, [$alumno->alumno_id, $user->year]);
+
+			$canti_recu = count($alumno->recuperaciones);
+			for ($k=0; $k < $canti_recu; $k++) { 
+				$recu = $alumno->recuperaciones[$k];
+				
+				$consulta = 'SELECT ar.* FROM areas ar 
+					INNER JOIN materias m ON m.area_id=ar.id and m.deleted_at is null
+					INNER JOIN asignaturas a ON a.materia_id=m.id and a.deleted_at is null
+					WHERE ar.id=? and ar.deleted_at is null';
+					
+				$canti_asignaturas_en_area = count(DB::select($consulta, [$recu->area_id]));
+				$recu->es_area = true;
+
+				$alumno->cant_lost_areas = $alumno->cant_lost_areas - 1;
+			}
 
 			
 			$alumno->cant_lost_asig = $alumno->cant_lost_asig - count($alumno->recuperaciones);
