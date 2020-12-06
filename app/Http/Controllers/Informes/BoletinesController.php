@@ -213,6 +213,7 @@ class BoletinesController extends Controller {
 		$alumnos		= Grupo::alumnos($grupo_id, $requested_alumnos);
 
 		$year->periodos = Periodo::hastaPeriodoN($user->year_id, $periodo_a_calcular);
+		$year->periodo = $this->user->numero_periodo;
 		
 		$grupo->cantidad_alumnos = count($alumnos);
 

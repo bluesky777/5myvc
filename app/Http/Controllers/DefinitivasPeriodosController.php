@@ -236,6 +236,74 @@ class DefinitivasPeriodosController extends Controller {
 	}
 
 
+	
+	public function getArreglarDuplicados()
+	{
+		$user 			= User::fromToken();
+		User::pueden_modificar_definitivas($user);
+		
+		$now 		= Carbon::now('America/Bogota');
+		$res 		= [];
+		$periodo_id = $user->periodo_id;
+
+		if (Request::has('periodo_id')) {
+			$periodo_id 		= Request::input('periodo_id');
+		}
+		
+		
+		$consulta = 'SELECT id FROM grupos g WHERE g.year_id=? and g.deleted_at is null';
+		$grupos = DB::select($consulta, [$user->year_id]);
+		//Log::info('$user->year_id '.$user->year_id . ' - '.$periodo_id);
+
+		for ($i=0; $i < count($grupos); $i++) { 
+			$grupo = $grupos[$i];
+
+
+			$consulta = 'SELECT * FROM matriculas m WHERE m.grupo_id=? and m.deleted_at is null';
+			$alumnos = DB::select($consulta, [$grupo->id]);
+			$canti_alum = count($alumnos);
+
+			for ($j=0; $j < $canti_alum; $j++) { 
+				$alumno = $alumnos[$j];
+
+
+				$consulta = 'SELECT * FROM asignaturas a WHERE a.grupo_id=? and a.deleted_at is null';
+				$asignaturas = DB::select($consulta, [$grupo->id]);
+				$canti_asig = count($asignaturas);
+
+
+				for ($k=0; $k < $canti_asig; $k++) { 
+					$asignatura = $asignaturas[$k];
+
+
+					$consulta = 'SELECT n.id FROM notas_finales n 
+						WHERE n.asignatura_id=? and alumno_id=? and  n.periodo_id=? and n.manual=1
+						order by n.id ';
+					$nota_ult = DB::select($consulta, [$asignatura->id, $alumno->alumno_id, $periodo_id]);
+					//Log::info('$asignatura->id ' . $asignatura->id . ' - ' . $alumno->alumno_id. ' - ' .$periodo_id);
+
+					if (count($nota_ult) > 1) {
+						$nota_ult = $nota_ult[count($nota_ult)-1];
+						//Log::info('mayor ' . $nota_ult->id);
+						
+						$consulta = 'DELETE FROM notas_finales
+							WHERE asignatura_id=? and alumno_id=? and  periodo_id=? and id!=?';
+						$nota_elim = DB::delete($consulta, [$asignatura->id, $alumno->alumno_id, $periodo_id, $nota_ult->id]);
+						array_push($res, $nota_elim);
+					}else{
+						//Log::info('MENOR ');
+					}
+
+
+				}
+			}
+
+		}
+		
+		return $res;
+	}
+
+
 	public function putToggleRecuperada()
 	{
 		$user 			= User::fromToken();
