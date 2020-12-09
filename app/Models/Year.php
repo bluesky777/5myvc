@@ -36,11 +36,11 @@ class Year extends Model {
 							y.logo_id, iL.nombre as logo, y.img_encabezado_id, iE.nombre as img_encabezado, y.nota_minima_aceptada, y.minu_hora_clase, y.encabezado_certificado, y.config_certificado_estudio_id, y.si_recupera_materia_recup_indicador, y.cant_areas_pierde_year, y.cant_asignatura_pierde_year,
 							y.caracter, y.calendario, y.jornada, y.contador_certificados, y.frase_final_certificado, y.contador_folios, y.texto_acta_eval,
 							
-							y.secretario_id, pSec.nombres as nombres_secretario, pSec.apellidos as apellidos_secretario, pSec.sexo as sexo_secretario,
+							y.secretario_id, pSec.nombres as nombres_secretario, pSec.apellidos as apellidos_secretario, pSec.sexo as sexo_secretario, pSec.num_doc as secretario_documento,
 							pSec.foto_id as secre_foto_id, IFNULL(iSec.nombre, IF(pSec.sexo="F","default_female.png", "default_male.png")) as secre_foto_nombre,
 							pSec.firma_id as secre_firma_id, iFS.nombre as secre_firma, 
 
-							y.rector_id, pRec.nombres as nombres_rector, pRec.apellidos as apellidos_rector, pRec.sexo as sexo_rector,
+							y.rector_id, pRec.nombres as nombres_rector, pRec.apellidos as apellidos_rector, pRec.sexo as sexo_rector, pRec.num_doc as rector_documento,
 							pRec.foto_id as rector_foto_id, IFNULL(iRec.nombre, IF(pRec.sexo="F","default_female.png", "default_male.png")) as rector_foto_nombre,
 							pRec.firma_id as rector_firma_id, iFR.nombre as rector_firma
 
@@ -67,11 +67,11 @@ class Year extends Model {
 							y.logo_id, iL.nombre as logo, y.img_encabezado_id, y.nota_minima_aceptada, y.minu_hora_clase, iE.nombre as img_encabezado, y.encabezado_certificado, y.config_certificado_estudio_id, y.si_recupera_materia_recup_indicador, y.cant_areas_pierde_year, y.cant_asignatura_pierde_year,
 							y.caracter, y.calendario, y.jornada, y.contador_certificados, y.frase_final_certificado, y.contador_folios, y.texto_acta_eval,
 
-							y.secretario_id, pSec.nombres as nombres_secretario, pSec.apellidos as apellidos_secretario, pSec.sexo as sexo_secretario,
+							y.secretario_id, pSec.nombres as nombres_secretario, pSec.apellidos as apellidos_secretario, pSec.sexo as sexo_secretario, pSec.num_doc as secretario_documento,
 							pSec.foto_id as secre_foto_id, IFNULL(iSec.nombre, IF(pSec.sexo="F","default_female.png", "default_male.png")) as secre_foto_nombre,
 							pSec.firma_id as secre_firma_id, iFS.nombre as secre_firma, 
 
-							y.rector_id, pRec.nombres as nombres_rector, pRec.apellidos as apellidos_rector, pRec.sexo as sexo_rector,
+							y.rector_id, pRec.nombres as nombres_rector, pRec.apellidos as apellidos_rector, pRec.sexo as sexo_rector, pRec.num_doc as rector_documento,
 							pRec.foto_id as rector_foto_id, IFNULL(iRec.nombre, IF(pRec.sexo="F","default_female.png", "default_male.png")) as rector_foto_nombre,
 							pRec.firma_id as rector_firma_id, iFR.nombre as rector_firma
 

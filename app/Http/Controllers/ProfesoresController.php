@@ -277,7 +277,7 @@ class ProfesoresController extends Controller {
 				$profesor->apellidos	=	Request::input('apellidos_profesor', Request::input('apellidos'));
 				$profesor->sexo			=	Request::input('sexo');
 				$profesor->tipo_doc		=	Request::input('tipo_doc');
-				$profesor->num_doc		=	Request::input('documento');
+				$profesor->num_doc		=	Request::input('num_doc');
 				$profesor->ciudad_doc	=	Request::input('ciudad_doc');
 				$profesor->fecha_nac	=	Request::input('fecha_nac');
 				$profesor->ciudad_nac	=	Request::input('ciudad_nac');
