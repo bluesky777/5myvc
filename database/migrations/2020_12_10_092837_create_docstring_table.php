@@ -14,10 +14,11 @@ class CreateDocstringTable extends Migration {
 			$table->string('num_doc', 255)->change();
 		});
 
-		/*
+		
 		Schema::table('years', function(Blueprint $table) {
-			$table->boolean('show_asignaturas_en_finales')->default(1);
-		});*/
+			$table->boolean('show_subasignaturas_en_finales')->default(1);
+			$table->boolean('mensaje_aprobo_con_pendientes')->default(1);
+		});
 
 
 	}
@@ -28,10 +29,11 @@ class CreateDocstringTable extends Migration {
 		Schema::table('profesores', function(Blueprint $table) {
 			$table->integer('num_doc')->change();
 		});
-		/*
-        Schema::table('articles', function($table) {
-            $table->dropColumn('show_asignaturas_en_finales');
-         });*/
+		
+        Schema::table('years', function($table) {
+            $table->dropColumn('show_subasignaturas_en_finales');
+            $table->dropColumn('mensaje_aprobo_con_pendientes');
+        });
 	}
 
 }

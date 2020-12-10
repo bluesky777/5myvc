@@ -165,9 +165,12 @@ class BolfinalesController extends Controller {
 					WHERE ar.id=? and ar.deleted_at is null';
 					
 				$canti_asignaturas_en_area = count(DB::select($consulta, [$recu->area_id]));
-				$recu->es_area = true;
-
-				$alumno->cant_lost_areas = $alumno->cant_lost_areas - 1;
+				
+				if ($canti_asignaturas_en_area > 0) {
+					$recu->es_area = true;
+	
+					$alumno->cant_lost_areas = $alumno->cant_lost_areas - 1;
+				}
 			}
 
 			
