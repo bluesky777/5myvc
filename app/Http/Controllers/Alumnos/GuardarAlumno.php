@@ -55,9 +55,11 @@ class GuardarAlumno {
 			case 'programar':
 			case 'descripcion_recomendacion':
 			case 'efectuar_una':
+			case 'promovido':
 			case 'descripcion_efectuada':
 			
-				$consulta 	= 'SELECT a.id, a.user_id, g.id as grupo_id, g.titular_id, m.id as matricula_id FROM alumnos a
+				$consulta 	= 'SELECT a.id, a.user_id, g.id as grupo_id, g.titular_id, m.id as matricula_id 
+									FROM alumnos a
 								INNER JOIN matriculas m ON m.alumno_id=a.id
 								INNER JOIN grupos g ON g.id=m.grupo_id AND g.year_id=?
 								WHERE a.id=?'; // Tengo confusión con INNER o LEFT grupos

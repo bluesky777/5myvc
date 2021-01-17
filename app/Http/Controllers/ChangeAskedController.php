@@ -610,16 +610,32 @@ class ChangeAskedController extends Controller {
 
 		if ($pedido['materia_to_add_id'] > 0) {
 			
-			$consulta = 'INSERT INTO asignaturas(materia_id, grupo_id, profesor_id, creditos, orden, created_by, created_at) 
-									VALUES(:materia_id, :grupo_id, :profesor_id, :creditos, 1, :created_by, :created_at)';
-			DB::insert($consulta, [
-					':materia_id' 	=> $pedido['materia_to_add_id'], 
-					':grupo_id' 	=> $pedido['grupo_to_add_id'], 
-					':profesor_id' 	=> $pedido['profesor_id'], 
-					':creditos' 	=> $pedido['creditos_new'], 
-					':created_by'	=> $user->user_id, 
-					':created_at' 	=> $now
-			]);
+			if ($pedido['asignatura_actual']['ocupada']) {
+				
+				$consulta = 'UPDATE asignaturas SET profesor_id=:profesor_id, creditos=:creditos, updated_by=:updated_by, updated_at=:updated_at
+								WHERE id=:id';
+				DB::update($consulta, [
+						':profesor_id' 	=> $pedido['profesor_id'], 
+						':creditos' 	=> $pedido['creditos_new'], 
+						':updated_by'	=> $user->user_id, 
+						':updated_at' 	=> $now, 
+						':id' 			=> $pedido['asignatura_actual']['asignatura_id']
+				]);
+
+			}else{
+
+				$consulta = 'INSERT INTO asignaturas(materia_id, grupo_id, profesor_id, creditos, orden, created_by, created_at) 
+										VALUES(:materia_id, :grupo_id, :profesor_id, :creditos, 1, :created_by, :created_at)';
+				DB::insert($consulta, [
+						':materia_id' 	=> $pedido['materia_to_add_id'], 
+						':grupo_id' 	=> $pedido['grupo_to_add_id'], 
+						':profesor_id' 	=> $pedido['profesor_id'], 
+						':creditos' 	=> $pedido['creditos_new'], 
+						':created_by'	=> $user->user_id, 
+						':created_at' 	=> $now
+				]);
+			}
+
 			$consulta = 'UPDATE change_asked_assignment SET asignatura_to_remove_accepted=true, materia_to_add_accepted=true, creditos_accepted=true, updated_at=:updated_at 
 						WHERE id=:assignment_id';
 

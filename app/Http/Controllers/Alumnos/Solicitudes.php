@@ -82,7 +82,26 @@ class Solicitudes extends Controller {
         
         for ($i=0; $i < count($pedidos); $i++) { 
             $detalles = ChangeAskedDetails::detalles($pedidos[$i]->asked_id);
-            $pedidos[$i]->detalles = $detalles;      
+            $pedidos[$i]->detalles = $detalles;
+
+            if ($pedidos[$i]->materia_to_add_id) {
+                
+                // para saber el nombre del profe que ya tenga esta materia 
+
+                $consulta = 'SELECT a.id as asignatura_id, p.nombres, p.apellidos FROM asignaturas a 
+                    LEFT JOIN profesores p ON p.id=a.profesor_id and p.deleted_at is null
+                    WHERE a.materia_id = :asign_id and a.grupo_id=:grupo_id and a.deleted_at is null';
+
+                $asignatura_actual = DB::select($consulta, [":asign_id" => $pedidos[$i]->materia_to_add_id, ':grupo_id' => $pedidos[$i]->grupo_to_add_id]);
+                
+                if (count($asignatura_actual) > 0) {
+                    $asignatura_actual[0]->ocupada = true;
+                    $pedidos[$i]->asignatura_actual = $asignatura_actual[0];
+                    
+                }else{
+                    $pedidos[$i]->asignatura_actual = ['ocupada' => false];
+                }
+            }
         }
         
         return $pedidos;
