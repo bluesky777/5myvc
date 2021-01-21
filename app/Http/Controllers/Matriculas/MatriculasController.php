@@ -431,8 +431,9 @@ class MatriculasController extends Controller {
 			$alumno_id 		= Request::input('alumno_id');
 			$grupo_id 		= Request::input('grupo_id');
 			$estado 		= Request::input('estado', 'PREM');
-			$year_id 		= Request::input('year_id');
+			$year_id 		= Request::input('year_id', $this->user->year_id);
 			$now 			= Carbon::now('America/Bogota');
+			$anio_sig 		= intval(Request::input('anio_sig', 1));
 			
 			
 			// Traigo matriculas del alumno este año aunque estén borradas
@@ -442,7 +443,7 @@ class MatriculasController extends Controller {
 					on m.alumno_id = :alumno_id and g.year_id = :year_id and m.grupo_id=g.id and m.deleted_at is null';
 
 			$matriculas = DB::select($consulta, ['alumno_id'=>$alumno_id, 'year_id'=>$year_id]);
-			
+			Log::info(count($matriculas) . ' -- ' . $alumno_id . '---$year_id' . $year_id);
 			if ( count($matriculas) == 0 ) {
 				
 				if($estado=='FORM' || $estado=='ASIS'){
@@ -478,7 +479,7 @@ class MatriculasController extends Controller {
 				where a.deleted_at is null and m.deleted_at is null
 				order by y.year, g.orden';
 
-			$matri = DB::select($consulta, [ ':alumno_id' => $alumno_id, ':anio'=> ($this->user->year+1) ] )[0];
+			$matri = DB::select($consulta, [ ':alumno_id' => $alumno_id, ':anio'=> ($this->user->year+$anio_sig) ] )[0];
 
 			return ['matricula' => $matri];
 		} else {

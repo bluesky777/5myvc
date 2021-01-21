@@ -12,6 +12,7 @@ use App\Models\Year;
 use App\Models\Periodo;
 use App\Models\Matricula;
 use App\Http\Controllers\Alumnos\OperacionesAlumnos;
+use \Log;
 
 
 class ObservadorController extends Controller {
@@ -27,7 +28,7 @@ class ObservadorController extends Controller {
 	public function getVertical($grupo_id, $tamanio)
 	{
         $user       = User::fromToken();
-        $year	    = Year::datos($user->year_id);
+        $year	    = Year::datos($user->year_id, false);
         
         $consulta = 'SELECT g.id, g.nombre, g.abrev, g.orden, gra.orden as orden_grado, g.grado_id, g.year_id, g.titular_id,
                         p.nombres as nombres_titular, p.apellidos as apellidos_titular, p.titulo,
@@ -39,7 +40,8 @@ class ObservadorController extends Controller {
                     order by g.orden';
 
         $grupos = DB::select($consulta, [':year_id'=> $year->year_id, ':grupo_id' => $grupo_id ] );
-    
+        
+        Log::info($year->year_id);
         for ($i=0; $i < count($grupos); $i++) { 
             
             $consulta   = Matricula::$consulta_asistentes_o_matriculados_simat;
@@ -63,6 +65,7 @@ class ObservadorController extends Controller {
             $grupos[$i]->alumnos = $alumnos;
 
         }
+
         
         if ($tamanio == 'carta') {
             $filas      = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26];
