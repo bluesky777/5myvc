@@ -92,6 +92,27 @@ class MatriculasController extends Controller {
 
 
 
+	public function putSetPromovido()
+	{
+		if (($this->user->roles[0]->name == 'Profesor' && $this->user->profes_can_edit_alumnos) || $this->user->roles[0]->name == 'Admin') {
+			$now 				= Carbon::now('America/Bogota');
+			$matricula_id 		= Request::input('matricula_id');
+			
+			$matri 				= Matricula::findOrFail($matricula_id);
+			$matri->promovido 	= Request::input('valor', 'Automático');
+			$matri->updated_by 	= $this->user->user_id;
+			$matri->updated_at 	= $now;
+			
+			$matri->save();
+
+			return $matri;
+		} else {
+			return abort('400', 'No tiene permisos para editar');
+		}
+	}
+
+
+
 	public function putSetAsistente()
 	{
 		if (($this->user->roles[0]->name == 'Profesor' && $this->user->profes_can_edit_alumnos) || $this->user->roles[0]->name == 'Admin') {
