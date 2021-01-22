@@ -94,6 +94,7 @@ AdvancedRoute::controller('observador', 'Informes\ObservadorController');
 AdvancedRoute::controller('observador-horizontal', 'Informes\ObservadorHorizontalController');
 AdvancedRoute::controller('ordinales', 'Disciplina\OrdinalesController');
 AdvancedRoute::controller('disciplina', 'Disciplina\DisciplinaController');
+AdvancedRoute::controller('promovidos', 'PromovidosController');
 
 # Perfiles
 AdvancedRoute::controller('perfiles', 'Perfiles\PerfilesController');
