@@ -139,6 +139,7 @@ class PromovidosController extends Controller {
 			}
 			if ($year->cant_areas_pierde_year > 0 && $alumno->cant_lost_areas >= $year->cant_areas_pierde_year) {
 				$diagnostico = "No promovido (calculado)";
+				Log::info($alumno->cant_lost_areas);
 			}
 
 			if ($alumno->cant_lost_asig > 0 && $alumno->cant_lost_asig < $year->cant_asignatura_pierde_year && $year->cant_asignatura_pierde_year > 0) {

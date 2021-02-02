@@ -200,7 +200,7 @@ class MatriculasController extends Controller {
 			return;
 		}
 
-		$sqlYearAnt = 'SELECT id from years where year=:year_ant';
+		$sqlYearAnt = 'SELECT id from years where year=:year_ant and deleted_at is null;';
 		
 		$year_cons = DB::select($sqlYearAnt, [ ':year_ant'	=> $year_ant ]);
 		if (count($year_cons) > 0) {
@@ -289,7 +289,7 @@ class MatriculasController extends Controller {
 		//event(new MatriculasEvent());
 		//! Borrar Event
 
-		$sqlYearAnt = 'SELECT id from years where year=:year_ant';
+		$sqlYearAnt = 'SELECT id from years where year=:year_ant and deleted_at is null;';
 		
 		$year_cons = DB::select($sqlYearAnt, [ ':year_ant'	=> $year_ant ]);
 		if (count($year_cons) > 0) {
@@ -464,7 +464,7 @@ class MatriculasController extends Controller {
 					on m.alumno_id = :alumno_id and g.year_id = :year_id and m.grupo_id=g.id and m.deleted_at is null';
 
 			$matriculas = DB::select($consulta, ['alumno_id'=>$alumno_id, 'year_id'=>$year_id]);
-			Log::info(count($matriculas) . ' -- ' . $alumno_id . '---$year_id' . $year_id);
+			//Log::info(count($matriculas) . ' -- ' . $alumno_id . '---$year_id' . $year_id);
 			if ( count($matriculas) == 0 ) {
 				
 				if($estado=='FORM' || $estado=='ASIS'){

@@ -403,6 +403,17 @@ class NotasController extends Controller {
 			$alumno->tardanzas 			= $tardanzas;
 			$alumno->tardanzas_count 	= count($tardanzas);
 
+
+			// Uniformes
+			$cons_uni = "SELECT u.id, u.asignatura_id, u.materia, u.alumno_id, u.periodo_id, u.contrario, u.sin_uniforme, u.incompleto, u.cabello, u.accesorios, u.otro1, u.otro2, u.excusado, u.fecha_hora, u.uploaded, u.created_by, u.descripcion 
+					FROM uniformes u
+					inner join periodos p on p.id=u.periodo_id and p.id=:per_id
+					WHERE u.asignatura_id=:asignatura_id and u.alumno_id=:alumno_id and u.deleted_at is null;";
+			$uniformes = DB::select($cons_uni, [":per_id" => $user->periodo_id, ':asignatura_id' => $asignatura_id, ':alumno_id' => $alumno->alumno_id ]);
+			
+			$alumno->uniformes 			= $uniformes;
+			$alumno->uniformes_count 	= count($uniformes);
+
 		}
 		
 		
