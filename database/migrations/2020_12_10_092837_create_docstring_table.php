@@ -5,6 +5,14 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 
 /*
+
+ALTER TABLE `matriculas` CHANGE `promovido` `promovido` VARCHAR(100) NOT NULL DEFAULT 'Automático';
+
+
+ALTER TABLE `years` ADD `show_subasignaturas_en_finales` TINYINT(1) NOT NULL DEFAULT '1' AFTER `cant_asignatura_pierde_year`, ADD `mensaje_aprobo_con_pendientes` TINYINT(1) NOT NULL DEFAULT '1' AFTER `show_subasignaturas_en_finales`;
+
+
+
 ALTER TABLE `years` ADD `show_materias_todas` TINYINT(1) NOT NULL DEFAULT '1' AFTER `mensaje_aprobo_con_pendientes`;
 
 

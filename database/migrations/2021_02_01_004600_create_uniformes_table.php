@@ -62,7 +62,7 @@ ALTER TABLE `uniformes`
   ADD CONSTRAINT `uniformes_alumno_id_foreign` FOREIGN KEY (`alumno_id`) REFERENCES `alumnos` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `uniformes_asignatura_id_foreign` FOREIGN KEY (`asignatura_id`) REFERENCES `asignaturas` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `uniformes_periodo_id_foreign` FOREIGN KEY (`periodo_id`) REFERENCES `periodos` (`id`) ON DELETE CASCADE;
-COMMIT;
+
 
  */
 
