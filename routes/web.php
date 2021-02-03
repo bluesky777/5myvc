@@ -59,6 +59,7 @@ AdvancedRoute::controller('frases', 'FrasesController');
 AdvancedRoute::controller('ChangesAsked', 'ChangeAskedController');
 AdvancedRoute::controller('ChangesAskedAssignment', 'ChangeAskedAssignmentController');
 AdvancedRoute::controller('ausencias', 'AusenciasController');
+AdvancedRoute::controller('uniformes', 'UniformesController');
 AdvancedRoute::controller('parentescos', 'ParentescosController');
 AdvancedRoute::controller('bitacoras', 'BitacorasController');
 AdvancedRoute::controller('roles', 'RolesController');
