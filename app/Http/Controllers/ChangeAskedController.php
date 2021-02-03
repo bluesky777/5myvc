@@ -94,9 +94,23 @@ class ChangeAskedController extends Controller {
 			$eventos = DB::select('SELECT * FROM calendario WHERE deleted_at is null');
 
 			
+			
+			# Asignaturas hoy
+			$horario_hoy = [];
+			$horario_manana = [];
+
+			if ($user->profesor_id) {
+				$now = Carbon::now('America/Bogota');
+				$dia = $now->dayOfWeek;
+				$horario_hoy 	= $this->asignaturas_dia($user->year_id, $user->profesor_id, $user->periodo_id, $dia, $user->show_materias_todas);
+				$horario_manana = $this->asignaturas_dia($user->year_id, $user->profesor_id, $user->periodo_id, $dia+1);
+			}
+			
+			
+			
 			return [ 'alumnos'=>$cambios_alum, 'profesores'=> $pedidos, 'historial'=> $historial, 'intentos_fallidos'=> 
 				$intentos_fallidos, 'profes_actuales' => $profes_actuales, 'mis_publicaciones' => $mis_publicaciones,
-				'publicaciones' => $publicaciones, 'eventos' => $eventos ];
+				'publicaciones' => $publicaciones, 'eventos' => $eventos, 'horario_hoy' => $horario_hoy, 'horario_manana' => $horario_manana ];
 
 			
 		}elseif ($user->tipo == 'Profesor') {
@@ -150,7 +164,7 @@ class ChangeAskedController extends Controller {
 			# Asignaturas hoy -  
 			$now = Carbon::now('America/Bogota');
 			$dia = $now->dayOfWeek;
-			$horario_hoy 	= $this->asignaturas_dia($user->year_id, $user->persona_id, $user->periodo_id, $dia);
+			$horario_hoy 	= $this->asignaturas_dia($user->year_id, $user->persona_id, $user->periodo_id, $dia, $user->show_materias_todas);
 			$horario_manana = $this->asignaturas_dia($user->year_id, $user->persona_id, $user->periodo_id, $dia+1);
 
 			
@@ -972,44 +986,48 @@ class ChangeAskedController extends Controller {
 		return [ 'borrar' => $borrar ];
 	}
 
-	
-	
-	private function asignaturas_dia($year_id, $profesor_id, $periodo_id, $dia)
+
+
+	private function asignaturas_dia($year_id, $profesor_id, $periodo_id, $dia, $show_materias_todas=0)
 	{
-		$dia_cond = ' domingo=1 ';
-		
-		switch ($dia) {
-			case 0:
-				$dia_cond = ' domingo=1 ';
-				break;
-			case 1:
-				$dia_cond = ' lunes=1 ';
-				break;
-			case 2:
-				$dia_cond = ' martes=1 ';
-				break;
-			case 3:
-				$dia_cond = ' miercoles=1 ';
-				break;
-			case 4:
-				$dia_cond = ' jueves=1 ';
-				break;
-			case 5:
-				$dia_cond = ' viernes=1 ';
-				break;
-			case 6:
-				$dia_cond = ' sabado=1 ';
-				break;
-			
+		$dia_cond = ' '; // Para que salgan todos
+
+		if (!$show_materias_todas){
+
+			switch ($dia) {
+				case 0:
+					$dia_cond = ' and domingo=1 ';
+					break;
+				case 1:
+					$dia_cond = ' and lunes=1 ';
+					break;
+				case 2:
+					$dia_cond = ' and martes=1 ';
+					break;
+				case 3:
+					$dia_cond = ' and miercoles=1 ';
+					break;
+				case 4:
+					$dia_cond = ' and jueves=1 ';
+					break;
+				case 5:
+					$dia_cond = ' and viernes=1 ';
+					break;
+				case 6:
+					$dia_cond = ' and sabado=1 ';
+					break;
+
+			}
 		}
-		
-			
+
+
+
 		$consulta = 'SELECT a.id as asignatura_id, a.grupo_id, a.profesor_id, a.creditos, a.orden,
 				m.materia, m.alias as alias_materia, g.nombre as nombre_grupo, g.abrev as abrev_grupo, g.titular_id, g.caritas
 			FROM asignaturas a
 			inner join materias m on m.id=a.materia_id and m.deleted_at is null
 			inner join grupos g on g.id=a.grupo_id and g.year_id=? and g.deleted_at is null
-			where a.profesor_id=? and a.deleted_at is null and '. $dia_cond .'
+			where a.profesor_id=? and a.deleted_at is null '. $dia_cond .'
 			order by g.orden, a.orden, m.materia, m.alias, a.id';
 		
 		$asignaturas = DB::select($consulta, [$year_id, $profesor_id]);

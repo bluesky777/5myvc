@@ -127,7 +127,7 @@ class User extends Authenticatable implements AuthenticatableUserContract
 									"N/A" as grupo_id, ("N/A") as nombre_grupo, ("N/A") as abrev_grupo, 
 									"N/A" as year_matricula_id, per.id as periodo_id, per.numero as numero_periodo, per.profes_pueden_editar_notas, per.profes_pueden_nivelar,
 									y.id as year_id, y.year, y.nota_minima_aceptada, y.actual as year_actual, per.actual as periodo_actual, 
-									y.unidad_displayname, y.subunidad_displayname, y.unidades_displayname, y.subunidades_displayname, 
+									y.unidad_displayname, y.subunidad_displayname, y.unidades_displayname, y.subunidades_displayname, y.show_materias_todas,
 									y.genero_unidad, y.genero_subunidad, per.fecha_plazo, y.alumnos_can_see_notas, y.logo_id,
 									y.si_recupera_materia_recup_indicador, y.year_pasado_en_bol, y.mostrar_puesto_boletin, y.mostrar_nota_comport_boletin, y.profes_can_edit_alumnos
 								from profesores p 
@@ -211,13 +211,13 @@ class User extends Authenticatable implements AuthenticatableUserContract
 				case 'Usuario':
 					
 					$consulta = 'SELECT u.id as persona_id, "" as nombres, "" as apellidos, u.id as user_id, u.username, u.is_superuser, u.tipo, 
-									u.sexo, u.email, "N/A" as fecha_nac, "N/A" as ciudad_nac, 
+									u.sexo, u.email, "N/A" as fecha_nac, "N/A" as ciudad_nac, u.profesor_id,
 									u.imagen_id, IFNULL(i.nombre, IF(u.sexo="F","default_female.png", "default_male.png")) as imagen_nombre, 
 									u.imagen_id as foto_id, IFNULL(i.nombre, IF(u.sexo="F","default_female.png", "default_male.png")) as foto_nombre, 
 									"N/A" as grupo_id, ("N/A") as nombre_grupo, ("N/A") as abrev_grupo, 
 									"N/A" as year_matricula_id, per.id as periodo_id, per.numero as numero_periodo, per.profes_pueden_editar_notas, per.profes_pueden_nivelar,
 									y.id as year_id, y.year, y.nota_minima_aceptada, y.actual as year_actual, per.actual as periodo_actual, 
-									y.unidad_displayname, y.subunidad_displayname, y.unidades_displayname, y.subunidades_displayname, 
+									y.unidad_displayname, y.subunidad_displayname, y.unidades_displayname, y.subunidades_displayname, y.show_materias_todas,
 									y.genero_unidad, y.genero_subunidad, per.fecha_plazo, y.si_recupera_materia_recup_indicador, y.year_pasado_en_bol, y.mostrar_nota_comport_boletin, y.alumnos_can_see_notas, y.logo_id
 								from users u
 								left join periodos per on per.id=u.periodo_id

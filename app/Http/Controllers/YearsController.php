@@ -432,6 +432,23 @@ class YearsController extends Controller {
 	}
 
 
+	// Mostrar todas las materias al docente al entrar ignorando el horario
+	public function putMostrarTodasMaterias(){
+		$user = User::fromToken();
+
+		$year_id 	= 	Request::input('year_id');
+		$can 		= 	(boolean) Request::input('can');
+
+		$year = Year::findOrFail($year_id);
+		$year->show_materias_todas = $can;
+		$year->save();
+
+		if ($can) { return 'Le apareceran todas las materias al docente ignorando el horario.';
+		}else{ return 'Se mostrarán solo las materias del horario.';}
+
+	}
+
+
 	public function putToggleMostrarAnioPasadoEnBoletin(){
 		$user = User::fromToken();
 

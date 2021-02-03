@@ -66,26 +66,33 @@ class DisciplinaController extends Controller {
 			$periodos 		= DB::select($cons_periodos, [$year_id]);
 			
 		}
-		
-		
-		
+
+
+
 		for ($j=0; $j < count($periodos); $j++) { 
-				
+
 			// Traigo tardanzas al colegio
 			$consulta 	= 'SELECT a.* FROM ausencias a WHERE a.alumno_id=? and a.periodo_id=? and a.entrada=1 and (a.cantidad_tardanza>0 or a.cantidad_tardanza is null) and a.deleted_at is null';
 			$tardanzas 	= DB::select($consulta, [ $alumno->alumno_id, $periodos[$j]->id ]);
 			$name 		= 'tardanzas_per' . $periodos[$j]->numero;
 			$alumno->{$name} = $tardanzas;
-		
-			
+
+
+			// Traigo fallas de uniformes
+			$consulta 	= 'SELECT a.* FROM uniformes a WHERE a.alumno_id=? and a.periodo_id=? and a.deleted_at is null';
+			$uniformes 	= DB::select($consulta, [ $alumno->alumno_id, $periodos[$j]->id ]);
+			$name 		= 'uniformes_per' . $periodos[$j]->numero;
+			$alumno->{$name} = $uniformes;
+
+
 			// Traido los procesos
 			$consulta 	= 'SELECT d.*, SUBSTRING(d.fecha_hora_aprox, 1, 10) as fecha_corta, CONCAT(p.nombres, " ", p.apellidos) as profesor_nombre 
 				FROM dis_procesos d 
 				LEFT JOIN profesores p ON p.id=d.profesor_id and p.deleted_at is null
 				WHERE alumno_id=? and d.periodo_id=? and d.deleted_at is null';
-				
+
 			$procesos 	= DB::select($consulta, [ $alumno->alumno_id, $periodos[$j]->id ]);
-			
+
 			for ($k=0; $k < count($procesos); $k++) { 
 				$consulta 	= 'SELECT d.* FROM dis_proceso_ordinales d WHERE proceso_id=? and d.deleted_at is null';
 				$procesos[$k]->proceso_ordinales 	= DB::select($consulta, [ $procesos[$k]->id ]);
