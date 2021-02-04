@@ -198,6 +198,16 @@ class ChangeAskedController extends Controller {
 			
 			$comportamiento 	= NotaComportamiento::notas_comportamiento_year($user->persona_id, $user->year_id);
 
+			// Uniformes
+			$cons_uni = "SELECT u.id, u.asignatura_id, u.materia, u.alumno_id, u.periodo_id, u.contrario, u.sin_uniforme, u.incompleto, u.cabello, u.accesorios, u.otro1, u.camara, u.excusado, u.fecha_hora, u.uploaded, u.created_by, u.descripcion,
+						p.numero 
+					FROM uniformes u
+					inner join periodos p on p.id=u.periodo_id and p.year_id=:year_id
+					WHERE u.alumno_id=:alumno_id and u.deleted_at is null;";
+			$uniformes = DB::select($cons_uni, [":year_id" => $user->year_id, ':alumno_id' => $user->persona_id ]);
+			
+
+			// Situaciones
 			$situaciones 		= Disciplina::situaciones_year_alumno($user->persona_id, $user->year_id);
 
 			
@@ -289,7 +299,7 @@ class ChangeAskedController extends Controller {
 			}
 
 			
-			return [  'alumnos' => $alumnos, 'ausencias_periodo'=>$ausencias, 'situaciones'=> $situaciones, 'comportamiento'=>$comportamiento, 'profes_actuales' => $profes_actuales,
+			return [  'alumnos' => $alumnos, 'ausencias_periodo'=>$ausencias, 'situaciones'=> $situaciones, 'comportamiento'=>$comportamiento, 'uniformes'=>$uniformes, 'profes_actuales' => $profes_actuales,
 				'publicaciones' => $publicaciones, 'eventos' => $eventos, 'grados_sig' => $grados_sig ];
 		
 		
@@ -325,6 +335,17 @@ class ChangeAskedController extends Controller {
 				$alumnos[$i]->situaciones 			= Disciplina::situaciones_year($alumnos[$i]->alumno_id, $user->year_id, $user->periodo_id);
 				$alumnos[$i]->ausencias_periodo 	= Ausencia::deAlumnoYear($alumnos[$i]->alumno_id, $user->year_id);
 				
+
+				// Uniformes
+				$cons_uni = "SELECT u.id, u.asignatura_id, u.materia, u.alumno_id, u.periodo_id, u.contrario, u.sin_uniforme, u.incompleto, u.cabello, u.accesorios, u.otro1, u.camara, u.excusado, u.fecha_hora, u.uploaded, u.created_by, u.descripcion,
+							p.numero 
+						FROM uniformes u
+						inner join periodos p on p.id=u.periodo_id and p.year_id=:year_id
+						WHERE u.alumno_id=:alumno_id and u.deleted_at is null;";
+				$uniformes = DB::select($cons_uni, [":year_id" => $user->year_id, ':alumno_id' => $alumnos[$i]->alumno_id ]);
+				$alumnos[$i]->uniformes 	= $uniformes;
+
+
 				# PREMATRICULAS SIGUIENTE AÑO
 				if ($user->prematr_antiguos) {
 					$alumnos[$i]->prematricula = ['estado' => null];
