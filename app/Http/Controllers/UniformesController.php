@@ -41,23 +41,23 @@ class UniformesController extends Controller {
         $incompleto     = Request::input('incompleto', 0);
         $cabello        = Request::input('cabello', 0);
         $accesorios     = Request::input('accesorios', 0);
+        $camara          = Request::input('camara', 0);
         $otro1          = Request::input('otro1', 0);
-        $otro2          = Request::input('otro2', 0);
         $excusado       = Request::input('excusado', 0);
         $descripcion    = Request::input('descripcion');
         $fecha_hora     = Request::input('fecha_hora');
         $created_by     = $this->user->user_id;
 
         $consulta = 'INSERT INTO uniformes (asignatura_id, materia, alumno_id, periodo_id, contrario, sin_uniforme, 
-            incompleto, cabello, accesorios, otro1, otro2, excusado, descripcion, fecha_hora, created_by, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)';
+            incompleto, cabello, accesorios, otro1, camara, excusado, descripcion, fecha_hora, created_by, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)';
 
         DB::insert($consulta, [
             $asignatura_id, $materia, $alumno_id, $periodo_id, $contrario, $sin_uniforme, 
-            $incompleto, $cabello, $accesorios, $otro1, $otro2, $excusado, $descripcion, $fecha_hora, $created_by, $now, $now
+            $incompleto, $cabello, $accesorios, $otro1, $camara, $excusado, $descripcion, $fecha_hora, $created_by, $now, $now
         ]);
 
         $last_id 	    = DB::getPdo()->lastInsertId();
-        $cons_uni = "SELECT u.id, u.asignatura_id, u.materia, u.alumno_id, u.periodo_id, u.contrario, u.sin_uniforme, u.incompleto, u.cabello, u.accesorios, u.otro1, u.otro2, u.excusado, u.fecha_hora, u.uploaded, u.created_by, u.descripcion 
+        $cons_uni = "SELECT u.id, u.asignatura_id, u.materia, u.alumno_id, u.periodo_id, u.contrario, u.sin_uniforme, u.incompleto, u.cabello, u.accesorios, u.otro1, u.camara, u.excusado, u.fecha_hora, u.uploaded, u.created_by, u.descripcion 
 					FROM uniformes u 
 					WHERE u.id=:id;";
 		$uniforme = DB::select($cons_uni, [":id" => $last_id ]);
@@ -101,8 +101,8 @@ class UniformesController extends Controller {
         $incompleto     = Request::input('incompleto');
         $cabello        = Request::input('cabello');
         $accesorios     = Request::input('accesorios');
+        $camara         = Request::input('camara');
         $otro1          = Request::input('otro1');
-        $otro2          = Request::input('otro2');
         $excusado       = Request::input('excusado');
         $descripcion    = Request::input('descripcion');
         $fecha_hora     = Carbon::parse(Request::input('fecha_hora'));
@@ -110,10 +110,10 @@ class UniformesController extends Controller {
         
         
         $consulta 	= 'UPDATE uniformes SET contrario=?, sin_uniforme=?, incompleto=?, cabello=?, 
-            accesorios=?, otro1=?, otro2=?, excusado=?, descripcion=?, fecha_hora=?, updated_by=?, updated_at=?
+            accesorios=?, otro1=?, camara=?, excusado=?, descripcion=?, fecha_hora=?, updated_by=?, updated_at=?
             WHERE id=?';
         $datos 		= [ $contrario, $sin_uniforme, $incompleto, $cabello, $accesorios, 
-            $otro1, $otro2, $excusado, $descripcion, $fecha_hora, $updated_by, $now, $unifor_id ];
+            $otro1, $camara, $excusado, $descripcion, $fecha_hora, $updated_by, $now, $unifor_id ];
         
         $res        = DB::update($consulta, $datos);
 
@@ -134,7 +134,7 @@ class UniformesController extends Controller {
 
 
         // Uniformes
-        $cons_uni = "SELECT u.id, u.asignatura_id, u.materia, u.alumno_id, u.periodo_id, u.contrario, u.sin_uniforme, u.incompleto, u.cabello, u.accesorios, u.otro1, u.otro2, u.excusado, u.fecha_hora, u.uploaded, u.created_by, u.descripcion 
+        $cons_uni = "SELECT u.id, u.asignatura_id, u.materia, u.alumno_id, u.periodo_id, u.contrario, u.sin_uniforme, u.incompleto, u.cabello, u.accesorios, u.otro1, u.camara, u.excusado, u.fecha_hora, u.uploaded, u.created_by, u.descripcion 
             FROM uniformes u
             inner join periodos p on p.id=u.periodo_id and p.id=:per_id
             WHERE u.asignatura_id=:asignatura_id and u.alumno_id=:alumno_id and u.deleted_at is null;";

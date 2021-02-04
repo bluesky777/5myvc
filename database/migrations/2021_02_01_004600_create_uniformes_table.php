@@ -64,6 +64,11 @@ ALTER TABLE `uniformes`
   ADD CONSTRAINT `uniformes_periodo_id_foreign` FOREIGN KEY (`periodo_id`) REFERENCES `periodos` (`id`) ON DELETE CASCADE;
 
 
+
+  
+-- Luego quise cambiar a CAMARA. Pailas
+  ALTER TABLE `uniformes` CHANGE `otro2` `camara` TINYINT(1) NOT NULL DEFAULT '0' AFTER `accesorios`;
+
  */
 
 class CreateUniformesTable extends Migration {
