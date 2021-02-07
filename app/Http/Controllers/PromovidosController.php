@@ -89,41 +89,6 @@ class PromovidosController extends Controller {
 			$alumno->cant_lost_asig = $alumno->cant_lost_asig - count($alumno->recuperaciones);
 
 	
-			$asignaturas_perdidas = $this->asignaturasPerdidasDeAlumno($alumno, $grupo_id, $this->user->year_id);
-
-			if (count($asignaturas_perdidas) > 0) {
-				
-				$alumno->asignaturas_perdidas = $asignaturas_perdidas;
-				$alumno->notas_perdidas_year = 0;
-				
-				if ($periodo_a_calcular) {
-					$alumno->periodos_con_perdidas = DB::select('SELECT * FROM periodos WHERE year_id=? and numero<=? and deleted_at is null', [$this->user->year_id, $periodo_a_calcular]);
-				}else{
-					$alumno->periodos_con_perdidas = DB::select('SELECT * FROM periodos WHERE year_id=? and deleted_at is null', [$this->user->year_id]);
-				}
-
-				foreach ($alumno->periodos_con_perdidas as $keyPerA => $periodoAlone) {
-
-					$periodoAlone->cant_perdidas = 0;
-					
-					foreach ($alumno->asignaturas_perdidas as $keyAsig => $asignatura_perdida) {
-
-						foreach ($asignatura_perdida->periodos as $keyPer => $periodo) {
-
-							if ($periodoAlone->id == $periodo->id) {
-								if ($periodo->id == $periodoAlone->id) {
-									$periodoAlone->cant_perdidas += $periodo->cantNotasPerdidas;
-								}
-								
-							}
-						}
-					}
-
-					$alumno->notas_perdidas_year += $periodoAlone->cant_perdidas;
-					
-				}
-			}
-
 
 
 			//****************************
@@ -139,7 +104,7 @@ class PromovidosController extends Controller {
 			}
 			if ($year->cant_areas_pierde_year > 0 && $alumno->cant_lost_areas >= $year->cant_areas_pierde_year) {
 				$diagnostico = "No promovido (calculado)";
-				Log::info($alumno->cant_lost_areas);
+				Log::info([$alumno->cant_lost_areas, $year->cant_areas_pierde_year]);
 			}
 
 			if ($alumno->cant_lost_asig > 0 && $alumno->cant_lost_asig < $year->cant_asignatura_pierde_year && $year->cant_asignatura_pierde_year > 0) {
@@ -148,8 +113,9 @@ class PromovidosController extends Controller {
 			if ($year->cant_asignatura_pierde_year > 0 && ($alumno->cant_lost_asig == 0 || $alumno->cant_lost_asig >= $year->cant_asignatura_pierde_year)) {
 				$diagnostico = "Promovido (calculado)";
 			}
-			if ($alumno->cant_lost_asig >= $year->cant_asignatura_pierde_year) {
+			if ($alumno->cant_lost_asig >= $year->cant_asignatura_pierde_year && $year->cant_asignatura_pierde_year>0) {
 				$diagnostico = "No promovido (calculado)";
+				Log::info([$alumno->cant_lost_asig, $year->cant_asignatura_pierde_year]);
 			}
 
 			$alumno->promovido = $diagnostico;
@@ -239,43 +205,16 @@ class PromovidosController extends Controller {
 			
 			foreach ($asignatura->definitivas as $keydef => $definitiva) {
 				
-				
 				$suma_def += (float)$definitiva->DefMateria;
-				
-				
-				if(($si_recupera_materia_recup_indicador && $definitiva->DefMateria >= User::$nota_minima_aceptada) || ( $definitiva->manual==1 && $definitiva->DefMateria >= User::$nota_minima_aceptada)){
-					// No se cuentan las notas perdidas
-				}else{
-					
-					// Cuantas notas tiene perdidas por cada definitiva
-					$consul = 'SELECT COUNT(n.id) as notas_perdidas
-						from notas n
-						inner join subunidades s on s.id=n.subunidad_id and s.deleted_at is null
-						inner join unidades u on u.id=s.unidad_id and u.periodo_id=:periodo_id and u.asignatura_id=:asignatura_id and u.deleted_at is null
-						where n.nota < :nota_minima and n.alumno_id=:alumno_id;';
-
-					$definitiva->notas_perdidas = DB::select(DB::raw($consul), array(
-											':periodo_id'	=> $definitiva->periodo_id,
-											':asignatura_id'=> $asignatura->asignatura_id,
-											':nota_minima'	=> User::$nota_minima_aceptada,
-											':alumno_id'	=> $alumno->alumno_id ));
-
-					if (count($definitiva->notas_perdidas) > 0) {
-						$definitiva->notas_perdidas = $definitiva->notas_perdidas[0]->notas_perdidas;
-						$notas_perd += $definitiva->notas_perdidas;
-					}
-				}
 				
 			}
 			if(count($asignatura->definitivas)){
 				$asignatura->promedio 			= $suma_def / count($asignatura->definitivas);
 				$asignatura->nota_asignatura 	= $asignatura->promedio;
-				$asignatura->notas_perdidas 	= $notas_perd;
 
 			}else{
 				$asignatura->promedio 			= 0;
 				$asignatura->nota_asignatura 	= 0;
-				$asignatura->notas_perdidas 	= $notas_perd;
 
 			}
 			
@@ -290,7 +229,7 @@ class PromovidosController extends Controller {
 			
 
 			$alumno->promedio += $asignatura->promedio;
-			$alumno->notas_perdidas += $asignatura->notas_perdidas;
+			//$alumno->notas_perdidas += $asignatura->notas_perdidas;
 
 
 
@@ -329,73 +268,6 @@ class PromovidosController extends Controller {
 
 
 
-	public function asignaturasPerdidasDeAlumno($alumno, $grupo_id, $year_id)
-	{
-		$asignaturas	= Grupo::detailed_materias($grupo_id);
-
-
-		foreach ($asignaturas as $keyAsig => $asignatura) {
-			$periodo_a_calcular = Request::input('periodo_a_calcular');
-			
-			if ($periodo_a_calcular) {
-				$asignatura->periodos = DB::select('SELECT * FROM periodos WHERE year_id=? and numero<=? and deleted_at is null', [$year_id, $periodo_a_calcular]);
-			}else{
-				$asignatura->periodos = DB::select('SELECT * FROM periodos WHERE year_id=? and deleted_at is null', [$year_id]);;
-			}
-			
-			
-
-			$asignatura->cantTotal = 0;
-
-			foreach ($asignatura->periodos as $keyPer => $periodo) {
-
-				
-				$consulta = 'SELECT distinct n.nota, n.id as nota_id, n.alumno_id,  s.id as subunidad_id, s.definicion, u.id as unidad_id, u.periodo_id
-						from notas n, subunidades s, unidades u, asignaturas a, matriculas m
-						where n.subunidad_id=s.id and s.unidad_id=u.id and u.periodo_id=:periodo_id 
-						and u.asignatura_id=a.id and m.alumno_id=n.alumno_id and m.deleted_at is null and m.estado="MATR"
-						and a.id=:asignatura_id and n.alumno_id=:alumno_id and n.nota < :nota_minima;';
-
-				$notas_perdidas = DB::select(DB::raw($consulta), array(
-									':periodo_id'		=> $periodo->id, 
-									':asignatura_id'	=> $asignatura->asignatura_id, 
-									':alumno_id'		=> $alumno->alumno_id,
-									':nota_minima'		=> User::$nota_minima_aceptada
-								));
-
-				$periodo->cantNotasPerdidas = count($notas_perdidas);
-
-				$asignatura->cantTotal += $periodo->cantNotasPerdidas;
-
-
-				if ($periodo->cantNotasPerdidas == 0) {
-					unset($asignatura->periodos[$keyPer]);
-				}
-				
-				
-			}
-
-			if (count($asignatura->periodos) == 0) {
-				unset($asignaturas[$keyAsig]);
-			}
-
-			$hasPeriodosConPerdidas = false;
-
-			foreach ($asignatura->periodos as $keyPer => $periodo) {
-				if ($periodo->cantNotasPerdidas > 0) {
-					$hasPeriodosConPerdidas = true;
-				}
-			}
-
-			if (!$hasPeriodosConPerdidas) {
-				unset($asignaturas[$keyAsig]);
-			}
-
-		}
-
-		return $asignaturas;
-
-	}
 
 
 	public function periodosPerdidosDeAlumno($alumno, $grupo_id, $year_id, $periodos)
