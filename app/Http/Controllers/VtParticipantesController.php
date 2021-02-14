@@ -176,15 +176,20 @@ class VtParticipantesController extends Controller {
 			return [['sin_votacion_actual' => true]];
 		}
 
-		$consulta = 'SELECT usus.persona_id, usus.nombres, usus.apellidos, usus.user_id, usus.username, usus.tipo from 
-						(select p.id as persona_id, p.nombres, p.apellidos, p.user_id, u.username, ("Pr") as tipo from profesores p inner join users u on p.user_id=u.id
+		$consulta = 'SELECT usus.persona_id, usus.nombres, usus.apellidos, usus.user_id, usus.username, usus.tipo, grupo from 
+						(select p.id as persona_id, p.nombres, p.apellidos, p.user_id, u.username, ("Pr") as tipo, ("Profesores") as grupo 
+							from profesores p 
+							inner join users u on p.user_id=u.id
+							inner join contratos c on c.profesor_id=p.id and c.year_id=:year_id1 
 						union
-						select a.id as persona_id, a.nombres, a.apellidos, a.user_id, u.username, ("Al") as tipo from alumnos a 
-							inner join users u on a.user_id=u.id
+						select a.id as persona_id, a.nombres, a.apellidos, a.user_id, u.username, ("Al") as tipo, g.nombre as grupo 
+							from alumnos a 
+							inner join users u on a.user_id=u.id and u.deleted_at is null and u.is_active=true
 							inner join matriculas m on m.alumno_id=a.id and (m.estado="MATR" or m.estado="ASIS")
+							inner join grupos g on m.grupo_id=g.id and g.year_id=:year_id2 and g.deleted_at is null
 						)usus';
 		
-		$participantes = DB::select(DB::raw($consulta), ['votacion_id' => $votacion->id]);
+		$participantes = DB::select(DB::raw($consulta), [':year_id1' => $user->year_id, ':year_id2' => $user->year_id ]);
 		//$participantes = [];
 
 		return $participantes;

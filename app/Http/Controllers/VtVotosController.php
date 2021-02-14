@@ -92,7 +92,7 @@ class VtVotosController extends Controller {
 
 		for($j=0; $j<$cantVot; $j++){
 
-			if ($votaciones[$j]->can_see_results) {
+			if ($votaciones[$j]->can_see_results || Request::input('permitir')) {
 
 				$aspiraciones = VtAspiracion::where('votacion_id', $votaciones[$j]->id)->get();
 
