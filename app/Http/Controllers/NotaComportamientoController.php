@@ -20,6 +20,19 @@ class NotaComportamientoController extends Controller {
 		return NotaComportamiento::all();
 	}
 
+	public function putGuardarLibro()
+	{
+		$user = User::fromToken();
+		$valor = Request::input('valor');
+		$campo = Request::input('campo');
+		$libro_id = Request::input('libro_id');
+
+		$consulta = 'UPDATE dis_libro_rojo SET '.$campo.'=:valor WHERE id=:libro_id';
+		DB::update($consulta, [$valor, $libro_id]);
+
+		return 'Cambiado';
+	}
+
 	public function getDetailed($grupo_id)
 	{
 		$user = User::fromToken();
@@ -55,6 +68,28 @@ class NotaComportamientoController extends Controller {
 			
 			$alumno->definiciones = $definiciones;
 			$alumno->nota = $nota;
+
+
+			// Traido el libro
+			$consulta 	= 'SELECT d.* FROM dis_libro_rojo d 
+				WHERE alumno_id=? and d.year_id=? and d.deleted_at is null';
+				
+			$libro 	= DB::select($consulta, [ $alumno->alumno_id, $user->year_id ]);
+			
+			if (count($libro) > 0) {
+				$libro = $libro[0];
+			}else{
+				$consulta_crear = 'INSERT INTO dis_libro_rojo (alumno_id, year_id, updated_by) VALUES (?,?,?)';
+				DB::insert($consulta_crear, [ $alumno->alumno_id, $user->year_id, $user->user_id ]);
+				$consulta 	= 'SELECT d.* FROM dis_libro_rojo d 
+					WHERE alumno_id=? and d.year_id=? and d.deleted_at is null';
+					
+				$libro 	= DB::select($consulta, [ $alumno->alumno_id, $user->year_id ]);
+				if (count($libro) > 0) {
+					$libro = $libro[0];
+				}
+			}
+			$alumno->libro = $libro;
 
 
 			// Traido los procesos
