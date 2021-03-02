@@ -5,6 +5,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 use DB;
 use App\Models\EscalaDeValoracion;
+use \Log;
 
 
 class Area extends Model {
@@ -24,23 +25,37 @@ class Area extends Model {
 					inner join areas ar on ar.id=m.area_id and ar.deleted_at is null
 					where a.deleted_at is null and a.grupo_id=? and a.profesor_id is not null
 					group by ar.id order by ar.orden';
-					
+
 		$areas 		= DB::select($consulta, [ $grupo_id ]);
 		$cantAr 	= count($areas);
 		$cantAs 	= count($asignaturas);
-		
-		for ($i=0; $i < $cantAr; $i++) { 
+
+		for ($i=0; $i < $cantAr; $i++) {
 			$found = 0;
 			$areas[$i]->sumatoria 		= 0;
 			$areas[$i]->asignaturas 	= [];
 			$areas[$i]->creditos 		= 0;
-			
-			for ($j=0; $j < $cantAs; $j++) { 
+			$areas[$i]->ausencias 		= 0;
+			$areas[$i]->per1 			= 0;
+			$areas[$i]->per2 			= 0;
+			$areas[$i]->per3 			= 0;
+			$areas[$i]->per4 			= 0;
+
+			for ($j=0; $j < $cantAs; $j++) {
 				if ($areas[$i]->area_id == $asignaturas[$j]->area_id) {
 					$found += 1;
 					$areas[$i]->sumatoria += $asignaturas[$j]->nota_asignatura;
 					if (isset($asignaturas[$j]->creditos)) {
 						$areas[$i]->creditos += $asignaturas[$j]->creditos;
+					}
+					if (isset($asignaturas[$j]->ausencias)) {
+						$areas[$i]->ausencias += $asignaturas[$j]->ausencias;
+					}
+
+
+					foreach ($asignaturas[$j]->definitivas as $key => $value) {
+						$field = 'per'.$value->periodo;
+						$areas[$i]->{$field} += $value->DefMateria;
 					}
 					array_push($areas[$i]->asignaturas, $asignaturas[$j]);
 				}
@@ -48,7 +63,11 @@ class Area extends Model {
 			
 			$areas[$i]->cant 				= $found;
 			if ($found>0) {
-				$areas[$i]->area_nota 			= round($areas[$i]->sumatoria / $found);
+				$areas[$i]->area_nota 		= round($areas[$i]->sumatoria / $found);
+				$areas[$i]->per1 		= $areas[$i]->per1 / $found;
+				$areas[$i]->per2 		= $areas[$i]->per2 / $found;
+				$areas[$i]->per3 		= $areas[$i]->per3 / $found;
+				$areas[$i]->per4 		= $areas[$i]->per4 / $found;
 			}else{
 				$areas[$i]->area_nota 			= 0;
 			}
