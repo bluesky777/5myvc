@@ -10,6 +10,8 @@ use App\Models\VtAspiracion;
 use App\Models\VtVotacion;
 use App\Models\VtParticipante;
 use App\Models\Profesor;
+use App\Models\Matricula;
+use \Log;
 
 
 class VtParticipantesController extends Controller {
@@ -34,7 +36,7 @@ class VtParticipantesController extends Controller {
 	{
 		$user 	= User::fromToken();
 		$actual = VtVotacion::actual($user);
-		
+				
 		if($actual) {
 			//$participantes = VtParticipante::participantesDeEvento($actual->id, $user->year_id);
 			$participantes = [];
@@ -58,6 +60,18 @@ class VtParticipantesController extends Controller {
 	}
 
 
+	
+	public function putVotantes()
+	{
+		$user 	= User::fromToken();
+		$grupo_id = Request::input('grupo_id');
+		$votacion_id = Request::input('votacion_id');
+		
+
+		$participantes = DB::select(Matricula::$consulta_asistentes_o_matriculados, [ ':grupo_id' => $grupo_id ] );
+		
+		return [ 'participantes' => $participantes ];
+	}
 
 	
 	public function putGuardarInscripciones()

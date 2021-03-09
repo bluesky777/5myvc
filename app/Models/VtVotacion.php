@@ -17,7 +17,7 @@ class VtVotacion extends Model {
 
 	public static function actual($user)
 	{
-		$consulta = 'SELECT * FROM vt_votaciones v WHERE v.user_id=:user_id and v.year_id=:year_id and v.deleted_at is null ';
+		$consulta = 'SELECT * FROM vt_votaciones v WHERE v.user_id=:user_id and v.year_id=:year_id and v.actual=1 and v.deleted_at is null ';
 		$votaciones = DB::select($consulta, [ 'user_id' => $user->user_id, 'year_id' => $user->year_id ] );
 
 		if(count($votaciones) > 0){
