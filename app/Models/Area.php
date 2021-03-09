@@ -13,11 +13,11 @@ class Area extends Model {
 
 	use SoftDeletes;
 	protected $softDelete = true;
-	
-	
+
+
 	public static function agrupar_asignaturas($grupo_id, $asignaturas, $escalas)
 	{
-		
+
 		// Agrupamos por áreas
 		$consulta 	= 'SELECT ar.id as area_id, ar.orden, ar.nombre as area_nombre, ar.alias as area_alias
 					FROM asignaturas a
@@ -54,13 +54,16 @@ class Area extends Model {
 
 
 					foreach ($asignaturas[$j]->definitivas as $key => $value) {
-						$field = 'per'.$value->periodo;
-						$areas[$i]->{$field} += $value->DefMateria;
+						//Log::info(get_object_vars($value));
+						if (isset($value->periodo)) {
+							$field = 'per'.$value->periodo;
+							$areas[$i]->{$field} += $value->DefMateria;
+						}
 					}
 					array_push($areas[$i]->asignaturas, $asignaturas[$j]);
 				}
 			}
-			
+
 			$areas[$i]->cant 				= $found;
 			if ($found>0) {
 				$areas[$i]->area_nota 		= round($areas[$i]->sumatoria / $found);
@@ -71,23 +74,23 @@ class Area extends Model {
 			}else{
 				$areas[$i]->area_nota 			= 0;
 			}
-			
+
 			$esca = 						EscalaDeValoracion::valoracion($areas[$i]->area_nota, $escalas);
 			if ($esca) {
 				$areas[$i]->area_desempenio 	= EscalaDeValoracion::valoracion($areas[$i]->area_nota, $escalas)->desempenio;
 			}else{
 				$areas[$i]->area_desempenio 	= '';
 			}
-			
+
 		}
 		return $areas;
 	}
-	
-	
-	
+
+
+
 	public static function agrupar_asignaturas_periodos($grupo_id, $asignaturas, $escalas, $num_periodo)
 	{
-		
+
 		// Agrupamos por áreas
 		$consulta 	= 'SELECT ar.id as area_id, ar.orden, ar.nombre as area_nombre, ar.alias as area_alias
 					FROM asignaturas a
@@ -95,12 +98,12 @@ class Area extends Model {
 					inner join areas ar on ar.id=m.area_id and ar.deleted_at is null
 					where a.deleted_at is null and a.grupo_id=? and a.profesor_id is not null
 					group by ar.id order by ar.orden';
-					
+
 		$areas 		= DB::select($consulta, [ $grupo_id ]);
 		$cantAr 	= count($areas);
 		$cantAs 	= count($asignaturas);
 
-		for ($i=0; $i < $cantAr; $i++) { 
+		for ($i=0; $i < $cantAr; $i++) {
 			$found = 0;
 			$areas[$i]->sumatoria_per1 	= 0;
 			$areas[$i]->sumatoria_per2 	= 0;
@@ -108,11 +111,11 @@ class Area extends Model {
 			$areas[$i]->sumatoria_per4 	= 0;
 			$areas[$i]->creditos 		= 0;
 			$areas[$i]->asignaturas 	= [];
-			
-			for ($j=0; $j < $cantAs; $j++) { 
+
+			for ($j=0; $j < $cantAs; $j++) {
 				if ($areas[$i]->area_id == $asignaturas[$j]->area_id) {
 					$found += 1;
-					
+
 					if (isset($asignaturas[$j]->nota_final_per1)) {
 						$areas[$i]->sumatoria_per1 += $asignaturas[$j]->nota_final_per1;
 					}
@@ -128,13 +131,13 @@ class Area extends Model {
 					if (isset($asignaturas[$j]->creditos)) {
 						$areas[$i]->creditos += $asignaturas[$j]->creditos;
 					}
-					
+
 					array_push($areas[$i]->asignaturas, $asignaturas[$j]);
 				}
 			}
-			
+
 			$areas[$i]->cant = $found;
-			
+
 			$areas[$i]->per1_nota 			= round($areas[$i]->sumatoria_per1 / $found);
 			$des 							= EscalaDeValoracion::valoracion($areas[$i]->per1_nota, $escalas);
 			if ($des) {
@@ -147,7 +150,7 @@ class Area extends Model {
 				if ($des) {
 					$areas[$i]->desempenio_per2 	= $des->desempenio;
 				}
-				
+
 			}
 			if ($num_periodo > 2) {
 				$areas[$i]->per3_nota 			= round($areas[$i]->sumatoria_per3 / $found);
@@ -168,6 +171,6 @@ class Area extends Model {
 		}
 		return $areas;
 	}
-	
-	
+
+
 }
