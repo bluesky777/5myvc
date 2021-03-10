@@ -69,6 +69,32 @@ class VtParticipantesController extends Controller {
 		
 
 		$participantes = DB::select(Matricula::$consulta_asistentes_o_matriculados, [ ':grupo_id' => $grupo_id ] );
+
+		foreach ($participantes as $key => $particip) {
+			$consulta = 'SELECT id, aspiracion, abrev FROM vt_aspiraciones WHERE votacion_id=? and deleted_at is null';
+			$aspiraciones = DB::select($consulta, [$votacion_id]);
+
+			foreach ($aspiraciones as $key => $aspiracion) {
+				
+				$consulta = 'SELECT * FROM (
+						SELECT v.id, v.user_id, v.candidato_id, v.blanco_aspiracion_id, v.created_at 
+						FROM vt_votos v
+						INNER JOIN vt_candidatos c ON v.candidato_id=c.id and c.deleted_at is null
+						INNER JOIN vt_aspiraciones a ON c.aspiracion_id=a.id and c.aspiracion_id=? and a.deleted_at is null
+						WHERE a.votacion_id=? and v.user_id=? and v.deleted_at is null
+					union
+						SELECT v.id, v.user_id, v.candidato_id, v.blanco_aspiracion_id, v.created_at
+						FROM vt_votos v
+						INNER JOIN vt_aspiraciones a ON v.blanco_aspiracion_id=a.id and a.id=? and a.deleted_at is null
+						WHERE a.votacion_id=? and v.user_id=? and v.deleted_at is null
+					) votos';
+
+					$aspiracion->votos = DB::select($consulta, [$aspiracion->id, $votacion_id, $particip->user_id, $aspiracion->id, $votacion_id, $particip->user_id]);
+			}
+
+			$particip->aspiraciones = $aspiraciones;
+
+		}
 		
 		return [ 'participantes' => $participantes ];
 	}
