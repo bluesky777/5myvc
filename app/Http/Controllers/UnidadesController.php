@@ -20,11 +20,59 @@ class UnidadesController extends Controller {
 	private $cons_subunidades 	= 'SELECT * FROM subunidades WHERE unidad_id=? and deleted_at is null order by orden, id';
 
 
-	public function getDeAsignaturaPeriodo($asignatura_id, $periodo_id)
+	public function putDeAsignaturaPeriodo($asignatura_id, $periodo_id)
 	{
 		$user = User::fromToken();
 
 
+		$consulta 	= 'SELECT a.id, a.materia_id, a.grupo_id, g.grado_id FROM asignaturas a
+			INNER JOIN grupos g ON g.id=a.grupo_id and g.deleted_at is null
+			WHERE a.id=:asignatura_id and a.deleted_at is null';
+		
+		$asignatura = DB::select($consulta, [":asignatura_id"=>$asignatura_id])[0];
+
+		
+		$consulta 	= 'SELECT p.id, p.numero as numero_periodo, p.year_id, y.year FROM periodos p
+			INNER JOIN years y ON y.id=p.year_id and y.deleted_at is null
+			WHERE p.numero=:numero and y.id!=:year_id and p.deleted_at is null order by p.id desc';
+
+		$periodos = DB::select($consulta, [ ":numero"=>$user->numero_periodo, ":year_id"=>$user->year_id ]);
+
+		for ($i=0; $i < count($periodos); $i++) {
+			$consulta = 'SELECT u.*
+				FROM unidades u
+				INNER JOIN asignaturas a ON u.asignatura_id=a.id and a.materia_id=? and u.deleted_at is null
+				INNER JOIN grupos g ON g.id=a.grupo_id and g.grado_id=? and g.deleted_at is null
+				WHERE u.periodo_id=? and u.deleted_at is null order by orden, id';
+
+			$unidades 			= DB::select($consulta, [$asignatura->materia_id, $asignatura->grado_id, $periodos[$i]->id]);
+
+			foreach ($unidades as $key => $unidad) {
+				$subunidades = DB::select($this->cons_subunidades, [$unidad->id]);
+				$unidad->subunidades = $subunidades;
+			}
+
+
+			$periodos[$i]->unidades = $unidades;
+
+		}
+
+
+		$unidades_actuales = $this->getDeAsignaturaPeriodo($asignatura_id, $periodo_id, $user);
+
+		return ["unidades" => $unidades_actuales, "anios_pasados"=>$periodos];
+	}
+
+
+
+	public function getDeAsignaturaPeriodo($asignatura_id, $periodo_id, $user=null)
+	{
+		if ($user!=null) {
+			$user = User::fromToken();
+		}
+		
+
+	
 		$unidades = DB::select($this->cons_unidades, [$asignatura_id, $periodo_id]);
 
 		
