@@ -11,6 +11,7 @@ use App\Models\Profesor;
 use App\Models\NotaFinal;
 
 use Carbon\Carbon;
+use \Log;
 
 
 class UnidadesController extends Controller {
@@ -67,10 +68,9 @@ class UnidadesController extends Controller {
 
 	public function getDeAsignaturaPeriodo($asignatura_id, $periodo_id, $user=null)
 	{
-		if ($user!=null) {
+		if ($user==null) {
 			$user = User::fromToken();
 		}
-		
 
 	
 		$unidades = DB::select($this->cons_unidades, [$asignatura_id, $periodo_id]);
