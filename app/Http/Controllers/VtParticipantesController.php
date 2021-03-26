@@ -35,8 +35,15 @@ class VtParticipantesController extends Controller {
 	public function putDatos()
 	{
 		$user 	= User::fromToken();
-		$actual = VtVotacion::actual($user);
-				
+
+		if ($user->user_id==1) {
+			$votacion_id = Request::input('votacion_id');
+			$actual = VtVotacion::actual($user, $votacion_id);
+		}else{
+			$actual = VtVotacion::actual($user);
+		}
+
+
 		if($actual) {
 			//$participantes = VtParticipante::participantesDeEvento($actual->id, $user->year_id);
 			$participantes = [];
@@ -75,7 +82,48 @@ class VtParticipantesController extends Controller {
 			$aspiraciones = DB::select($consulta, [$votacion_id]);
 
 			foreach ($aspiraciones as $key => $aspiracion) {
-				
+
+				$consulta = 'SELECT * FROM (
+						SELECT v.id, v.user_id, v.candidato_id, v.blanco_aspiracion_id, v.created_at 
+						FROM vt_votos v
+						INNER JOIN vt_candidatos c ON v.candidato_id=c.id and c.deleted_at is null
+						INNER JOIN vt_aspiraciones a ON c.aspiracion_id=a.id and c.aspiracion_id=? and a.deleted_at is null
+						WHERE a.votacion_id=? and v.user_id=? and v.deleted_at is null
+					union
+						SELECT v.id, v.user_id, v.candidato_id, v.blanco_aspiracion_id, v.created_at
+						FROM vt_votos v
+						INNER JOIN vt_aspiraciones a ON v.blanco_aspiracion_id=a.id and a.id=? and a.deleted_at is null
+						WHERE a.votacion_id=? and v.user_id=? and v.deleted_at is null
+					) votos';
+
+					$aspiracion->votos = DB::select($consulta, [$aspiracion->id, $votacion_id, $particip->user_id, $aspiracion->id, $votacion_id, $particip->user_id]);
+			}
+
+			$particip->aspiraciones = $aspiraciones;
+
+		}
+		
+		return [ 'participantes' => $participantes ];
+	}
+
+	
+	
+	public function putProfesores()
+	{
+		$user 	= User::fromToken();
+		$votacion_id = Request::input('votacion_id');
+		
+		$consulta = 'SELECT * FROM profesores p
+			INNER JOIN contratos c ON p.id=c.profesor_id and p.deleted_at is null and c.year_id=:year_id';
+
+		$participantes = DB::select($consulta, [ ':year_id'=>$user->year_id ] );
+
+		foreach ($participantes as $key => $particip) {
+			$consulta = 'SELECT id, aspiracion, abrev FROM vt_aspiraciones WHERE votacion_id=? and deleted_at is null';
+			$aspiraciones = DB::select($consulta, [$votacion_id]);
+
+			foreach ($aspiraciones as $key => $aspiracion) {
+
 				$consulta = 'SELECT * FROM (
 						SELECT v.id, v.user_id, v.candidato_id, v.blanco_aspiracion_id, v.created_at 
 						FROM vt_votos v

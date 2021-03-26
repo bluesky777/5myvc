@@ -18,9 +18,17 @@ class VtVotacionesController extends Controller {
 	public function getIndex()
 	{
 		$user = User::fromToken();
-		
-		$votaciones = VtVotacion::where('user_id', $user->user_id)
-							->where('year_id', $user->year_id)->get();
+
+		if ($user->user_id == 1) {
+
+			$votaciones = VtVotacion::where('year_id', $user->year_id)->get();
+
+		}else{
+
+			$votaciones = VtVotacion::where('user_id', $user->user_id)
+				->where('year_id', $user->year_id)->get();
+
+		}
 
 		for($i=0; $i<count($votaciones); $i++){
 			$aspiraciones = VtAspiracion::where('votacion_id', $votaciones[$i]->id)->get();

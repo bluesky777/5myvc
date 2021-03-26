@@ -15,11 +15,19 @@ class VtVotacion extends Model {
 	protected $softDelete = true;
 
 
-	public static function actual($user)
+	public static function actual($user, $admin=0)
 	{
-		$consulta = 'SELECT * FROM vt_votaciones v WHERE v.user_id=:user_id and v.year_id=:year_id and v.actual=1 and v.deleted_at is null ';
-		$votaciones = DB::select($consulta, [ 'user_id' => $user->user_id, 'year_id' => $user->year_id ] );
+		if ($admin) {
 
+			$consulta = 'SELECT * FROM vt_votaciones v WHERE v.id=:votacion_id and v.deleted_at is null ';
+			$votaciones = DB::select($consulta, [ 'votacion_id' => $admin ] );
+
+		}else{
+
+			$consulta = 'SELECT * FROM vt_votaciones v WHERE v.user_id=:user_id and v.year_id=:year_id and v.actual=1 and v.deleted_at is null ';
+			$votaciones = DB::select($consulta, [ 'user_id' => $user->user_id, 'year_id' => $user->year_id ] );
+
+		}
 		if(count($votaciones) > 0){
 			return $votaciones[0];
 		}

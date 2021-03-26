@@ -44,7 +44,7 @@ class ImporterFixer {
 		for ($i=0; $i < $this->cant_td; $i++) { 
 			
 			$tipo_low 		= strtolower($this->tipos_doc[$i]->tipo);
-			$abrev_low 		= strtolower($this->tipos_doc[$i]->tipo);
+			$abrev_low 		= strtolower($this->tipos_doc[$i]->abrev);
 			$altipo_low 	= strtolower($alumno->tipo_de_documento);
 			$A1tipo_low 	= strtolower($alumno->tipo_docu_acud1);
 			$A2tipo_low 	= strtolower($alumno->tipo_docu_acud2);
