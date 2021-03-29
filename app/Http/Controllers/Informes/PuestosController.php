@@ -128,12 +128,12 @@ class PuestosController extends Controller {
 
 
 
-    public $consulta_notas_finales_periodo = 'SELECT a.id as asignatura_id, m.materia, m.alias, p.cant_perdidas, r.nota_asignatura, ar.orden as orden_area, m.orden as orden_materia, a.orden as orden_asignatura
+    public $consulta_notas_finales_periodo = 'SELECT a.id as asignatura_id, m.materia, m.alias, p.cant_perdidas, r.nota_asignatura, ar.orden as orden_area, m.orden as orden_materia, a.orden as orden_asignatura, r.manual
             FROM asignaturas a
             inner join materias m on m.id=a.materia_id and m.deleted_at is null and a.deleted_at is null and a.grupo_id=:gr_id
             inner join areas ar on ar.id=m.area_id and ar.deleted_at is null
             left join (
-                select nf.asignatura_id, avg(nf.nota) as nota_asignatura from notas_finales nf
+                select nf.asignatura_id, avg(nf.nota) as nota_asignatura, nf.manual from notas_finales nf
                 inner join asignaturas a on a.id=nf.asignatura_id and a.deleted_at is null and nf.alumno_id=:alu_id
                 inner join periodos p on p.id=nf.periodo_id and p.numero=:num_periodo and p.deleted_at is null and p.year_id=:year_id
                 group by a.id

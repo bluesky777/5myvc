@@ -11,6 +11,8 @@ use App\Models\Grupo;
 use App\Models\Alumno;
 use App\Models\Frase;
 use App\Models\Year;
+use App\Models\Matricula;
+use \Log;
 
 use Carbon\Carbon;
 
@@ -98,21 +100,10 @@ class ComportamientoController extends Controller {
 
 		$grupo = DB::select($consulta, [':year_id'=> $user->year_id, ':grupo_id' => $grupo_id ] )[0];
 		
-		$discCtrl 		= new DisciplinaController;
-			
-		$consulta = 'SELECT m.id as matricula_id, m.alumno_id, a.no_matricula, a.nombres, a.apellidos, a.sexo, a.user_id, 
-				a.fecha_nac, a.ciudad_nac, a.celular, a.direccion, a.religion,
-				m.grupo_id, u.username, 
-				u.imagen_id, IFNULL(i.nombre, IF(a.sexo="F","default_female.png", "default_male.png")) as imagen_nombre, 
-				a.foto_id, IFNULL(i2.nombre, IF(a.sexo="F","default_female.png", "default_male.png")) as foto_nombre
-			FROM alumnos a
-			INNER JOIN matriculas m ON a.id=m.alumno_id and a.deleted_at is null and m.deleted_at is null and (m.estado="ASIS" or m.estado="PREM" or m.estado="MATR")
-			left join users u on a.user_id=u.id and u.deleted_at is null
-			left join images i on i.id=u.imagen_id and i.deleted_at is null
-			left join images i2 on i2.id=a.foto_id and i2.deleted_at is null
-			WHERE m.grupo_id=? order by a.apellidos, a.nombres';
-
-		$alumnos 		= DB::select($consulta, [$grupo->id]);
+		$discCtrl 	= new DisciplinaController;
+		
+		$consulta   = Matricula::$consulta_asistentes_o_matriculados_simat;
+		$alumnos 	= DB::select($consulta, [$grupo->id]);
 
 		for ($j=0; $j < count($alumnos); $j++) { 
 			// Datos de disciplina (situaciones, tardanzas)
@@ -121,12 +112,12 @@ class ComportamientoController extends Controller {
 			// Datos comportamiento (frases de cada periodo y nota del titular)
 			$alumno = $alumnos[$j];
 
-			$consulta = 'SELECT * 
+			$consulta = 'SELECT n.*, p.fecha_fin, p.numero 
 				FROM nota_comportamiento n 
-				INNER JOIN periodos p ON n.periodo_id=p.id and p.year_id=? and p.deleted_at is null
-				WHERE n.alumno_id=? and n.deleted_at is null';
+				INNER JOIN periodos p ON n.periodo_id=p.id and p.year_id=:year_id and p.deleted_at is null
+				WHERE n.alumno_id=:alumno_id and n.deleted_at is null';
 
-			$notas = DB::select($consulta, [$user->year_id, $alumno->alumno_id]);
+			$notas = DB::select($consulta, [':year_id'=>$user->year_id, ':alumno_id'=>$alumno->alumno_id]);
 
 			for ($i=0; $i < count($notas); $i++) { 
 				$nota = $notas[$i];
@@ -145,7 +136,7 @@ class ComportamientoController extends Controller {
 								
 							) defi';
 
-				$definiciones = DB::select($consulta, array('comportamiento1_id' => $nota->id, 'comportamiento2_id' => $nota->id));
+				$definiciones = DB::select($consulta, ['comportamiento1_id' => $nota->id, 'comportamiento2_id' => $nota->id]);
 				
 				$nota->definiciones = $definiciones;
 
@@ -189,8 +180,9 @@ class ComportamientoController extends Controller {
 
 
 			// Traigo los procesos
-			$consulta 	= 'SELECT d.*, SUBSTRING(d.fecha_hora_aprox, 1, 10) as fecha_corta, CONCAT(p.nombres, " ", p.apellidos) as profesor_nombre 
+			$consulta 	= 'SELECT d.*, pe.numero as periodo_numero, SUBSTRING(d.fecha_hora_aprox, 1, 10) as fecha_corta, CONCAT(p.nombres, " ", p.apellidos) as profesor_nombre 
 				FROM dis_procesos d 
+				INNER JOIN periodos pe ON pe.id=d.periodo_id and pe.deleted_at is null
 				LEFT JOIN profesores p ON p.id=d.profesor_id and p.deleted_at is null
 				WHERE alumno_id=? and d.periodo_id=? and d.deleted_at is null';
 				
