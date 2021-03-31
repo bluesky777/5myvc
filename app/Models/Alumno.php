@@ -32,7 +32,11 @@ class Alumno extends Model {
 				where a.id=? and a.deleted_at is null';
 
 		$datos = DB::select($consulta, [$alumno_id]);
-		return $datos[0];
+		if (count($datos)>0) {
+			return $datos[0];
+		}else{
+			return [''=>null];
+		}
 	}
 
 
