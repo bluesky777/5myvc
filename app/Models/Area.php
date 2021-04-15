@@ -36,6 +36,7 @@ class Area extends Model {
 			$areas[$i]->asignaturas 	= [];
 			$areas[$i]->creditos 		= 0;
 			$areas[$i]->ausencias 		= 0;
+			$areas[$i]->tardanzas 		= 0;
 			$areas[$i]->per1 			= 0;
 			$areas[$i]->per2 			= 0;
 			$areas[$i]->per3 			= 0;
@@ -49,17 +50,21 @@ class Area extends Model {
 						$areas[$i]->creditos += $asignaturas[$j]->creditos;
 					}
 					if (isset($asignaturas[$j]->ausencias)) {
-						$areas[$i]->ausencias += $asignaturas[$j]->ausencias;
+						$areas[$i]->ausencias += $asignaturas[$j]->total_ausencias;
+						$areas[$i]->tardanzas += $asignaturas[$j]->total_tardanzas;
 					}
 
-
-					foreach ($asignaturas[$j]->definitivas as $key => $value) {
-						//Log::info(get_object_vars($value));
-						if (isset($value->periodo)) {
-							$field = 'per'.$value->periodo;
-							$areas[$i]->{$field} += $value->DefMateria;
+					// Bol2 no tiene definitivas, creo que tienen notas_finales. Pero bolfinal sí.
+					if(isset($asignaturas[$j]->definitivas)){
+						foreach ($asignaturas[$j]->definitivas as $key => $value) {
+							//Log::info(get_object_vars($value));
+							if (isset($value->periodo)) {
+								$field = 'per'.$value->periodo;
+								$areas[$i]->{$field} += $value->DefMateria;
+							}
 						}
 					}
+
 					array_push($areas[$i]->asignaturas, $asignaturas[$j]);
 				}
 			}
