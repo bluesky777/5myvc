@@ -49,9 +49,17 @@ class Area extends Model {
 					if (isset($asignaturas[$j]->creditos)) {
 						$areas[$i]->creditos += $asignaturas[$j]->creditos;
 					}
-					if (isset($asignaturas[$j]->ausencias)) {
-						$areas[$i]->ausencias += $asignaturas[$j]->total_ausencias;
-						$areas[$i]->tardanzas += $asignaturas[$j]->total_tardanzas;
+
+					if(isset($asignaturas[$j]->total_ausencias)){
+				        $areas[$i]->ausencias += $asignaturas[$j]->total_ausencias;
+				    }else{
+				        $areas[$i]->ausencias += $asignaturas[$j]->ausencias;
+				    }
+
+					if(isset($asignaturas[$j]->total_tardanzas)){
+					    $areas[$i]->tardanzas += $asignaturas[$j]->total_tardanzas;
+					} else {
+					    $areas[$i]->tardanzas += $asignaturas[$j]->tardanzas;
 					}
 
 					// Bol2 no tiene definitivas, creo que tienen notas_finales. Pero bolfinal sí.

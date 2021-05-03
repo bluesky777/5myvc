@@ -9,6 +9,7 @@ use App\Models\Profesor;
 use App\Models\Role;
 use App\Models\Year;
 use Hash;
+use Carbon\Carbon;
 
 
 class ProfesoresController extends Controller {
@@ -27,7 +28,7 @@ class ProfesoresController extends Controller {
 					p.num_doc, p.ciudad_doc, p.fecha_nac, p.ciudad_nac, p.titulo,
 					p.estado_civil, p.barrio, p.direccion, p.telefono, p.celular,
 					p.facebook, p.email, p.tipo_profesor, p.user_id, u.username,
-					u.email as email_usu, u.imagen_id, u.is_superuser,
+					u.email as email_usu, u.imagen_id, u.is_superuser, u.is_active,
 					c.id as contrato_id, c.year_id,
 					p.foto_id, IFNULL(i.nombre, IF(p.sexo="F","default_female.png", "default_male.png")) as foto_nombre
 				from profesores p
@@ -208,6 +209,27 @@ class ProfesoresController extends Controller {
 			
 			
 		}
+	}
+
+	/*************************************************************
+	 * Guardar por VALOR
+	 *************************************************************/
+	public function putGuardarValor()
+	{
+		if($this->user->roles[0]->name == 'Admin'){
+			$valor 		= Request::input('valor');
+			$user_id 	= Request::input('user_id');
+			$persona_id 	= Request::input('persona_id');
+			$propiedad 	= Request::input('propiedad');
+			$now 		= Carbon::now('America/Bogota');
+
+			if(Request::input('propiedad') == 'is_active'){
+				$consulta 	= 'UPDATE users SET '.$propiedad.'=:valor, updated_by=:modificador, updated_at=:fecha WHERE id=:user_id';
+				$datos 		= [ ':valor' => $valor, ':modificador' => $this->user->user_id, ':fecha' => $now, ':user_id' => $user_id ];
+				$res 		= DB::update($consulta, $datos);
+			}
+		}
+		return ['Guardado.'];
 	}
 
 
