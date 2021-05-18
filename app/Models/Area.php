@@ -52,13 +52,13 @@ class Area extends Model {
 
 					if(isset($asignaturas[$j]->total_ausencias)){
 				        $areas[$i]->ausencias += $asignaturas[$j]->total_ausencias;
-				    }else{
+				    }else if(isset($asignaturas[$j]->ausencias)){
 				        $areas[$i]->ausencias += $asignaturas[$j]->ausencias;
 				    }
 
 					if(isset($asignaturas[$j]->total_tardanzas)){
 					    $areas[$i]->tardanzas += $asignaturas[$j]->total_tardanzas;
-					} else {
+					} else if(isset($asignaturas[$j]->tardanzas)){
 					    $areas[$i]->tardanzas += $asignaturas[$j]->tardanzas;
 					}
 
